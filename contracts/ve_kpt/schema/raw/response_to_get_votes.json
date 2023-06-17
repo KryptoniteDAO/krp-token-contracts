@@ -1,0 +1,16 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "GetVotesResponse",
+  "type": "object",
+  "required": [
+    "votes"
+  ],
+  "properties": {
+    "votes": {
+      "type": "integer",
+      "format": "uint128",
+      "minimum": 0.0
+    }
+  },
+  "additionalProperties": false
+}
