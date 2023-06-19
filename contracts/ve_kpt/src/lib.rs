@@ -4,7 +4,7 @@ mod error;
 mod ve_querier;
 mod ve_handler;
 pub mod msg;
-mod handler;
-mod querier;
+pub mod handler;
+pub mod querier;
 
 

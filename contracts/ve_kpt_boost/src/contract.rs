@@ -55,13 +55,15 @@ pub fn execute(
             add_lock_setting(deps, info, duration, mining_boost)
         }
         ExecuteMsg::ModifyLockSetting { index, duration, mining_boost } => {
-            modify_lock_setting(deps, info, index, duration, mining_boost)
+            let _index = index as usize;
+            modify_lock_setting(deps, info, _index, duration, mining_boost)
         }
         ExecuteMsg::ChangeGov { gov } => {
             change_gov(deps, info, gov)
         }
         ExecuteMsg::SetLockStatus { index } => {
-            set_lock_status(deps, env, info, index)
+            let _index = index as usize;
+            set_lock_status(deps, env, info, _index)
         }
     }
 

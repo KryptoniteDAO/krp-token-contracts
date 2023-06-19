@@ -1,3 +1,4 @@
+use std::ops::Sub;
 use cosmwasm_std::{Addr, attr, Binary, DepsMut, Env, MessageInfo, Response, StdError, StdResult, Uint128};
 use cw20_base::allowances::{execute_burn_from, execute_send_from, execute_transfer_from};
 use cw20_base::contract::{execute_burn, execute_mint, execute_send, execute_transfer, query_balance, query_token_info};
@@ -57,6 +58,7 @@ pub fn ve_burn(mut deps: DepsMut, env: Env, owner: Addr, amount: u128) -> StdRes
         ("action", "ve_burn"),
     ]);
     Ok(res)
+
 }
 
 /**
@@ -280,18 +282,19 @@ fn _write_checkpoint(
     let old_checkpoint = if pos == 0 {
         Checkpoint { from_block: 0, votes: 0 }
     } else {
-        check_points[pos - 1].clone()
+        check_points[pos.sub(1usize)].clone()
     };
     let old_weight = old_checkpoint.votes;
     let new_weight = op(Uint128::from(old_weight), Uint128::from(delta));
     if pos > 0 && old_checkpoint.from_block == 0 {
-        check_points[pos - 1].votes = new_weight;
+        check_points[pos.sub(1usize)].votes = new_weight;
     } else {
         check_points.push(Checkpoint { from_block: block_number, votes: new_weight });
     }
     let _ = store_checkpoints(deps.storage, account, &check_points);
 
     (old_weight, new_weight)
+
 }
 
 fn _add(a: Uint128, b: Uint128) -> u128 {

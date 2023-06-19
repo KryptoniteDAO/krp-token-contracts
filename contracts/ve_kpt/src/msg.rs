@@ -10,7 +10,6 @@ pub struct InstantiateMsg {
     pub cw20_init_msg: Cw20InstantiateMsg,
 
     pub max_supply: u128,
-    pub kpt_fund: Addr,
     // default msg.sender
     pub gov: Option<Addr>,
     pub max_minted: u128,
@@ -19,7 +18,7 @@ pub struct InstantiateMsg {
 #[cw_serde]
 pub enum ExecuteMsg {
     UpdateConfig{
-        max_supply: Option<Uint128>,
+        max_minted: Option<Uint128>,
         kpt_fund: Option<Addr>,
         gov: Option<Addr>,
     },
@@ -100,7 +99,7 @@ pub enum QueryMsg {
     #[returns(IsMinterResponse)]
     IsMinter { address: String },
     #[returns(CheckpointResponse)]
-    Checkpoints {account: Addr, pos: usize},
+    Checkpoints {account: Addr, pos: u32},
     #[returns(NumCheckpointsResponse)]
     NumCheckpoints{account: Addr},
     #[returns(DelegatesResponse)]

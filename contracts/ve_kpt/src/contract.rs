@@ -44,13 +44,17 @@ pub fn instantiate(
         cap: Some(msg.max_supply.into()),
     });
 
-    let marketing = cw20_instantiate_msg.marketing.unwrap();
-    cw20_instantiate_msg.marketing = Some(InstantiateMarketingInfo {
-        project: marketing.project,
-        description: marketing.description,
-        logo: marketing.logo,
-        marketing: Option::from(gov.clone().to_string()),
-    });
+
+    cw20_instantiate_msg.marketing = if let Some(marketing) = cw20_instantiate_msg.marketing {
+        Some(InstantiateMarketingInfo {
+            project: marketing.project,
+            description: marketing.description,
+            logo: marketing.logo,
+            marketing: Option::from(gov.clone().to_string()),
+        })
+    } else {
+        None
+    };
 
 
     let ins_res = cw20_instantiate(deps.branch(), env, info, cw20_instantiate_msg);
@@ -60,7 +64,7 @@ pub fn instantiate(
 
     let vote_config = VoteConfig {
         max_supply: msg.max_supply,
-        kpt_fund: Addr::unchecked(msg.kpt_fund),
+        kpt_fund: Addr::unchecked(""),
         gov,
         max_minted: Uint128::from(msg.max_minted),
         total_minted: Uint128::from(0u128),
@@ -80,8 +84,8 @@ pub fn execute(
     msg: ExecuteMsg,
 ) -> Result<Response, ContractError> {
     match msg {
-        ExecuteMsg::UpdateConfig { max_supply, kpt_fund, gov } => {
-            update_config(deps, info, max_supply, kpt_fund, gov)
+        ExecuteMsg::UpdateConfig { max_minted, kpt_fund, gov } => {
+            update_config(deps, info, max_minted, kpt_fund, gov)
         }
         ExecuteMsg::SetMinters { contracts, is_minter } => {
             set_minters(deps, info, contracts, is_minter)
@@ -247,7 +251,6 @@ mod tests {
         let info = mock_info("creator", &[]);
         let max_supply = 1000000u128;
         let max_minted = 500000u128;
-        let kpt_fund = Addr::unchecked("kptfund");
         let gov = Addr::unchecked("gov");
         let marketing = InstantiateMarketingInfo {
             project: Option::from("Test Project".to_string()),
@@ -266,7 +269,6 @@ mod tests {
         let msg = InstantiateMsg {
             max_supply,
             max_minted,
-            kpt_fund:kpt_fund.clone(),
             gov: Some(gov.clone()),
             cw20_init_msg:cw20_instantiate_msg,
         };
@@ -297,7 +299,6 @@ mod tests {
         let invalid_msg = InstantiateMsg {
             max_supply,
             max_minted,
-            kpt_fund:kpt_fund.clone(),
             gov: Some(gov.clone()),
             cw20_init_msg: invalid_cw20_instantiate_msg,
         };
@@ -307,7 +308,6 @@ mod tests {
         let vote_config = read_vote_config(deps.as_ref().storage).unwrap();
         println!("vote_config:{:?}", vote_config);
         assert_eq!(vote_config.max_supply, max_supply);
-        assert_eq!(vote_config.kpt_fund, kpt_fund);
         assert_eq!(vote_config.gov, Addr::unchecked(gov.clone()));
         assert_eq!(vote_config.max_minted, Uint128::from(max_minted));
         assert_eq!(vote_config.total_minted, Uint128::from(0u128));

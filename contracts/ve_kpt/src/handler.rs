@@ -5,7 +5,7 @@ use crate::msg::KptFundMsg;
 use crate::state::{is_minter, read_vote_config, store_minters, store_vote_config};
 use crate::ve_handler::{ve_burn, ve_mint};
 
-pub fn update_config(deps: DepsMut, info: MessageInfo, max_supply: Option<Uint128>, kpt_fund: Option<Addr>, gov: Option<Addr>) -> Result<Response, ContractError> {
+pub fn update_config(deps: DepsMut, info: MessageInfo, max_minted: Option<Uint128>, kpt_fund: Option<Addr>, gov: Option<Addr>) -> Result<Response, ContractError> {
     let mut vote_config = read_vote_config(deps.storage)?;
 
     if info.sender != vote_config.gov {
@@ -13,9 +13,9 @@ pub fn update_config(deps: DepsMut, info: MessageInfo, max_supply: Option<Uint12
     }
 
     let mut attrs = vec![attr("action", "update_config"), attr("sender", info.sender.to_string())];
-    if let Some(max_supply) = max_supply {
-        vote_config.max_supply = max_supply.clone().u128();
-        attrs.push(attr("max_supply", max_supply.to_string()));
+    if let Some(max_minted) = max_minted {
+        vote_config.max_minted = max_minted.clone();
+        attrs.push(attr("max_minted", max_minted.to_string()));
     }
     if let Some(kpt_fund) = kpt_fund {
         vote_config.kpt_fund = kpt_fund.clone();

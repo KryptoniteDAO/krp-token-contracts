@@ -54,7 +54,7 @@
             },
             "pos": {
               "type": "integer",
-              "format": "uint",
+              "format": "uint32",
               "minimum": 0.0
             }
           },

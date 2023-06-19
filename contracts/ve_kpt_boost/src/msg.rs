@@ -22,7 +22,7 @@ pub enum ExecuteMsg {
         mining_boost: Uint128,
     },
     ModifyLockSetting {
-        index: usize,
+        index: u32,
         duration: Uint128,
         mining_boost: Uint128,
     },
@@ -30,7 +30,7 @@ pub enum ExecuteMsg {
         gov: Addr,
     },
     SetLockStatus {
-        index: usize,
+        index: u32,
     },
 }
 

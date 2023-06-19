@@ -31,7 +31,7 @@
                 }
               ]
             },
-            "max_supply": {
+            "max_minted": {
               "anyOf": [
                 {
                   "$ref": "#/definitions/Uint128"

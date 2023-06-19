@@ -4,7 +4,6 @@
   "type": "object",
   "required": [
     "cw20_init_msg",
-    "kpt_fund",
     "max_minted",
     "max_supply"
   ],
@@ -21,9 +20,6 @@
           "type": "null"
         }
       ]
-    },
-    "kpt_fund": {
-      "$ref": "#/definitions/Addr"
     },
     "max_minted": {
       "type": "integer",

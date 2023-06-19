@@ -1,4 +1,5 @@
-use cosmwasm_std::{Addr, Deps, Env, StdError, StdResult};
+use std::ops::{Add, Div, Sub};
+use cosmwasm_std::{Addr, Deps, Env, Isqrt, StdError, StdResult};
 use crate::msg::{DelegatesResponse, GetPastTotalSupplyResponse, GetPastVotesResponse, GetVotesResponse, NumCheckpointsResponse};
 use crate::state::{Checkpoint, read_checkpoints_default, read_delegates_default, read_vote_info_default};
 
@@ -6,12 +7,13 @@ use crate::state::{Checkpoint, read_checkpoints_default, read_delegates_default,
 /**
  * @dev Get the `pos`-th checkpoint for `account`.
  */
-pub fn checkpoints(deps: Deps, account: Addr, pos: usize) -> StdResult<Checkpoint> {
+pub fn checkpoints(deps: Deps, account: Addr, pos: u32) -> StdResult<Checkpoint> {
     let checkpoints = read_checkpoints_default(deps.storage, account)?;
-    if pos >= checkpoints.len() {
+    let _pos = pos as usize;
+    if _pos >= checkpoints.len() {
         return Err(StdError::generic_err("Position out of range"));
     }
-    Ok(checkpoints[pos].clone())
+    Ok(checkpoints[_pos].clone())
 }
 
 /**
@@ -36,10 +38,11 @@ pub fn delegates(deps: Deps, account: Addr) -> StdResult<DelegatesResponse> {
  */
 pub fn get_votes(deps: Deps, account: Addr) -> StdResult<GetVotesResponse> {
     let check_points = read_checkpoints_default(deps.storage, account)?;
-    if check_points.len() == 0 {
-        return Ok(GetVotesResponse { votes: 0 });
+    if check_points.is_empty() {
+        return Ok(GetVotesResponse { votes: 0u128 });
     }
-    let votes = check_points[check_points.len() - 1].votes;
+    let votes = check_points.last().unwrap().votes;
+
     Ok(GetVotesResponse { votes })
 }
 
@@ -94,29 +97,53 @@ fn _check_points_lookup(check_points: Vec<Checkpoint>, block_number: u64) -> u12
     // Note that if the latest checkpoint available is exactly for `blockNumber`, we end up with an index that is
     // past the end of the array, so we technically don't find a checkpoint after `blockNumber`, but it works out
     // the same.
+
     let length = check_points.len();
-    let mut low = 0;
+    let mut low = 0usize;
     let mut high = length;
     if length > 5 {
-        let mid = length - (length as f64).sqrt() as usize;
+        let mid = length - length.isqrt();
         if check_points[mid].from_block > block_number {
             high = mid;
         } else {
-            low = mid + 1;
+            low = mid.add(1usize);
         }
     }
     while low < high {
-        let mid = (low + high) / 2;
+        let mid = (low + high).div(2usize);
         if check_points[mid].from_block > block_number {
             high = mid;
         } else {
-            low = mid + 1;
+            low = mid.add(1usize);
         }
     }
     if high == 0 {
         return 0;
     }
-    check_points[high - 1].votes
+    check_points[high.sub(1usize)].votes
 }
 
 
+#[cfg(test)]
+mod tests {
+    use std::ops::Sub;
+    use super::*;
+    #[test]
+    fn test_check_points_lookup() {
+        // Positive test case
+        let check_points = vec![
+            Checkpoint { from_block: 0, votes: 100 },
+            Checkpoint { from_block: 100, votes: 200 },
+            Checkpoint { from_block: 200, votes: 300 },
+            Checkpoint { from_block: 300, votes: 400 },
+        ];
+        let pos = check_points.len();
+        let s :usize = 1usize;
+        println!("check_points: {:?}", check_points[pos.sub(s)]);
+        assert_eq!(_check_points_lookup(check_points.clone(), 50), 100);
+        assert_eq!(_check_points_lookup(check_points.clone(), 150), 200);
+        assert_eq!(_check_points_lookup(check_points.clone(), 250), 300);
+        assert_eq!(_check_points_lookup(check_points.clone(), 350), 400);
+
+    }
+}
