@@ -137,6 +137,27 @@
         }
       },
       "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "balance_of"
+      ],
+      "properties": {
+        "balance_of": {
+          "type": "object",
+          "required": [
+            "account"
+          ],
+          "properties": {
+            "account": {
+              "$ref": "#/definitions/Addr"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
     }
   ],
   "definitions": {
