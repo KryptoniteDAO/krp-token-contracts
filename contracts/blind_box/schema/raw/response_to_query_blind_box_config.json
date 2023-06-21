@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "BlindBoxConfigResponse",
+  "type": "object",
+  "required": [
+    "gov",
+    "nft_base_url",
+    "nft_uri_suffix",
+    "price_token",
+    "start_mint_time",
+    "token_id_index",
+    "token_id_prefix"
+  ],
+  "properties": {
+    "gov": {
+      "type": "string"
+    },
+    "nft_base_url": {
+      "type": "string"
+    },
+    "nft_uri_suffix": {
+      "type": "string"
+    },
+    "price_token": {
+      "type": "string"
+    },
+    "start_mint_time": {
+      "type": "integer",
+      "format": "uint64",
+      "minimum": 0.0
+    },
+    "token_id_index": {
+      "type": "integer",
+      "format": "uint128",
+      "minimum": 0.0
+    },
+    "token_id_prefix": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}

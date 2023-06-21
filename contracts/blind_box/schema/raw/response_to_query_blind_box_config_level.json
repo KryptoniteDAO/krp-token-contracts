@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "BlindBoxConfigLevelResponse",
+  "type": "object",
+  "required": [
+    "mint_total_count",
+    "minted_count",
+    "price"
+  ],
+  "properties": {
+    "mint_total_count": {
+      "type": "integer",
+      "format": "uint128",
+      "minimum": 0.0
+    },
+    "minted_count": {
+      "type": "integer",
+      "format": "uint128",
+      "minimum": 0.0
+    },
+    "price": {
+      "type": "integer",
+      "format": "uint128",
+      "minimum": 0.0
+    }
+  },
+  "additionalProperties": false
+}
