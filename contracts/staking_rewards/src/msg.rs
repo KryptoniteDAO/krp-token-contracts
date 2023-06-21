@@ -43,6 +43,11 @@ pub struct GetUserRewardPerTokenPaidResponse {
     pub reward_per_token_paid: Uint128,
 }
 
+#[cw_serde]
+pub struct BalanceOfResponse {
+    pub balance_of: Uint128,
+}
+
 /// This structure describes a CW20 hook message.
 #[cw_serde]
 pub enum Cw20HookMsg {
@@ -78,7 +83,7 @@ pub enum ExecuteMsg {
         duration: Uint128,
     },
     GetReward {},
-    Withdraw {amount: Uint128},
+    Withdraw { amount: Uint128 },
     NotifyRewardAmount {
         amount: Uint128,
     },
@@ -103,6 +108,8 @@ pub enum QueryMsg {
     GetUserUpdatedAt { account: Addr },
     #[returns(GetUserRewardPerTokenPaidResponse)]
     GetUserRewardPerTokenPaid { account: Addr },
+    #[returns(BalanceOfResponse)]
+    BalanceOf { account: Addr },
 }
 
 

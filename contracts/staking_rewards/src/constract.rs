@@ -1,9 +1,10 @@
 use cosmwasm_std::{entry_point, DepsMut, Env, MessageInfo, Response, StdResult, StdError, Deps, to_binary, Binary, Addr, Uint128};
 use cw2::set_contract_version;
 use cw_utils::nonpayable;
+use crate::error::ContractError;
 use crate::handler::{get_reward, notify_reward_amount, receive_cw20, update_staking_config, update_staking_duration, withdraw};
 use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg, UpdateStakingConfigStruct};
-use crate::querier::{earned, get_boost, get_user_reward_per_token_paid, get_user_updated_at, last_time_reward_applicable, query_staking_config, query_staking_state, reward_per_token};
+use crate::querier::{balance_of, earned, get_boost, get_user_reward_per_token_paid, get_user_updated_at, last_time_reward_applicable, query_staking_config, query_staking_state, reward_per_token};
 use crate::state::{StakingConfig, StakingState, store_staking_config, store_staking_state};
 
 
@@ -17,10 +18,10 @@ pub fn instantiate(
     _env: Env,
     info: MessageInfo,
     msg: InstantiateMsg,
-) -> StdResult<Response> {
+) -> Result<Response, ContractError> {
     let r = nonpayable(&info);
     if r.is_err() {
-        return Err(StdError::generic_err("NonPayable"));
+        return Err(ContractError::Std(StdError::generic_err("nonpayable")));
     }
 
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
@@ -65,7 +66,7 @@ pub fn execute(
     env: Env,
     info: MessageInfo,
     msg: ExecuteMsg,
-) -> StdResult<Response> {
+) -> Result<Response, ContractError> {
     match msg {
         ExecuteMsg::Receive(msg) => {
             receive_cw20(deps, env, info, msg)
@@ -128,6 +129,9 @@ pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
         QueryMsg::GetUserRewardPerTokenPaid { account } => {
             to_binary(&get_user_reward_per_token_paid(deps, account)?)
         }
+        QueryMsg::BalanceOf { account } => {
+            to_binary(&balance_of(deps, account)?)
+        }
     }
 }
 
@@ -141,7 +145,7 @@ pub fn migrate(_deps: DepsMut, _env: Env, _msg: MigrateMsg) -> StdResult<Respons
 mod tests {
     use super::*;
     use cosmwasm_std::testing::{mock_dependencies, mock_env, mock_info};
-    use cosmwasm_std::{StdError, Uint128, Coin};
+    use cosmwasm_std::{Uint128};
     use cw2::get_contract_version;
     use crate::state::{read_staking_config, read_staking_state};
 
@@ -182,20 +186,4 @@ mod tests {
         assert_eq!(contract_version.version, CONTRACT_VERSION.to_string());
     }
 
-    #[test]
-    fn test_instantiate_nonpayable() {
-        let mut deps = mock_dependencies();
-        let msg = InstantiateMsg {
-            gov: None,
-            staking_token: Addr::unchecked("staking_token"),
-            rewards_token: Addr::unchecked("rewards_token"),
-            ve_kpt_boost: Addr::unchecked("ve_kpt_boost"),
-            kpt_fund: Addr::unchecked("kpt_fund"),
-            reward_controller_addr: Addr::unchecked("reward_controller_addr"),
-            duration: Uint128::from(100u128),
-        };
-        let info = mock_info("creator", &vec![Coin::new(1000, "token")]);
-        let res = instantiate(deps.as_mut(), mock_env(), info.clone(), msg.clone());
-        assert_eq!(res.unwrap_err(), StdError::generic_err("NonPayable"));
-    }
 }

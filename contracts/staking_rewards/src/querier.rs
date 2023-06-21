@@ -1,5 +1,5 @@
 use cosmwasm_std::{Addr, Deps, Env, QueryRequest, StdResult, to_binary, Uint128, WasmQuery};
-use crate::msg::{EarnedResponse, GetBoostResponse, GetUserRewardPerTokenPaidResponse, GetUserUpdatedAtResponse, LastTimeRewardApplicableResponse, RewardPerTokenResponse, StakingConfigResponse, StakingStateResponse};
+use crate::msg::{BalanceOfResponse, EarnedResponse, GetBoostResponse, GetUserRewardPerTokenPaidResponse, GetUserUpdatedAtResponse, LastTimeRewardApplicableResponse, RewardPerTokenResponse, StakingConfigResponse, StakingStateResponse};
 use crate::state::{read_balance_of, read_rewards, read_staking_config, read_staking_state, read_user_reward_per_token_paid, read_user_updated_at};
 use crate::third_msg::{GetUserBoostResponse, VeKptBoostQueryMsg};
 
@@ -124,5 +124,12 @@ pub fn get_user_reward_per_token_paid(deps: Deps, account: Addr) -> StdResult<Ge
     let user_reward_per_token_paid = read_user_reward_per_token_paid(deps.storage, account.clone());
     Ok(GetUserRewardPerTokenPaidResponse {
         reward_per_token_paid: user_reward_per_token_paid,
+    })
+}
+
+pub fn balance_of(deps: Deps, account: Addr) -> StdResult<BalanceOfResponse> {
+    let balance_of = read_balance_of(deps.storage, account.clone());
+    Ok(BalanceOfResponse {
+        balance_of,
     })
 }

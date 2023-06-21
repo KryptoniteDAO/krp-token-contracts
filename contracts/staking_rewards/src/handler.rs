@@ -1,15 +1,16 @@
-use cosmwasm_std::{Addr, attr, CosmosMsg, DepsMut, Env, from_binary, MessageInfo, QueryRequest, Response, StdError, StdResult, SubMsg, to_binary, Uint128, WasmMsg, WasmQuery};
+use cosmwasm_std::{Addr, attr, CosmosMsg, DepsMut, Env, from_binary, MessageInfo, QueryRequest, Response, StdError, SubMsg, to_binary, Uint128, WasmMsg, WasmQuery};
 use cw20::{Cw20ExecuteMsg, Cw20ReceiveMsg};
+use crate::error::ContractError;
 use crate::msg::{Cw20HookMsg, UpdateStakingConfigStruct};
 use crate::querier::{earned, is_empty_address, reward_per_token};
 use crate::state::{read_balance_of, read_rewards, read_staking_config, read_staking_state, store_balance_of, store_rewards, store_staking_config, store_staking_state, store_user_reward_per_token_paid, store_user_updated_at};
 use crate::third_msg::{GetUnlockTimeResponse, KptFundExecuteMsg, RewardTokenExecuteMsg, VeKptBoostQueryMsg};
 
 pub fn update_staking_config(deps: DepsMut, info: MessageInfo,
-                             update_struct: UpdateStakingConfigStruct) -> StdResult<Response> {
+                             update_struct: UpdateStakingConfigStruct) -> Result<Response, ContractError> {
     let mut staking_config = read_staking_config(deps.storage)?;
     if info.sender.ne(&staking_config.gov) {
-        return Err(StdError::generic_err("unauthorized"));
+        return Err(ContractError::Unauthorized {});
     }
 
     let mut attrs = vec![];
@@ -50,16 +51,16 @@ pub fn update_staking_config(deps: DepsMut, info: MessageInfo,
 }
 
 
-pub fn update_staking_duration(deps: DepsMut, env: Env, info: MessageInfo, duration: Uint128) -> StdResult<Response> {
+pub fn update_staking_duration(deps: DepsMut, env: Env, info: MessageInfo, duration: Uint128) -> Result<Response, ContractError> {
     let staking_config = read_staking_config(deps.storage)?;
     let mut staking_state = read_staking_state(deps.storage)?;
     if info.sender.ne(&staking_config.gov) {
-        return Err(StdError::generic_err("unauthorized"));
+        return Err(ContractError::Unauthorized {});
     }
 
     let current_time = Uint128::from(env.block.time.seconds());
     if staking_state.finish_at > current_time {
-        return Err(StdError::generic_err("duration can only be updated after the end of the current period"));
+        return Err(ContractError::Std(StdError::generic_err("duration can only be updated after the end of the current period")));
     }
     staking_state.duration = duration.clone();
 
@@ -75,7 +76,7 @@ pub fn update_staking_duration(deps: DepsMut, env: Env, info: MessageInfo, durat
 
 
 // Update user's claimable reward data and record the timestamp.
-fn _update_reward(deps: DepsMut, env: Env, account: Addr) -> StdResult<()> {
+fn _update_reward(deps: DepsMut, env: Env, account: Addr) -> Result<Response, ContractError> {
     let reward_per_token_response = reward_per_token(deps.as_ref(), env.clone()).unwrap();
     let reward_per_token_stored = reward_per_token_response.reward_per_token;
     // let last_time_reward_applicable_response = last_time_reward_applicable(deps.as_ref(), env.clone()).unwrap();
@@ -87,14 +88,18 @@ fn _update_reward(deps: DepsMut, env: Env, account: Addr) -> StdResult<()> {
         store_user_reward_per_token_paid(deps.storage, account.clone(), &reward_per_token_stored)?;
         store_user_updated_at(deps.storage, account.clone(), &Uint128::from(env.block.time.seconds()))?;
     }
-    Ok(())
+    Ok(Response::new().add_attributes(vec![
+        attr("action", "update_reward"),
+        attr("account", account.to_string()),
+        attr("reward_per_token_stored", reward_per_token_stored.to_string()),
+    ]))
 }
 
 // Allows users to stake a specified amount of tokens
-pub fn stake(mut deps: DepsMut, env: Env, info: MessageInfo, user: Addr, amount: Uint128) -> StdResult<Response> {
+pub fn stake(mut deps: DepsMut, env: Env, user: Addr, amount: Uint128) -> Result<Response, ContractError> {
     _update_reward(deps.branch(), env.clone(), user.clone())?;
     if amount.is_zero() {
-        return Err(StdError::generic_err("amount = 0"));
+        return Err(ContractError::Std(StdError::generic_err("amount = 0")));
     }
 
     let mut balance_of = read_balance_of(deps.storage, user.clone());
@@ -102,7 +107,7 @@ pub fn stake(mut deps: DepsMut, env: Env, info: MessageInfo, user: Addr, amount:
     balance_of += amount;
     staking_state.total_supply += amount;
 
-    store_balance_of(deps.storage, info.sender.clone(), &balance_of)?;
+    store_balance_of(deps.storage, user.clone(), &balance_of.clone())?;
     store_staking_state(deps.storage, &staking_state)?;
     Ok(Response::new()
         .add_attributes(vec![
@@ -113,11 +118,11 @@ pub fn stake(mut deps: DepsMut, env: Env, info: MessageInfo, user: Addr, amount:
 }
 
 // Allows users to withdraw a specified amount of staked tokens
-pub fn withdraw(mut deps: DepsMut, env: Env, info: MessageInfo, amount: Uint128) -> StdResult<Response> {
+pub fn withdraw(mut deps: DepsMut, env: Env, info: MessageInfo, amount: Uint128) -> Result<Response, ContractError> {
     let user = info.sender;
     _update_reward(deps.branch(), env.clone(), user.clone())?;
     if amount.is_zero() {
-        return Err(StdError::generic_err("amount = 0"));
+        return Err(ContractError::Std(StdError::generic_err("amount = 0")));
     }
 
     let staking_token = read_staking_config(deps.storage)?.staking_token;
@@ -167,16 +172,16 @@ pub fn receive_cw20(
     env: Env,
     info: MessageInfo,
     cw20_msg: Cw20ReceiveMsg,
-) -> StdResult<Response> {
+) -> Result<Response, ContractError> {
     let contract_addr = info.sender.clone();
     let msg_sender = deps.api.addr_validate(&cw20_msg.sender).unwrap();
     match from_binary(&cw20_msg.msg) {
         Ok(Cw20HookMsg::Stake {}) => {
             let staking_config = read_staking_config(deps.storage)?;
             if contract_addr.ne(&staking_config.staking_token) {
-                return Err(StdError::generic_err("not staking token"));
+                return Err(ContractError::Std(StdError::generic_err("not staking token")));
             }
-            stake(deps, env, info, msg_sender, cw20_msg.amount)
+            stake(deps, env, msg_sender, cw20_msg.amount)
         }
         // Ok(Cw20HookMsg::Withdraw {}) => {
         //     // let staking_config = read_staking_config(deps.storage)?;
@@ -190,12 +195,14 @@ pub fn receive_cw20(
         //         attr("amount", cw20_msg.amount.to_string()),
         //     ]))
         // }
-        Err(_) => Err(StdError::generic_err("Not a valid cw20 message")),
+        Err(_) => Err(ContractError::Std(StdError::generic_err(
+            "data should be given",
+        ))),
     }
 }
 
 // Allows users to claim their earned rewards
-pub fn get_reward(mut deps: DepsMut, env: Env, info: MessageInfo) -> StdResult<Response> {
+pub fn get_reward(mut deps: DepsMut, env: Env, info: MessageInfo) -> Result<Response, ContractError> {
     _update_reward(deps.branch(), env.clone(), info.sender.clone())?;
 
     let sender = info.sender.clone();
@@ -211,7 +218,7 @@ pub fn get_reward(mut deps: DepsMut, env: Env, info: MessageInfo) -> StdResult<R
     let unlock_time = unlock_time_response.unlock_time;
     let current_time = Uint128::from(env.block.time.seconds());
     if current_time < unlock_time {
-        return Err(StdError::generic_err("Your lock-in period has not ended. You can't claim your veKPT now."));
+        return Err(ContractError::Std(StdError::generic_err("not unlocked yet")));
     }
     let reward = read_rewards(deps.storage, info.sender.clone());
 
@@ -250,12 +257,12 @@ pub fn get_reward(mut deps: DepsMut, env: Env, info: MessageInfo) -> StdResult<R
 }
 
 // Allows the owner to set the mining rewards.
-pub fn notify_reward_amount(mut deps: DepsMut, env: Env, info: MessageInfo, amount: Uint128) -> StdResult<Response> {
+pub fn notify_reward_amount(mut deps: DepsMut, env: Env, info: MessageInfo, amount: Uint128) -> Result<Response, ContractError> {
     _update_reward(deps.branch(), env.clone(), Addr::unchecked(""))?;
     if !amount.is_zero() {
         let staking_config = read_staking_config(deps.storage)?;
         if info.sender != staking_config.reward_controller_addr {
-            return Err(StdError::generic_err("unauthorized"));
+            return Err(ContractError::Unauthorized {});
         }
 
         let current_time = Uint128::from(env.block.time.seconds());
@@ -267,7 +274,9 @@ pub fn notify_reward_amount(mut deps: DepsMut, env: Env, info: MessageInfo, amou
             staking_state.reward_rate = (amount + remaining_rewards) / staking_state.duration;
         }
         if staking_state.reward_rate.is_zero() {
-            return Err(StdError::generic_err("reward rate = 0"));
+            return Err(ContractError::Std(StdError::generic_err(
+                "reward rate is zero",
+            )));
         }
 
         staking_state.finish_at = current_time + staking_state.duration;

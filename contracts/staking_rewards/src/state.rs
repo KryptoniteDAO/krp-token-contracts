@@ -38,11 +38,10 @@ const USER_REWARD_PER_TOKEN_PAID: Map<Addr, Uint128> = Map::new("user_reward_per
 const REWARDS: Map<Addr, Uint128> = Map::new("rewards");
 const USER_UPDATED_AT: Map<Addr, Uint128> = Map::new("user_updated_at");
 // User address => staked amount
-const BALANCE_OF: Map<Addr, Uint128> = Map::new("balance_of");
+const STAKING_USER_BALANCE_OF: Map<&Addr, Uint128> = Map::new("staking_user_balance_of");
 
 pub fn store_user_reward_per_token_paid(storage: &mut dyn Storage, user: Addr, reward_per_token_paid: &Uint128) ->StdResult<()> {
-    USER_REWARD_PER_TOKEN_PAID.save(storage, user, reward_per_token_paid)?;
-    Ok(())
+    USER_REWARD_PER_TOKEN_PAID.save(storage, user, reward_per_token_paid)
 }
 
 pub fn read_user_reward_per_token_paid(storage: &dyn Storage, user: Addr) -> Uint128 {
@@ -50,8 +49,7 @@ pub fn read_user_reward_per_token_paid(storage: &dyn Storage, user: Addr) -> Uin
 }
 
 pub fn store_rewards(storage: &mut dyn Storage, user: Addr, rewards: &Uint128) -> StdResult<()> {
-    REWARDS.save(storage, user, rewards)?;
-    Ok(())
+    REWARDS.save(storage, user, rewards)
 }
 
 pub fn read_rewards(storage: &dyn Storage, user: Addr) -> Uint128 {
@@ -59,8 +57,7 @@ pub fn read_rewards(storage: &dyn Storage, user: Addr) -> Uint128 {
 }
 
 pub fn store_user_updated_at(storage: &mut dyn Storage, user: Addr, updated_at: &Uint128) -> StdResult<()> {
-    USER_UPDATED_AT.save(storage, user, updated_at)?;
-    Ok(())
+    USER_UPDATED_AT.save(storage, user, updated_at)
 }
 
 pub fn read_user_updated_at(storage: &dyn Storage, user: Addr) -> Uint128 {
@@ -68,12 +65,11 @@ pub fn read_user_updated_at(storage: &dyn Storage, user: Addr) -> Uint128 {
 }
 
 pub fn store_balance_of(storage: &mut dyn Storage, user: Addr, balance: &Uint128) -> StdResult<()> {
-    BALANCE_OF.save(storage, user, balance)?;
-    Ok(())
+    STAKING_USER_BALANCE_OF.save(storage, &user, balance)
 }
 
 pub fn read_balance_of(storage: &dyn Storage, user: Addr) -> Uint128 {
-    BALANCE_OF.load(storage, user).unwrap_or(Uint128::zero())
+    STAKING_USER_BALANCE_OF.load(storage, &user).unwrap_or(Uint128::zero())
 }
 
 pub fn store_staking_config(storage: &mut dyn Storage, config: &StakingConfig) -> StdResult<()> {
@@ -86,11 +82,9 @@ pub fn read_staking_config(storage: &dyn Storage) -> StdResult<StakingConfig> {
 }
 
 pub fn store_staking_state(storage: &mut dyn Storage, state: &StakingState) -> StdResult<()> {
-    STAKING_STATE.save(storage, state)?;
-    Ok(())
+    STAKING_STATE.save(storage, state)
 }
 
 pub fn read_staking_state(storage: &dyn Storage) -> StdResult<StakingState> {
     STAKING_STATE.load(storage)
 }
-
