@@ -47,7 +47,7 @@ pub struct GetUserRewardPerTokenPaidResponse {
 #[cw_serde]
 pub enum Cw20HookMsg {
     Stake {},
-    Withdraw {},
+    // Withdraw {},
 }
 
 #[cw_serde]
@@ -78,6 +78,7 @@ pub enum ExecuteMsg {
         duration: Uint128,
     },
     GetReward {},
+    Withdraw {amount: Uint128},
     NotifyRewardAmount {
         amount: Uint128,
     },

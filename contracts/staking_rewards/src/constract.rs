@@ -1,7 +1,7 @@
 use cosmwasm_std::{entry_point, DepsMut, Env, MessageInfo, Response, StdResult, StdError, Deps, to_binary, Binary, Addr, Uint128};
 use cw2::set_contract_version;
 use cw_utils::nonpayable;
-use crate::handler::{get_reward, notify_reward_amount, receive_cw20, update_staking_config, update_staking_duration};
+use crate::handler::{get_reward, notify_reward_amount, receive_cw20, update_staking_config, update_staking_duration, withdraw};
 use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg, UpdateStakingConfigStruct};
 use crate::querier::{earned, get_boost, get_user_reward_per_token_paid, get_user_updated_at, last_time_reward_applicable, query_staking_config, query_staking_state, reward_per_token};
 use crate::state::{StakingConfig, StakingState, store_staking_config, store_staking_state};
@@ -95,6 +95,9 @@ pub fn execute(
         ExecuteMsg::NotifyRewardAmount { amount } => {
             notify_reward_amount(deps, env, info, amount)
         }
+        ExecuteMsg::Withdraw { amount } => {
+            withdraw(deps, env, info, amount)
+        }
     }
 }
 
@@ -138,7 +141,7 @@ pub fn migrate(_deps: DepsMut, _env: Env, _msg: MigrateMsg) -> StdResult<Respons
 mod tests {
     use super::*;
     use cosmwasm_std::testing::{mock_dependencies, mock_env, mock_info};
-    use cosmwasm_std::{ StdError, Uint128, Coin};
+    use cosmwasm_std::{StdError, Uint128, Coin};
     use cw2::get_contract_version;
     use crate::state::{read_staking_config, read_staking_state};
 

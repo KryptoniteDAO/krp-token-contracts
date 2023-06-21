@@ -91,7 +91,8 @@ fn _update_reward(deps: DepsMut, env: Env, account: Addr) -> StdResult<()> {
 }
 
 // Allows users to stake a specified amount of tokens
-pub fn stake(deps: DepsMut, info: MessageInfo, user: Addr, amount: Uint128) -> StdResult<Response> {
+pub fn stake(mut deps: DepsMut, env: Env, info: MessageInfo, user: Addr, amount: Uint128) -> StdResult<Response> {
+    _update_reward(deps.branch(), env.clone(), user.clone())?;
     if amount.is_zero() {
         return Err(StdError::generic_err("amount = 0"));
     }
@@ -112,22 +113,26 @@ pub fn stake(deps: DepsMut, info: MessageInfo, user: Addr, amount: Uint128) -> S
 }
 
 // Allows users to withdraw a specified amount of staked tokens
-pub fn withdraw(deps: DepsMut, info: MessageInfo, token: Addr, user: Addr, amount: Uint128) -> StdResult<Response> {
+pub fn withdraw(mut deps: DepsMut, env: Env, info: MessageInfo, amount: Uint128) -> StdResult<Response> {
+    let user = info.sender;
+    _update_reward(deps.branch(), env.clone(), user.clone())?;
     if amount.is_zero() {
         return Err(StdError::generic_err("amount = 0"));
     }
+
+    let staking_token = read_staking_config(deps.storage)?.staking_token;
 
     let mut balance_of = read_balance_of(deps.storage, user.clone());
     let mut staking_state = read_staking_state(deps.storage)?;
     balance_of -= amount;
     staking_state.total_supply -= amount;
 
-    store_balance_of(deps.storage, info.sender.clone(), &balance_of)?;
+    store_balance_of(deps.storage, user.clone(), &balance_of)?;
     store_staking_state(deps.storage, &staking_state)?;
 
     let messages: Vec<CosmosMsg> = vec![
         CosmosMsg::Wasm(WasmMsg::Execute {
-            contract_addr: token.to_string(),
+            contract_addr: staking_token.to_string(),
             msg: to_binary(&Cw20ExecuteMsg::Transfer {
                 recipient: user.clone().to_string(),
                 amount,
@@ -159,7 +164,7 @@ pub fn withdraw(deps: DepsMut, info: MessageInfo, token: Addr, user: Addr, amoun
 /// * **cw20_msg** is an object of type [`Cw20ReceiveMsg`]. This is the CW20 message that has to be processed.
 pub fn receive_cw20(
     deps: DepsMut,
-    _env: Env,
+    env: Env,
     info: MessageInfo,
     cw20_msg: Cw20ReceiveMsg,
 ) -> StdResult<Response> {
@@ -171,15 +176,20 @@ pub fn receive_cw20(
             if contract_addr.ne(&staking_config.staking_token) {
                 return Err(StdError::generic_err("not staking token"));
             }
-            stake(deps, info, msg_sender, cw20_msg.amount)
+            stake(deps, env, info, msg_sender, cw20_msg.amount)
         }
-        Ok(Cw20HookMsg::Withdraw {}) => {
-            let staking_config = read_staking_config(deps.storage)?;
-            if contract_addr.ne(&staking_config.staking_token) {
-                return Err(StdError::generic_err("not staking token"));
-            }
-            withdraw(deps, info, contract_addr.clone(), msg_sender, cw20_msg.amount)
-        }
+        // Ok(Cw20HookMsg::Withdraw {}) => {
+        //     // let staking_config = read_staking_config(deps.storage)?;
+        //     // if contract_addr.ne(&staking_config.staking_token) {
+        //     //     return Err(StdError::generic_err("not staking token"));
+        //     // }
+        //     // withdraw(deps, info, contract_addr.clone(), msg_sender, cw20_msg.amount)
+        //     Ok(Response::new().add_attributes(vec![
+        //         attr("action", "withdraw"),
+        //         attr("user", msg_sender.to_string()),
+        //         attr("amount", cw20_msg.amount.to_string()),
+        //     ]))
+        // }
         Err(_) => Err(StdError::generic_err("Not a valid cw20 message")),
     }
 }
