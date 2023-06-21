@@ -1,5 +1,5 @@
 use cosmwasm_std::{Addr, Deps, Env, QueryRequest, StdResult, to_binary, Uint128, WasmQuery};
-use crate::msg::{EarnedResponse, GetBoostResponse, LastTimeRewardApplicableResponse, RewardPerTokenResponse, StakingConfigResponse, StakingStateResponse};
+use crate::msg::{EarnedResponse, GetBoostResponse, GetUserRewardPerTokenPaidResponse, GetUserUpdatedAtResponse, LastTimeRewardApplicableResponse, RewardPerTokenResponse, StakingConfigResponse, StakingStateResponse};
 use crate::state::{read_balance_of, read_rewards, read_staking_config, read_staking_state, read_user_reward_per_token_paid, read_user_updated_at};
 use crate::third_msg::{GetUserBoostResponse, VeKptBoostQueryMsg};
 
@@ -109,5 +109,20 @@ pub fn query_staking_state(deps: Deps) -> StdResult<StakingStateResponse> {
         reward_per_token_stored: staking_state.reward_per_token_stored,
         finish_at: staking_state.finish_at,
         updated_at: staking_state.updated_at,
+    })
+}
+
+
+pub fn get_user_updated_at(deps: Deps, account: Addr) -> StdResult<GetUserUpdatedAtResponse> {
+    let user_updated_at = read_user_updated_at(deps.storage, account.clone());
+    Ok(GetUserUpdatedAtResponse {
+        updated_at: user_updated_at,
+    })
+}
+
+pub fn get_user_reward_per_token_paid(deps: Deps, account: Addr) -> StdResult<GetUserRewardPerTokenPaidResponse> {
+    let user_reward_per_token_paid = read_user_reward_per_token_paid(deps.storage, account.clone());
+    Ok(GetUserRewardPerTokenPaidResponse {
+        reward_per_token_paid: user_reward_per_token_paid,
     })
 }

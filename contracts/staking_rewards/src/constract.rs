@@ -3,7 +3,7 @@ use cw2::set_contract_version;
 use cw_utils::nonpayable;
 use crate::handler::{get_reward, notify_reward_amount, receive_cw20, update_staking_config, update_staking_duration};
 use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg, UpdateStakingConfigStruct};
-use crate::querier::{earned, get_boost, last_time_reward_applicable, query_staking_config, query_staking_state, reward_per_token};
+use crate::querier::{earned, get_boost, get_user_reward_per_token_paid, get_user_updated_at, last_time_reward_applicable, query_staking_config, query_staking_state, reward_per_token};
 use crate::state::{StakingConfig, StakingState, store_staking_config, store_staking_state};
 
 
@@ -118,6 +118,12 @@ pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
         }
         QueryMsg::QueryStakingState {} => {
             to_binary(&query_staking_state(deps)?)
+        }
+        QueryMsg::GetUserUpdatedAt { account } => {
+            to_binary(&get_user_updated_at(deps, account)?)
+        }
+        QueryMsg::GetUserRewardPerTokenPaid { account } => {
+            to_binary(&get_user_reward_per_token_paid(deps, account)?)
         }
     }
 }

@@ -33,6 +33,16 @@ pub struct GetBoostResponse {
     pub boost: Uint128,
 }
 
+#[cw_serde]
+pub struct GetUserUpdatedAtResponse {
+    pub updated_at: Uint128,
+}
+
+#[cw_serde]
+pub struct GetUserRewardPerTokenPaidResponse {
+    pub reward_per_token_paid: Uint128,
+}
+
 /// This structure describes a CW20 hook message.
 #[cw_serde]
 pub enum Cw20HookMsg {
@@ -88,6 +98,10 @@ pub enum QueryMsg {
     QueryStakingConfig {},
     #[returns(StakingStateResponse)]
     QueryStakingState {},
+    #[returns(GetUserUpdatedAtResponse)]
+    GetUserUpdatedAt { account: Addr },
+    #[returns(GetUserRewardPerTokenPaidResponse)]
+    GetUserRewardPerTokenPaid { account: Addr },
 }
 
 
