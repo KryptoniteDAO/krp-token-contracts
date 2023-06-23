@@ -3,13 +3,13 @@ use cosmwasm_std::{Addr, BalanceResponse, BankQuery, Deps, Env, QueryRequest, St
 use crate::msg::{EarnedResponse, GetBoostResponse, GetMinerConfigResponse, GetMinerStateResponse, LastTimeRewardApplicableResponse, RewardPerTokenResponse};
 use crate::state::{read_is_redemption_provider, read_miner_config, read_miner_state, read_rewards, read_user_reward_per_token_paid, read_user_updated_at};
 use crate::third_msg::{GetUserBoostResponse, TotalSupplyResponse, VeKptBoostQueryMsg};
-use crate::third_msg::KusdRewardQueryMsg::TotalSupplyQuery;
+use crate::third_msg::KusdRewardQueryMsg::{State};
 
 pub fn total_staked(deps: Deps) -> Uint128 {
     let miner_config = read_miner_config(deps.storage).unwrap();
     let total_supply_response: TotalSupplyResponse = deps.querier.query(&QueryRequest::Wasm(WasmQuery::Smart {
         contract_addr: miner_config.kusd_controller_addr.to_string(),
-        msg: to_binary(&TotalSupplyQuery {}).unwrap(),
+        msg: to_binary(&State {}).unwrap(),
     })).unwrap();
     total_supply_response.total_supply
 }

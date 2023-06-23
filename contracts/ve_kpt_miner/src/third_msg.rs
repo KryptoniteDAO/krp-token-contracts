@@ -6,6 +6,11 @@ pub struct TotalSupplyResponse {
     pub total_supply: Uint128,
 }
 
+#[cw_serde]
+pub struct StateResponse {
+    pub total_supply: Uint128,
+}
+
 
 #[cw_serde]
 pub struct GetUserBoostResponse {
@@ -22,7 +27,10 @@ pub struct GetUnlockTimeResponse {
 pub enum KusdRewardQueryMsg {
     #[returns(TotalSupplyResponse)]
     TotalSupplyQuery {},
+    #[returns(StateResponse)]
+    State {},
 }
+
 #[cw_serde]
 #[derive(QueryResponses)]
 pub enum VeKptBoostQueryMsg {
