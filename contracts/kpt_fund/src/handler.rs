@@ -1,4 +1,4 @@
-use cosmwasm_std::{Addr, attr, BankMsg, coin, CosmosMsg, DepsMut, Env, MessageInfo, Response, StdError, StdResult, SubMsg, to_binary, Uint128, Uint64, WasmMsg};
+use cosmwasm_std::{Addr, attr, BankMsg, coin, CosmosMsg, DepsMut, Env, MessageInfo, Response, StdError, StdResult, SubMsg, to_binary, Uint128, Uint256, Uint64, WasmMsg};
 use crate::msg::UpdateConfigMsg;
 use crate::querier::{earned, get_claim_able_kpt, get_reserved_kpt_for_vesting, total_staked};
 use crate::state::{KptFundConfig, read_kpt_fund_config, read_rewards, read_time2full_redemption, read_unstake_rate, store_kpt_fund_config, store_last_withdraw_time, store_rewards, store_time2full_redemption, store_unstake_rate, store_user_reward_per_token_paid};
@@ -125,6 +125,8 @@ pub fn unstake(
     info: MessageInfo,
     amount: Uint128,
 ) -> StdResult<Response> {
+    refresh_reward(deps.branch(), info.sender.clone())?;
+
     let sender = info.sender;
     let config: KptFundConfig = read_kpt_fund_config(deps.storage).unwrap();
     let current_time = Uint64::from(env.block.time.seconds());
@@ -146,15 +148,16 @@ pub fn unstake(
 
     withdraw(deps.branch(), env.clone(), sender.clone())?;
 
-    let mut total = amount.clone();
+    let mut total = Uint256::from(amount.clone());
     let time2full_redemption_user = read_time2full_redemption(deps.storage, sender.clone());
     if time2full_redemption_user.gt(&current_time) {
         let unstake_rate_user = read_unstake_rate(deps.storage, sender.clone());
         let diff_time = time2full_redemption_user.checked_sub(current_time).unwrap();
-        total = total.checked_add(unstake_rate_user.checked_mul(Uint128::from(diff_time)).unwrap()).unwrap();
+        total = total.checked_add(unstake_rate_user.multiply_ratio(Uint256::from(diff_time),Uint256::from(1000000000000u128))).unwrap();
     }
 
-    let user_new_unstake_rate = total.checked_div(Uint128::from(config.exit_cycle)).unwrap();
+    // let user_new_unstake_rate = total.checked_div(Uint128::from(config.exit_cycle)).unwrap();
+    let user_new_unstake_rate = total.multiply_ratio(Uint256::from(1000000000000u128), Uint256::from(config.exit_cycle));
     let user_new_time2full_redemption = current_time.checked_add(config.exit_cycle).unwrap();
 
     store_unstake_rate(deps.storage, sender.clone(), &user_new_unstake_rate)?;
@@ -214,12 +217,6 @@ pub fn withdraw(
         ]))
 }
 
-// function reStake() external updateReward(msg.sender) {
-// esLBR.mint(msg.sender, getReservedLBRForVesting(msg.sender) + getClaimAbleLBR(msg.sender));
-// unstakeRate[msg.sender] = 0;
-// time2fullRedemption[msg.sender] = 0;
-// }
-
 pub fn re_stake(
     mut deps: DepsMut,
     env: Env,
@@ -254,7 +251,7 @@ pub fn re_stake(
         sub_msgs.push(sub_mint_msg);
     }
 
-    store_unstake_rate(deps.storage, sender.clone(), &Uint128::zero())?;
+    store_unstake_rate(deps.storage, sender.clone(), &Uint256::zero())?;
     store_time2full_redemption(deps.storage, sender.clone(), &Uint64::zero())?;
 
     Ok(Response::new()

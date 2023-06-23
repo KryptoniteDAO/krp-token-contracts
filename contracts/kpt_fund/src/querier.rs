@@ -1,7 +1,8 @@
-use cosmwasm_std::{Addr, Deps, Env, QueryRequest, StdResult, to_binary, Uint128, Uint64, WasmQuery};
+use std::str::FromStr;
+use cosmwasm_std::{Addr, Deps, Env, QueryRequest, StdResult, to_binary, Uint128, Uint256, Uint64, WasmQuery};
 use cw20::{BalanceResponse, TokenInfoResponse};
 use cw20_base::msg::QueryMsg::{Balance, TokenInfo};
-use crate::msg::{EarnedResponse, GetClaimAbleKptResponse, GetClaimAbleKusdResponse, GetReservedKptForVestingResponse, KptFundConfigResponse};
+use crate::msg::{EarnedResponse, GetClaimAbleKptResponse, GetClaimAbleKusdResponse, GetReservedKptForVestingResponse, KptFundConfigResponse, UserLastWithdrawTimeResponse, UserRewardPerTokenPaidResponse, UserRewardsResponse, UserTime2fullRedemptionResponse, UserUnstakeRateResponse};
 use crate::state::{KptFundConfig, read_kpt_fund_config, read_last_withdraw_time, read_rewards, read_time2full_redemption, read_unstake_rate, read_user_reward_per_token_paid};
 
 
@@ -52,25 +53,25 @@ pub fn get_claim_able_kpt(deps: Deps, env: Env, user: Addr) -> StdResult<GetClai
     let diff_time;
     let current_time = env.block.time.seconds();
     if current_time.gt(&time2full_redemption_user.u64()) {
-        diff_time = Uint128::from(time2full_redemption_user.checked_sub(last_withdraw_time_user).unwrap());
+        diff_time = Uint256::from(time2full_redemption_user.checked_sub(last_withdraw_time_user).unwrap());
     } else {
-        diff_time = Uint128::from(env.block.time.seconds().checked_sub(last_withdraw_time_user.u64()).unwrap());
+        diff_time = Uint256::from(env.block.time.seconds().checked_sub(last_withdraw_time_user.u64()).unwrap());
     }
-    let amount = unstake_rate_user.checked_mul(diff_time).unwrap();
+    let amount = unstake_rate_user.multiply_ratio(diff_time, Uint256::from(1000000000000u128));
 
-    Ok(GetClaimAbleKptResponse { amount })
+    Ok(GetClaimAbleKptResponse { amount: Uint128::from_str(&amount.to_string()).unwrap() })
 }
 
 pub fn get_reserved_kpt_for_vesting(deps: Deps, env: Env, user: Addr) -> StdResult<GetReservedKptForVestingResponse> {
     let time2full_redemption_user = read_time2full_redemption(deps.storage, user.clone());
     let unstake_rate_user = read_unstake_rate(deps.storage, user.clone());
-    let mut diff_time = Uint128::zero();
+    let mut diff_time = Uint256::zero();
     let current_time = env.block.time.seconds();
-    if current_time.gt(&time2full_redemption_user.u64()) {
-        diff_time = Uint128::from(time2full_redemption_user.checked_sub(Uint64::from(env.block.time.seconds())).unwrap());
+    if current_time.lt(&time2full_redemption_user.u64()) {
+        diff_time = Uint256::from(time2full_redemption_user.checked_sub(Uint64::from(current_time)).unwrap());
     }
-    let amount = unstake_rate_user.checked_mul(diff_time).unwrap();
-    Ok(GetReservedKptForVestingResponse { amount })
+    let amount = unstake_rate_user.multiply_ratio(diff_time, Uint256::from(1000000000000u128));
+    Ok(GetReservedKptForVestingResponse { amount: Uint128::from_str(&amount.to_string()).unwrap() })
 }
 
 pub fn earned(
@@ -82,7 +83,7 @@ pub fn earned(
     let user_rewards = read_rewards(deps.storage, account.clone());
     let staked = staked_of(deps, account);
     let a = staked.checked_mul(config.reward_per_token_stored.checked_sub(user_reward_per_token_paid).unwrap()).unwrap();
-    let b = a.checked_div(Uint128::new(1_000_000u128)).unwrap();
+    let b = a.checked_div(Uint128::new(1000000u128)).unwrap();
     let amount = b.checked_add(user_rewards).unwrap();
     Ok(EarnedResponse { amount })
 }
@@ -91,3 +92,29 @@ pub fn get_claim_able_kusd(deps: Deps, user: Addr) -> StdResult<GetClaimAbleKusd
     let amount = earned(deps, user.clone()).unwrap().amount;
     Ok(GetClaimAbleKusdResponse { amount })
 }
+
+pub fn get_user_reward_per_token_paid(deps: Deps, account: Addr) -> StdResult<UserRewardPerTokenPaidResponse> {
+    let user_reward_per_token_paid = read_user_reward_per_token_paid(deps.storage, account.clone());
+    Ok(UserRewardPerTokenPaidResponse { user_reward_per_token_paid })
+}
+
+pub fn get_user_rewards(deps: Deps, account: Addr) -> StdResult<UserRewardsResponse> {
+    let user_rewards = read_rewards(deps.storage, account.clone());
+    Ok(UserRewardsResponse { user_rewards })
+}
+
+pub fn get_user_time2full_redemption(deps: Deps, account: Addr) -> StdResult<UserTime2fullRedemptionResponse> {
+    let user_time2full_redemption = read_time2full_redemption(deps.storage, account.clone());
+    Ok(UserTime2fullRedemptionResponse { user_time2full_redemption })
+}
+
+pub fn get_user_unstake_rate(deps: Deps, account: Addr) -> StdResult<UserUnstakeRateResponse> {
+    let user_unstake_rate = read_unstake_rate(deps.storage, account.clone());
+    Ok(UserUnstakeRateResponse { user_unstake_rate })
+}
+
+pub fn get_user_last_withdraw_time(deps: Deps, account: Addr) -> StdResult<UserLastWithdrawTimeResponse> {
+    let user_last_withdraw_time = read_last_withdraw_time(deps.storage, account.clone());
+    Ok(UserLastWithdrawTimeResponse { user_last_withdraw_time })
+}
+

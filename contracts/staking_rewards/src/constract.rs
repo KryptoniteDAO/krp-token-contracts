@@ -1,4 +1,4 @@
-use cosmwasm_std::{entry_point, DepsMut, Env, MessageInfo, Response, StdResult, StdError, Deps, to_binary, Binary, Addr, Uint128};
+use cosmwasm_std::{entry_point, DepsMut, Env, MessageInfo, Response, StdResult, StdError, Deps, to_binary, Binary, Addr, Uint128, Uint256};
 use cw2::set_contract_version;
 use cw_utils::nonpayable;
 use crate::error::ContractError;
@@ -47,7 +47,7 @@ pub fn instantiate(
         duration: msg.duration,
         finish_at: Uint128::zero(),
         updated_at: Uint128::zero(),
-        reward_rate: Uint128::zero(),
+        reward_rate: Uint256::zero(),
         reward_per_token_stored: Uint128::zero(),
         total_supply: Uint128::zero(),
     };
@@ -145,7 +145,7 @@ pub fn migrate(_deps: DepsMut, _env: Env, _msg: MigrateMsg) -> StdResult<Respons
 mod tests {
     use super::*;
     use cosmwasm_std::testing::{mock_dependencies, mock_env, mock_info};
-    use cosmwasm_std::{Uint128};
+    use cosmwasm_std::{Uint128, Uint256};
     use cw2::get_contract_version;
     use crate::state::{read_staking_config, read_staking_state};
 
@@ -177,7 +177,7 @@ mod tests {
         assert_eq!(staking_state.duration, Uint128::from(100u128));
         assert_eq!(staking_state.finish_at, Uint128::zero());
         assert_eq!(staking_state.updated_at, Uint128::zero());
-        assert_eq!(staking_state.reward_rate, Uint128::zero());
+        assert_eq!(staking_state.reward_rate, Uint256::zero());
         assert_eq!(staking_state.reward_per_token_stored, Uint128::zero());
         assert_eq!(staking_state.total_supply, Uint128::zero());
         // Verify contract version was stored correctly

@@ -1,4 +1,4 @@
-use cosmwasm_std::{Addr, StdResult, Storage, Uint128};
+use cosmwasm_std::{Addr, StdResult, Storage, Uint128, Uint256};
 use cw_storage_plus::{Item, Map};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -25,7 +25,7 @@ pub struct MinerState{
     // Minimum of last updated time and reward finish time
     pub updated_at: Uint128,
     // Reward to be paid out per second
-    pub reward_rate: Uint128,
+    pub reward_rate: Uint256,
     // Sum of (reward rate * dt * 1e6 / total supply)
     pub reward_per_token_stored: Uint128,
     // 50 * 1e6

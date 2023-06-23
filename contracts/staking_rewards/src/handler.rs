@@ -1,4 +1,5 @@
-use cosmwasm_std::{Addr, attr, CosmosMsg, DepsMut, Env, from_binary, MessageInfo, QueryRequest, Response, StdError, SubMsg, to_binary, Uint128, WasmMsg, WasmQuery};
+use std::ops::Add;
+use cosmwasm_std::{Addr, attr, CosmosMsg, DepsMut, Env, from_binary, MessageInfo, QueryRequest, Response, StdError, SubMsg, to_binary, Uint128, Uint256, WasmMsg, WasmQuery};
 use cw20::{Cw20ExecuteMsg, Cw20ReceiveMsg};
 use crate::error::ContractError;
 use crate::msg::{Cw20HookMsg, UpdateStakingConfigStruct};
@@ -268,10 +269,16 @@ pub fn notify_reward_amount(mut deps: DepsMut, env: Env, info: MessageInfo, amou
         let current_time = Uint128::from(env.block.time.seconds());
         let mut staking_state = read_staking_state(deps.storage)?;
         if current_time >= staking_state.finish_at {
-            staking_state.reward_rate = amount / staking_state.duration;
+            // staking_state.reward_rate = amount / staking_state.duration;
+            staking_state.reward_rate = Uint256::from(amount)
+                .multiply_ratio(Uint256::from(1000000000000u128), Uint256::from(staking_state.duration));
         } else {
-            let remaining_rewards = (staking_state.finish_at - current_time) * staking_state.reward_rate;
-            staking_state.reward_rate = (amount + remaining_rewards) / staking_state.duration;
+            // let remaining_rewards = (staking_state.finish_at - current_time) * staking_state.reward_rate;
+            let remaining_rewards = Uint256::from(staking_state.finish_at - current_time)
+                .multiply_ratio( staking_state.reward_rate,Uint256::from(1000000000000u128));
+            // staking_state.reward_rate = (amount + remaining_rewards) / staking_state.duration;
+            staking_state.reward_rate = (Uint256::from(amount).add(remaining_rewards))
+                .multiply_ratio(Uint256::from(1000000000000u128), Uint256::from(staking_state.duration));
         }
         if staking_state.reward_rate.is_zero() {
             return Err(ContractError::Std(StdError::generic_err(

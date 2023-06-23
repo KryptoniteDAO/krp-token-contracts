@@ -62,6 +62,7 @@ pub fn update_blind_box_config(deps: DepsMut, info: MessageInfo,
                                price_token: Option<String>,
                                token_id_prefix: Option<String>,
                                start_mint_time: Option<u64>,
+                               receiver_price_addr: Option<Addr>,
 ) -> Result<Response, ContractError> {
     let mut blind_box_config = read_blind_box_config(deps.storage)?;
 
@@ -101,6 +102,11 @@ pub fn update_blind_box_config(deps: DepsMut, info: MessageInfo,
     if let Some(start_mint_time) = start_mint_time {
         blind_box_config.start_mint_time = start_mint_time.clone();
         attrs.push(attr("start_mint_time", start_mint_time.to_string()));
+    }
+
+    if let Some(receiver_price_addr) = receiver_price_addr {
+        blind_box_config.receiver_price_addr = receiver_price_addr.clone();
+        attrs.push(attr("receiver_price_addr", receiver_price_addr.to_string()));
     }
 
     store_blind_box_config(deps.storage, &blind_box_config)?;

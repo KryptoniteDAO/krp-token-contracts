@@ -7,6 +7,7 @@
     "nft_base_url",
     "nft_uri_suffix",
     "price_token",
+    "receiver_price_addr",
     "symbol",
     "token_id_prefix"
   ],
@@ -42,6 +43,9 @@
     },
     "price_token": {
       "type": "string"
+    },
+    "receiver_price_addr": {
+      "$ref": "#/definitions/Addr"
     },
     "start_mint_time": {
       "type": [

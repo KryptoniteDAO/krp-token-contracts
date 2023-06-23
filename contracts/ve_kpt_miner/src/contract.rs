@@ -1,4 +1,4 @@
-use cosmwasm_std::{entry_point, DepsMut, Env, MessageInfo, Response, StdResult, StdError, Deps, to_binary, Binary, Addr, Uint128};
+use cosmwasm_std::{entry_point, DepsMut, Env, MessageInfo, Response, StdResult, StdError, Deps, to_binary, Binary, Addr, Uint128, Uint256};
 use cw2::set_contract_version;
 use cw_utils::nonpayable;
 use crate::handler::{get_reward, notify_reward_amount, refresh_reward, set_is_redemption_provider, update_miner_config, update_miner_state};
@@ -50,7 +50,7 @@ pub fn instantiate(
         duration: msg.duration,
         finish_at: Uint128::zero(),
         updated_at: Uint128::zero(),
-        reward_rate: Uint128::zero(),
+        reward_rate: Uint256::zero(),
         reward_per_token_stored: Uint128::zero(),
         extra_rate,
         lockdown_period: msg.lockdown_period,
@@ -133,7 +133,7 @@ pub fn migrate(_deps: DepsMut, _env: Env, _msg: MigrateMsg) -> StdResult<Respons
 mod tests {
     // Import necessary dependencies
     use cosmwasm_std::testing::{mock_dependencies, mock_env, mock_info};
-    use cosmwasm_std::{coins, Addr, Uint128};
+    use cosmwasm_std::{coins, Addr, Uint128, Uint256};
     // Import functions and structs from the contract
     use crate::msg::{InstantiateMsg};
     use crate::state::{MinerConfig, MinerState, read_miner_config, read_miner_state};
@@ -187,7 +187,7 @@ mod tests {
             duration: Uint128::new(1),
             finish_at: Uint128::zero(),
             updated_at: Uint128::zero(),
-            reward_rate: Uint128::zero(),
+            reward_rate: Uint256::zero(),
             reward_per_token_stored: Uint128::zero(),
             extra_rate: Uint128::new(1),
             lockdown_period: Uint128::new(1),

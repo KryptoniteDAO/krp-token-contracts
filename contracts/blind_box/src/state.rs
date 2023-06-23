@@ -27,6 +27,7 @@ pub struct BlindBoxConfig {
     pub token_id_index: u128,
     pub start_mint_time: u64,
     pub level_infos: Vec<BlindBoxLevel>,
+    pub receiver_price_addr: Addr,
 }
 
 

@@ -17,7 +17,7 @@ pub struct BlindBoxConfigResponse {
     pub token_id_prefix: String,
     pub token_id_index: u128,
     pub start_mint_time: u64,
-
+    pub receiver_price_addr: Addr,
 }
 
 #[cw_serde]
@@ -47,6 +47,7 @@ pub struct InstantiateMsg {
     pub token_id_prefix: String,
     pub level_infos: Option<Vec<BlindBoxLevelMsg>>,
     pub start_mint_time: Option<u64>,
+    pub receiver_price_addr: Addr,
 }
 
 
@@ -63,6 +64,7 @@ pub enum ExecuteMsg {
         price_token: Option<String>,
         token_id_prefix: Option<String>,
         start_mint_time: Option<u64>,
+        receiver_price_addr: Option<Addr>,
     },
     UpdateConfigLevel {
         index: u32,

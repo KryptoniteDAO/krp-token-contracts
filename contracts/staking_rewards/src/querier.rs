@@ -1,4 +1,5 @@
-use cosmwasm_std::{Addr, Deps, Env, QueryRequest, StdResult, to_binary, Uint128, WasmQuery};
+use std::str::FromStr;
+use cosmwasm_std::{Addr, Deps, Env, QueryRequest, StdResult, to_binary, Uint128, Uint256, WasmQuery};
 use crate::msg::{BalanceOfResponse, EarnedResponse, GetBoostResponse, GetUserRewardPerTokenPaidResponse, GetUserUpdatedAtResponse, LastTimeRewardApplicableResponse, RewardPerTokenResponse, StakingConfigResponse, StakingStateResponse};
 use crate::state::{read_balance_of, read_rewards, read_staking_config, read_staking_state, read_user_reward_per_token_paid, read_user_updated_at};
 use crate::third_msg::{GetUserBoostResponse, VeKptBoostQueryMsg};
@@ -29,7 +30,9 @@ pub fn reward_per_token(deps: Deps, env: Env) -> StdResult<RewardPerTokenRespons
     let updated_at = staking_state.updated_at;
     let reward_per_token_stored = staking_state.reward_per_token_stored;
 
-    let reward_per_token = reward_per_token_stored + (reward_rate * (last_time_reward_applicable - updated_at) * Uint128::new(1000000)) / staking_state.total_supply;
+    let rewards_256 = reward_rate.multiply_ratio(Uint256::from(last_time_reward_applicable - updated_at), Uint256::from(1000000u128));
+    let rewards_128 = Uint128::from_str(&rewards_256.to_string()).unwrap();
+    let reward_per_token = reward_per_token_stored + rewards_128 / staking_state.total_supply;
     Ok(RewardPerTokenResponse {
         reward_per_token,
     })
@@ -54,7 +57,7 @@ pub fn get_boost(deps: Deps, account: Addr) -> StdResult<GetBoostResponse> {
     })).unwrap();
 
     let user_boost = get_user_boost_res.user_boost;
-    let boost = Uint128::new(100) * Uint128::new(1000000) + user_boost;
+    let boost = Uint128::new(100u128) * Uint128::new(1000000u128) + user_boost;
     Ok(GetBoostResponse {
         boost,
     })
@@ -69,7 +72,7 @@ pub fn earned(deps: Deps, env: Env, account: Addr) -> StdResult<EarnedResponse> 
 
     let boost = get_boost(deps, account.clone()).unwrap().boost;
     let earned = ((balance_of * boost * (reward_per_token - user_reward_per_token_paid))
-        / Uint128::new(1000000000000)) + rewards;
+        / Uint128::new(1000000000000u128)) + rewards;
     Ok(EarnedResponse {
         earned,
     })

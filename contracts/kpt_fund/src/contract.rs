@@ -3,7 +3,7 @@ use cw2::set_contract_version;
 use cw_utils::nonpayable;
 use crate::handler::{get_reward, notify_reward_amount, re_stake, refresh_reward, stake, unstake, update_kpt_fund_config, withdraw};
 use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg, UpdateConfigMsg};
-use crate::querier::{earned, get_claim_able_kpt, get_claim_able_kusd, get_reserved_kpt_for_vesting, kpt_fund_config};
+use crate::querier::{earned, get_claim_able_kpt, get_claim_able_kusd, get_reserved_kpt_for_vesting, get_user_last_withdraw_time, get_user_reward_per_token_paid, get_user_rewards, get_user_time2full_redemption, get_user_unstake_rate, kpt_fund_config};
 use crate::state::{KptFundConfig, store_kpt_fund_config};
 
 
@@ -107,6 +107,21 @@ pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
         QueryMsg::GetReservedKptForVesting { user } => to_binary(&get_reserved_kpt_for_vesting(deps, env, user)?),
         QueryMsg::Earned { account } => to_binary(&earned(deps, account)?),
         QueryMsg::GetClaimAbleKusd { account } => to_binary(&get_claim_able_kusd(deps, account)?),
+        QueryMsg::GetUserRewardPerTokenPaid { account } => {
+            to_binary(&get_user_reward_per_token_paid(deps, account)?)
+        }
+        QueryMsg::GetUserRewards { account } => {
+            to_binary(&get_user_rewards(deps, account)?)
+        }
+        QueryMsg::GetUserTime2fullRedemption { account } => {
+            to_binary(&get_user_time2full_redemption(deps, account)?)
+        }
+        QueryMsg::GetUserUnstakeRate { account } => {
+            to_binary(&get_user_unstake_rate(deps, account)?)
+        }
+        QueryMsg::GetUserLastWithdrawTime { account } => {
+            to_binary(&get_user_last_withdraw_time(deps, account)?)
+        }
     }
 }
 
@@ -118,9 +133,10 @@ pub fn migrate(_deps: DepsMut, _env: Env, _msg: MigrateMsg) -> StdResult<Respons
 
 #[cfg(test)]
 mod tests {
+    use std::str::FromStr;
     // Import necessary dependencies for testing
     use cosmwasm_std::testing::{mock_dependencies, mock_env, mock_info};
-    use cosmwasm_std::{Addr, from_binary, Uint128, Uint64};
+    use cosmwasm_std::{Addr, from_binary, Uint128, Uint256, Uint64};
     use crate::contract::query;
     use crate::msg::{InstantiateMsg, KptFundConfigResponse, QueryMsg, UpdateConfigMsg};
     use crate::state::{KptFundConfig, read_kpt_fund_config};
@@ -245,4 +261,5 @@ mod tests {
             claim_able_time: Uint64::from(10u64),
         });
     }
+
 }

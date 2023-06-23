@@ -39,6 +39,7 @@ pub fn instantiate(
         token_id_index: 0,
         start_mint_time: msg.start_mint_time.unwrap_or(0u64),
         level_infos: vec![],
+        receiver_price_addr: msg.receiver_price_addr,
     };
 
 
@@ -155,8 +156,9 @@ pub fn execute(
             price_token,
             token_id_prefix,
             start_mint_time,
+            receiver_price_addr,
         } => {
-            update_blind_box_config(deps, info, nft_base_url, nft_uri_suffix, gov, price_token, token_id_prefix,start_mint_time)
+            update_blind_box_config(deps, info, nft_base_url, nft_uri_suffix, gov, price_token, token_id_prefix, start_mint_time, receiver_price_addr)
         }
         ExecuteMsg::UpdateConfigLevel {
             index,
@@ -275,7 +277,7 @@ pub fn migrate(_deps: DepsMut, _env: Env, _msg: MigrateMsg) -> StdResult<Respons
 mod tests {
     use super::*;
     use cosmwasm_std::testing::{mock_dependencies, mock_env, mock_info};
-    use cosmwasm_std::{coin, StdError};
+    use cosmwasm_std::{Addr, coin, StdError};
     use crate::msg::BlindBoxLevelMsg;
 
     const TOKEN_ID_PREFIX: &str = "prefix";
@@ -303,7 +305,8 @@ mod tests {
                 price: LEVEL_PRICE,
                 mint_total_count: LEVEL_MINT_TOTAL_COUNT,
             }]),
-            start_mint_time: None
+            start_mint_time: None,
+            receiver_price_addr: Addr::unchecked("receiver"),
         };
         let res = instantiate(deps.as_mut(), env, info, msg).unwrap();
         assert_eq!(0, res.messages.len());
@@ -322,7 +325,8 @@ mod tests {
                 price: LEVEL_PRICE,
                 mint_total_count: LEVEL_MINT_TOTAL_COUNT,
             }]),
-            start_mint_time: None
+            start_mint_time: None,
+            receiver_price_addr: Addr::unchecked("receiver"),
         };
         let res = instantiate(deps.as_mut(), env, info, msg);
         match res {
@@ -332,5 +336,4 @@ mod tests {
             _ => panic!("Unexpected error"),
         }
     }
-
 }

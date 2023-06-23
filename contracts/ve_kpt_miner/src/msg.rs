@@ -1,5 +1,5 @@
 use cosmwasm_schema::{cw_serde, QueryResponses};
-use cosmwasm_std::{Addr, Uint128};
+use cosmwasm_std::{Addr, Uint128, Uint256};
 
 
 #[cw_serde]
@@ -123,7 +123,7 @@ pub struct GetMinerStateResponse {
     pub duration: Uint128,
     pub finish_at: Uint128,
     pub updated_at: Uint128,
-    pub reward_rate: Uint128,
+    pub reward_rate: Uint256,
     pub reward_per_token_stored: Uint128,
     pub extra_rate: Uint128,
     pub lockdown_period: Uint128,

@@ -1,6 +1,6 @@
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
-use cosmwasm_std::{Addr, StdResult, Storage, Uint128, Uint64};
+use cosmwasm_std::{Addr, StdResult, Storage, Uint128, Uint256, Uint64};
 use cw_storage_plus::{Item, Map};
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
@@ -31,7 +31,7 @@ const REWARDS: Map<Addr, Uint128> = Map::new("rewards");
 // mapping(address => uint) public time2fullRedemption;
 const TIME2FULL_REDEMPTION: Map<Addr, Uint64> = Map::new("time2full_redemption");
 // mapping(address => uint) public unstakeRate;
-const UNSTAKE_RATE: Map<Addr, Uint128> = Map::new("unstake_rate");
+const UNSTAKE_RATE: Map<Addr, Uint256> = Map::new("unstake_rate");
 // mapping(address => uint) public lastWithdrawTime;
 const LAST_WITHDRAW_TIME: Map<Addr, Uint64> = Map::new("last_withdraw_time");
 
@@ -71,13 +71,13 @@ pub fn read_time2full_redemption(storage: &dyn Storage, user: Addr) -> Uint64 {
     TIME2FULL_REDEMPTION.load(storage, user).unwrap_or(Uint64::zero())
 }
 
-pub fn store_unstake_rate(storage: &mut dyn Storage, user: Addr, unstake_rate: &Uint128) -> StdResult<()> {
+pub fn store_unstake_rate(storage: &mut dyn Storage, user: Addr, unstake_rate: &Uint256) -> StdResult<()> {
     UNSTAKE_RATE.save(storage, user, unstake_rate)?;
     Ok(())
 }
 
-pub fn read_unstake_rate(storage: &dyn Storage, user: Addr) -> Uint128 {
-    UNSTAKE_RATE.load(storage, user).unwrap_or(Uint128::zero())
+pub fn read_unstake_rate(storage: &dyn Storage, user: Addr) -> Uint256 {
+    UNSTAKE_RATE.load(storage, user).unwrap_or(Uint256::zero())
 }
 
 pub fn store_last_withdraw_time(storage: &mut dyn Storage, user: Addr, last_withdraw_time: &Uint64) -> StdResult<()> {

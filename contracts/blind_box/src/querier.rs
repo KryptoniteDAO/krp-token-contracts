@@ -11,7 +11,8 @@ pub fn query_blind_box_config(deps: Deps) -> StdResult<BlindBoxConfigResponse> {
         price_token: blind_box_config.price_token,
         token_id_prefix: blind_box_config.token_id_prefix,
         token_id_index: blind_box_config.token_id_index,
-        start_mint_time: blind_box_config.start_mint_time
+        start_mint_time: blind_box_config.start_mint_time,
+        receiver_price_addr: blind_box_config.receiver_price_addr,
     })
 }
 

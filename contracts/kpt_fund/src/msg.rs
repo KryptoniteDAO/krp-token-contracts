@@ -1,6 +1,6 @@
 
 use cosmwasm_schema::{cw_serde,QueryResponses};
-use cosmwasm_std::{Addr, Uint128, Uint64};
+use cosmwasm_std::{Addr, Uint128, Uint256, Uint64};
 
 #[cw_serde]
 pub struct UpdateConfigMsg {
@@ -74,7 +74,53 @@ pub enum QueryMsg {
     #[returns(GetClaimAbleKusdResponse)]
     GetClaimAbleKusd {
         account: Addr,
+    },
+    #[returns(UserRewardPerTokenPaidResponse)]
+    GetUserRewardPerTokenPaid {
+        account: Addr,
+    },
+    #[returns(UserRewardPerTokenPaidResponse)]
+    GetUserRewards {
+        account: Addr,
+    },
+    #[returns(UserTime2fullRedemptionResponse)]
+    GetUserTime2fullRedemption {
+        account: Addr,
+    },
+    #[returns(UserUnstakeRateResponse)]
+    GetUserUnstakeRate {
+        account: Addr,
+    },
+    #[returns(UserLastWithdrawTimeResponse)]
+    GetUserLastWithdrawTime {
+        account: Addr,
     }
+}
+
+
+#[cw_serde]
+pub struct UserRewardPerTokenPaidResponse {
+    pub user_reward_per_token_paid: Uint128,
+}
+
+#[cw_serde]
+pub struct UserRewardsResponse {
+    pub user_rewards: Uint128,
+}
+
+#[cw_serde]
+pub struct UserTime2fullRedemptionResponse {
+    pub user_time2full_redemption: Uint64,
+}
+
+#[cw_serde]
+pub struct UserUnstakeRateResponse {
+    pub user_unstake_rate: Uint256,
+}
+
+#[cw_serde]
+pub struct UserLastWithdrawTimeResponse {
+    pub user_last_withdraw_time: Uint64,
 }
 
 #[cw_serde]
