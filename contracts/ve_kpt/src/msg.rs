@@ -186,7 +186,7 @@ pub struct NumCheckpointsResponse {
 #[cw_serde]
 pub enum KptFundMsg {
     RefreshReward {
-        user: Addr,
+        account: Addr,
     },
 }
 

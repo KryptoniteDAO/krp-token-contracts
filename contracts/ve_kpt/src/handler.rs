@@ -63,7 +63,7 @@ pub fn mint(deps: DepsMut, env: Env, info: MessageInfo, user: Addr, amount: u128
     let mut sub_msgs: Vec<SubMsg> = vec![];
     if msg_sender.ne(&kpt_fund) {
         let refresh_reward_msg = KptFundMsg::RefreshReward {
-            user: user.clone()
+            account: user.clone()
         };
         let sub_msg = SubMsg::new(CosmosMsg::Wasm(WasmMsg::Execute {
             contract_addr: kpt_fund.clone().to_string(),
@@ -97,7 +97,7 @@ pub fn burn(deps: DepsMut, env: Env, info: MessageInfo, user: Addr, amount: u128
     let mut sub_msgs: Vec<SubMsg> = vec![];
     if msg_sender.ne(&kpt_fund) {
         let refresh_reward_msg = KptFundMsg::RefreshReward {
-            user: user.clone()
+            account: user.clone()
         };
         let sub_msg = SubMsg::new(CosmosMsg::Wasm(WasmMsg::Execute {
             contract_addr: kpt_fund.clone().to_string(),
