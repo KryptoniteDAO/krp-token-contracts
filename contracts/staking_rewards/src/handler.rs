@@ -3,7 +3,7 @@ use cosmwasm_std::{Addr, attr, CosmosMsg, DepsMut, Env, from_binary, MessageInfo
 use cw20::{Cw20ExecuteMsg, Cw20ReceiveMsg};
 use crate::error::ContractError;
 use crate::msg::{Cw20HookMsg, UpdateStakingConfigStruct};
-use crate::querier::{earned, is_empty_address, reward_per_token};
+use crate::querier::{earned, is_empty_address, last_time_reward_applicable, reward_per_token};
 use crate::state::{read_balance_of, read_rewards, read_staking_config, read_staking_state, store_balance_of, store_rewards, store_staking_config, store_staking_state, store_user_reward_per_token_paid, store_user_updated_at};
 use crate::third_msg::{GetUnlockTimeResponse, KptFundExecuteMsg, RewardTokenExecuteMsg, VeKptBoostQueryMsg};
 
@@ -80,8 +80,14 @@ pub fn update_staking_duration(deps: DepsMut, env: Env, info: MessageInfo, durat
 fn _update_reward(deps: DepsMut, env: Env, account: Addr) -> Result<Response, ContractError> {
     let reward_per_token_response = reward_per_token(deps.as_ref(), env.clone()).unwrap();
     let reward_per_token_stored = reward_per_token_response.reward_per_token;
-    // let last_time_reward_applicable_response = last_time_reward_applicable(deps.as_ref(), env.clone()).unwrap();
-    // let updated_at = last_time_reward_applicable_response.last_time_reward_applicable;
+
+    let last_time_reward_applicable_response = last_time_reward_applicable(deps.as_ref(), env.clone()).unwrap();
+    let updated_at = last_time_reward_applicable_response.last_time_reward_applicable;
+
+    let mut staking_state = read_staking_state(deps.storage)?;
+    staking_state.reward_per_token_stored = reward_per_token_stored.clone();
+    staking_state.updated_at = updated_at.clone();
+    store_staking_state(deps.storage, &staking_state)?;
 
     if !is_empty_address(account.as_str()) {
         let earned = earned(deps.as_ref(), env.clone(), account.clone()).unwrap().earned;

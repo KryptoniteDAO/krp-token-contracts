@@ -1,7 +1,7 @@
 use std::ops::Add;
 use cosmwasm_std::{Addr, attr, DepsMut, Env, MessageInfo, QueryRequest, Response, StdError, StdResult, SubMsg, to_binary, Uint128, Uint256, WasmMsg, WasmQuery};
-use crate::msg::{ RewardPerTokenResponse, UpdateMinerConfigStruct, UpdateMinerStateStruct};
-use crate::querier::{earned, is_empty_address, reward_per_token};
+use crate::msg::{LastTimeRewardApplicableResponse, RewardPerTokenResponse, UpdateMinerConfigStruct, UpdateMinerStateStruct};
+use crate::querier::{earned, is_empty_address, last_time_reward_applicable, reward_per_token};
 use crate::state::{read_miner_config, read_miner_state, read_rewards, store_is_redemption_provider, store_miner_config, store_miner_state, store_rewards, store_user_reward_per_token_paid, store_user_updated_at};
 use crate::third_msg::{GetUnlockTimeResponse, KptFundExecuteMsg, VeKptBoostQueryMsg, VeKptExecuteMsg};
 
@@ -99,8 +99,13 @@ pub fn set_is_redemption_provider(deps: DepsMut, info: MessageInfo, user: Addr, 
 fn _update_reward(deps: DepsMut, env: Env, account: Addr) -> StdResult<()> {
     let reward_per_token_response: RewardPerTokenResponse = reward_per_token(deps.as_ref(), env.clone()).unwrap();
     let reward_per_token_stored = reward_per_token_response.reward_per_token;
-    // let last_time_reward_applicable_response: LastTimeRewardApplicableResponse = last_time_reward_applicable(deps.as_ref(), env.clone()).unwrap();
-    // let updated_at = last_time_reward_applicable_response.last_time_reward_applicable;
+    let last_time_reward_applicable_response: LastTimeRewardApplicableResponse = last_time_reward_applicable(deps.as_ref(), env.clone()).unwrap();
+    let updated_at = last_time_reward_applicable_response.last_time_reward_applicable;
+
+    let mut miner_state = read_miner_state(deps.storage)?;
+    miner_state.reward_per_token_stored = reward_per_token_stored.clone();
+    miner_state.updated_at = updated_at.clone();
+    store_miner_state(deps.storage, &miner_state)?; // update state
 
     if !is_empty_address(account.as_str()) {
         let earned = earned(deps.as_ref(), env.clone(), account.clone()).unwrap().earned;
