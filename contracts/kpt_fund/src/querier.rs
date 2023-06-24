@@ -91,6 +91,9 @@ pub fn earned(
     Ok(EarnedResponse { amount })
 }
 
+// function getClaimAbleUSD(address user) external view returns (uint256 amount) {
+// amount = lybra.getMintedEUSDByShares(earned(user));
+// }
 pub fn get_claim_able_kusd(deps: Deps, user: Addr) -> StdResult<GetClaimAbleKusdResponse> {
     let amount = earned(deps, user.clone()).unwrap().amount;
     Ok(GetClaimAbleKusdResponse { amount })

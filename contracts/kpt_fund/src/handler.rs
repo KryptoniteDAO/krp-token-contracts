@@ -239,13 +239,13 @@ pub fn re_stake(
     let reserve_kpt = reserve_kpt_res.unwrap().amount;
     let total = claim_able.checked_add(reserve_kpt).unwrap();
     if total.gt(&Uint128::zero()) {
-        let kpt_mint_msg = VeKptExecuteMsg::Mint {
+        let ve_kpt_mint_msg = VeKptExecuteMsg::Mint {
             recipient: sender.clone().to_string(),
             amount: total.clone(),
         };
         let sub_mint_msg = SubMsg::new(CosmosMsg::Wasm(WasmMsg::Execute {
             contract_addr: config.ve_kpt_addr.to_string(),
-            msg: to_binary(&kpt_mint_msg)?,
+            msg: to_binary(&ve_kpt_mint_msg)?,
             funds: vec![],
         }));
         sub_msgs.push(sub_mint_msg);
