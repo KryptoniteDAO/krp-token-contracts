@@ -52,12 +52,15 @@ pub fn get_claim_able_kpt(deps: Deps, env: Env, user: Addr) -> StdResult<GetClai
     let unstake_rate_user = read_unstake_rate(deps.storage, user.clone());
     let diff_time;
     let current_time = env.block.time.seconds();
-    if current_time.gt(&time2full_redemption_user.u64()) {
-        diff_time = Uint256::from(time2full_redemption_user.checked_sub(last_withdraw_time_user).unwrap());
-    } else {
-        diff_time = Uint256::from(env.block.time.seconds().checked_sub(last_withdraw_time_user.u64()).unwrap());
+    let mut  amount = Uint256::zero();
+    if time2full_redemption_user.gt(&last_withdraw_time_user) {
+        if current_time.gt(&time2full_redemption_user.u64()) {
+            diff_time = Uint256::from(time2full_redemption_user.checked_sub(last_withdraw_time_user).unwrap());
+        } else {
+            diff_time = Uint256::from(env.block.time.seconds().checked_sub(last_withdraw_time_user.u64()).unwrap());
+        }
+        amount = unstake_rate_user.multiply_ratio(diff_time, Uint256::from(1000000000000u128));
     }
-    let amount = unstake_rate_user.multiply_ratio(diff_time, Uint256::from(1000000000000u128));
 
     Ok(GetClaimAbleKptResponse { amount: Uint128::from_str(&amount.to_string()).unwrap() })
 }
