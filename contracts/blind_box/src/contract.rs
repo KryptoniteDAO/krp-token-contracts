@@ -2,10 +2,10 @@ use cosmwasm_std::{entry_point, DepsMut, Env, MessageInfo, Response, StdResult, 
 use cw2::set_contract_version;
 use cw721_base::ContractError;
 use cw_utils::nonpayable;
-use crate::handler::{do_mint, update_blind_box_config, update_config_leve};
+use crate::handler::{create_referral_info, do_mint, modify_reward_token_type, update_blind_box_config, update_config_level, update_referral_level_box_config, update_referral_level_config, update_reward_token_config};
 use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
-use crate::querier::{query_all_nft_info, query_blind_box_config, query_blind_box_config_level, query_blind_box_info, query_nft_info};
-use crate::state::{BlindBoxConfig, BlindBoxLevel, store_blind_box_config};
+use crate::querier::{cal_mint_info, check_referral_code, get_user_info, query_all_nft_info, query_all_referral_reward_config, query_blind_box_config, query_blind_box_config_level, query_blind_box_info, query_inviter_records, query_nft_info};
+use crate::state::{BlindBoxConfig, BlindBoxLevel, ReferralRewardConfig, store_blind_box_config, store_referral_reward_config};
 
 
 // version info for migration info
@@ -40,6 +40,8 @@ pub fn instantiate(
         start_mint_time: msg.start_mint_time.unwrap_or(0u64),
         level_infos: vec![],
         receiver_price_addr: msg.receiver_price_addr,
+        end_mint_time: msg.end_mint_time.unwrap_or(0u64),
+        can_transfer_time: msg.can_transfer_time.unwrap_or(0u64),
     };
 
 
@@ -48,13 +50,32 @@ pub fn instantiate(
     } else {
         vec![]
     };
-    for level_info in level_infos {
+    for (index, level_info) in level_infos.iter().enumerate() {
         blind_box_config.level_infos.push(BlindBoxLevel {
+            level_index: index as u8,
             price: level_info.price,
             mint_total_count: level_info.mint_total_count,
             minted_count: 0u128,
+            received_total_amount: 0u128,
         });
     }
+
+    let referral_reward_config;
+    if msg.referral_reward_config.is_some() {
+        let referral_reward_config_msg = msg.referral_reward_config.unwrap();
+
+        referral_reward_config = ReferralRewardConfig {
+            reward_token_config: referral_reward_config_msg.reward_token_config.unwrap_or(Default::default()),
+            referral_level_config: referral_reward_config_msg.referral_level_config,
+        };
+    } else {
+        referral_reward_config = ReferralRewardConfig {
+            reward_token_config: Default::default(),
+            referral_level_config: Default::default(),
+        };
+    }
+    store_referral_reward_config(deps.storage, &referral_reward_config)?;
+
     let cw721_msg = cw721_base::InstantiateMsg {
         name: msg.name,
         symbol: msg.symbol,
@@ -83,10 +104,17 @@ pub fn execute(
     msg: ExecuteMsg,
 ) -> Result<Response, ContractError> {
     match msg {
-        ExecuteMsg::Mint { level_index, recipient } => {
-            do_mint(deps, env, info, level_index, recipient)
+        ExecuteMsg::Mint { level_index,mint_num, recipient, referral_code } => {
+            do_mint(deps, env, info, level_index,mint_num, recipient, referral_code)
         }
         ExecuteMsg::TransferNft { recipient, token_id } => {
+            let blind_box_config = query_blind_box_config(deps.as_ref())?;
+            let current_time = env.block.time.seconds();
+            if blind_box_config.can_transfer_time > 0u64 && blind_box_config.can_transfer_time < current_time {
+                return Err(ContractError::Std(StdError::generic_err(
+                    "can not transfer now",
+                )));
+            }
             let cw721_msg = cw721_base::ExecuteMsg::TransferNft {
                 recipient,
                 token_id,
@@ -98,6 +126,13 @@ pub fn execute(
             token_id,
             msg,
         } => {
+            let blind_box_config = query_blind_box_config(deps.as_ref())?;
+            let current_time = env.block.time.seconds();
+            if blind_box_config.can_transfer_time > 0u64 && blind_box_config.can_transfer_time < current_time {
+                return Err(ContractError::Std(StdError::generic_err(
+                    "can not transfer now",
+                )));
+            }
             let cw721_msg = cw721_base::ExecuteMsg::SendNft {
                 contract,
                 token_id,
@@ -157,15 +192,35 @@ pub fn execute(
             token_id_prefix,
             start_mint_time,
             receiver_price_addr,
+            end_mint_time,
+            can_transfer_time
         } => {
-            update_blind_box_config(deps, info, nft_base_url, nft_uri_suffix, gov, price_token, token_id_prefix, start_mint_time, receiver_price_addr)
+            update_blind_box_config(deps, info, nft_base_url, nft_uri_suffix, gov, price_token, token_id_prefix,
+                                    start_mint_time, receiver_price_addr, end_mint_time,can_transfer_time)
         }
         ExecuteMsg::UpdateConfigLevel {
             index,
             price,
             mint_total_count,
         } => {
-            update_config_leve(deps, info, index, price, mint_total_count)
+            update_config_level(deps, info, index, price, mint_total_count)
+        }
+        ExecuteMsg::UpdateRewardTokenConfig {
+            reward_token_type, reward_token, conversion_ratio
+        } => {
+            update_reward_token_config(deps, info, reward_token_type, reward_token, conversion_ratio)
+        }
+        ExecuteMsg::UpdateReferralLevelConfig { referral_level_config_msg } => {
+            update_referral_level_config(deps, info, referral_level_config_msg)
+        }
+        ExecuteMsg::UpdateReferralLevelBoxConfig { level_reward_box_config_msg } => {
+            update_referral_level_box_config(deps, info, level_reward_box_config_msg)
+        }
+        ExecuteMsg::CreateReferralInfo { referral_code, reward_token_type } => {
+            create_referral_info(deps, env, info, referral_code, reward_token_type)
+        }
+        ExecuteMsg::ModifyRewardTokenType { reward_token_type } => {
+            modify_reward_token_type(deps, env, info, reward_token_type)
         }
     }
 }
@@ -263,6 +318,24 @@ pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
         QueryMsg::QueryBlindBoxInfo { token_id } => {
             to_binary(&query_blind_box_info(deps, token_id)?)
         }
+        QueryMsg::QueryAllReferralRewardConfig {} => {
+            to_binary(&query_all_referral_reward_config(deps)?)
+        }
+        QueryMsg::QueryInviterRecords {
+            inviter,
+            start_after,
+            limit, } => {
+            to_binary(&query_inviter_records(deps, &inviter, start_after, limit)?)
+        }
+        QueryMsg::CalMintInfo { level_index,mint_num, referral_code } => {
+            to_binary(&cal_mint_info(deps, level_index, mint_num,referral_code)?)
+        }
+        QueryMsg::CheckReferralCode { referral_code } => {
+            to_binary(&check_referral_code(deps, referral_code)?)
+        }
+        QueryMsg::GetUserInfo { user } => {
+            to_binary(&get_user_info(deps, user)?)
+        }
     }
 }
 
@@ -307,6 +380,9 @@ mod tests {
             }]),
             start_mint_time: None,
             receiver_price_addr: Addr::unchecked("receiver"),
+            end_mint_time: None,
+            can_transfer_time: None,
+            referral_reward_config: None,
         };
         let res = instantiate(deps.as_mut(), env, info, msg).unwrap();
         assert_eq!(0, res.messages.len());
@@ -327,6 +403,9 @@ mod tests {
             }]),
             start_mint_time: None,
             receiver_price_addr: Addr::unchecked("receiver"),
+            end_mint_time: None,
+            can_transfer_time: None,
+            referral_reward_config: None,
         };
         let res = instantiate(deps.as_mut(), env, info, msg);
         match res {
