@@ -110,7 +110,7 @@ pub fn execute(
         ExecuteMsg::TransferNft { recipient, token_id } => {
             let blind_box_config = query_blind_box_config(deps.as_ref())?;
             let current_time = env.block.time.seconds();
-            if blind_box_config.can_transfer_time > 0u64 && blind_box_config.can_transfer_time < current_time {
+            if blind_box_config.can_transfer_time > 0u64 && blind_box_config.can_transfer_time > current_time {
                 return Err(ContractError::Std(StdError::generic_err(
                     "can not transfer now",
                 )));
@@ -128,7 +128,7 @@ pub fn execute(
         } => {
             let blind_box_config = query_blind_box_config(deps.as_ref())?;
             let current_time = env.block.time.seconds();
-            if blind_box_config.can_transfer_time > 0u64 && blind_box_config.can_transfer_time < current_time {
+            if blind_box_config.can_transfer_time > 0u64 && blind_box_config.can_transfer_time > current_time {
                 return Err(ContractError::Std(StdError::generic_err(
                     "can not transfer now",
                 )));
