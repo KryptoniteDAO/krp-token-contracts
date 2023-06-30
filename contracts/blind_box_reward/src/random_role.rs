@@ -4,8 +4,21 @@ use cosmwasm_std::{Env, StdError, TransactionInfo};
 use crate::error::ContractError;
 use crate::state::{RandomBoxRewardRuleConfig, RandomBoxRewardRuleConfigState};
 
+const CHARACTERS: [char; 62] = [
+    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
+    'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',
+    'U', 'V', 'W', 'X', 'Y', 'Z', 'a', 'b', 'c', 'd',
+    'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n',
+    'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x',
+    'y', 'z'
+];
+
 fn _get_random_seed(env: Env, unique_factor: String, rand_factor: Vec<String>) -> String {
     let mut seed = rand_factor;
+    let block_time = env.block.time.seconds();
+    let mod_time = block_time % 62;
+    seed.push(CHARACTERS[mod_time as usize].to_string());
     seed.push(unique_factor);
     seed.push(env.block.time.nanos().to_string());
     seed.push(env.block.height.to_string());
@@ -15,7 +28,6 @@ fn _get_random_seed(env: Env, unique_factor: String, rand_factor: Vec<String>) -
 
 fn _cal_random_number(seed: &str) -> Result<u64, ContractError> {
     let result = sha256::digest(seed);
-    println!("result: {:?}", result);
     let random_number_bytes_first = &result[..6]; // Take the first 5 bytes
     let random_number_bytes_last = &result[result.len() - 6..]; // Take the last 5 bytes
     let random_number_first = u64::from_str_radix(random_number_bytes_first, 16)
@@ -24,7 +36,6 @@ fn _cal_random_number(seed: &str) -> Result<u64, ContractError> {
         .map_err(|_| ContractError::InvalidInput {})?;
     let random_number = random_number_first.checked_add(random_number_last)
         .ok_or(ContractError::ArithmeticOverflow {})?;
-    println!("random_number: {:?}", random_number);
     Ok(random_number)
 }
 
