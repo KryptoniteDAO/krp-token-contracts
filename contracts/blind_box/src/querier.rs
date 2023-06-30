@@ -52,6 +52,7 @@ pub fn query_blind_box_info(deps: Deps, token_id: String) -> StdResult<BlindBoxI
         price: blind_box_info.price,
         block_number: blind_box_info.block_number,
         is_random_box: blind_box_info.is_random_box,
+        is_reward_box: blind_box_info.is_reward_box
     })
 }
 
@@ -286,6 +287,7 @@ mod tests {
             level_infos: vec![BlindBoxLevel { level_index, price: 100, mint_total_count: 0, minted_count: 0, received_total_amount: 0, is_random_box: false }],
             receiver_price_addr: Addr::unchecked(""),
             can_transfer_time: 0,
+            inviter_reward_box_contract: Addr::unchecked(""),
         };
         store_blind_box_config(&mut deps.storage, &config).unwrap();
         let referral_reward_config = ReferralRewardConfig {

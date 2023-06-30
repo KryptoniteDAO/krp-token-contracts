@@ -1,8 +1,8 @@
-use cosmwasm_std::{entry_point, DepsMut, Env, MessageInfo, Response, StdResult, StdError, Deps, to_binary, Binary};
+use cosmwasm_std::{entry_point, DepsMut, Env, MessageInfo, Response, StdResult, StdError, Deps, to_binary, Binary, Addr};
 use cw2::set_contract_version;
 use cw721_base::ContractError;
 use cw_utils::nonpayable;
-use crate::handler::{create_referral_info, do_mint, modify_reward_token_type, update_blind_box_config, update_config_level, update_referral_level_box_config, update_referral_level_config, update_reward_token_config};
+use crate::handler::{create_referral_info, do_inviter_reward_mint, do_mint, modify_reward_token_type, update_blind_box_config, update_config_level, update_referral_level_box_config, update_referral_level_config, update_reward_token_config};
 use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 use crate::querier::{cal_mint_info, check_referral_code, get_user_info, query_all_nft_info, query_all_referral_reward_config, query_blind_box_config, query_blind_box_config_level, query_blind_box_info, query_inviter_records, query_nft_info};
 use crate::state::{BlindBoxConfig, BlindBoxLevel, ReferralRewardConfig, store_blind_box_config, store_referral_reward_config};
@@ -42,6 +42,7 @@ pub fn instantiate(
         receiver_price_addr: msg.receiver_price_addr,
         end_mint_time: msg.end_mint_time.unwrap_or(0u64),
         can_transfer_time: msg.can_transfer_time.unwrap_or(0u64),
+        inviter_reward_box_contract: Addr::unchecked(""),
     };
 
 
@@ -57,7 +58,7 @@ pub fn instantiate(
             mint_total_count: level_info.mint_total_count,
             minted_count: 0u128,
             received_total_amount: 0u128,
-            is_random_box: level_info.is_random_box
+            is_random_box: level_info.is_random_box,
         });
     }
 
@@ -105,8 +106,8 @@ pub fn execute(
     msg: ExecuteMsg,
 ) -> Result<Response, ContractError> {
     match msg {
-        ExecuteMsg::Mint { level_index,mint_num, recipient, referral_code } => {
-            do_mint(deps, env, info, level_index,mint_num, recipient, referral_code)
+        ExecuteMsg::Mint { level_index, mint_num, recipient, referral_code } => {
+            do_mint(deps, env, info, level_index, mint_num, recipient, referral_code)
         }
         ExecuteMsg::TransferNft { recipient, token_id } => {
             let blind_box_config = query_blind_box_config(deps.as_ref())?;
@@ -194,10 +195,11 @@ pub fn execute(
             start_mint_time,
             receiver_price_addr,
             end_mint_time,
-            can_transfer_time
+            can_transfer_time,
+            inviter_reward_box_contract,
         } => {
             update_blind_box_config(deps, info, nft_base_url, nft_uri_suffix, gov, price_token, token_id_prefix,
-                                    start_mint_time, receiver_price_addr, end_mint_time,can_transfer_time)
+                                    start_mint_time, receiver_price_addr, end_mint_time, can_transfer_time, inviter_reward_box_contract)
         }
         ExecuteMsg::UpdateConfigLevel {
             index,
@@ -222,6 +224,9 @@ pub fn execute(
         }
         ExecuteMsg::ModifyRewardTokenType { reward_token_type } => {
             modify_reward_token_type(deps, env, info, reward_token_type)
+        }
+        ExecuteMsg::DoInviterRewardMint { inviter, level_index, mint_num } => {
+            do_inviter_reward_mint(deps, env, info, inviter, level_index, mint_num)
         }
     }
 }
@@ -328,8 +333,8 @@ pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
             limit, } => {
             to_binary(&query_inviter_records(deps, &inviter, start_after, limit)?)
         }
-        QueryMsg::CalMintInfo { level_index,mint_num, referral_code } => {
-            to_binary(&cal_mint_info(deps, level_index, mint_num,referral_code)?)
+        QueryMsg::CalMintInfo { level_index, mint_num, referral_code } => {
+            to_binary(&cal_mint_info(deps, level_index, mint_num, referral_code)?)
         }
         QueryMsg::CheckReferralCode { referral_code } => {
             to_binary(&check_referral_code(deps, referral_code)?)
@@ -378,7 +383,7 @@ mod tests {
             level_infos: Some(vec![BlindBoxLevelMsg {
                 price: LEVEL_PRICE,
                 mint_total_count: LEVEL_MINT_TOTAL_COUNT,
-                is_random_box: false
+                is_random_box: false,
             }]),
             start_mint_time: None,
             receiver_price_addr: Addr::unchecked("receiver"),
@@ -402,7 +407,7 @@ mod tests {
             level_infos: Some(vec![BlindBoxLevelMsg {
                 price: LEVEL_PRICE,
                 mint_total_count: LEVEL_MINT_TOTAL_COUNT,
-                is_random_box: false
+                is_random_box: false,
             }]),
             start_mint_time: None,
             receiver_price_addr: Addr::unchecked("receiver"),

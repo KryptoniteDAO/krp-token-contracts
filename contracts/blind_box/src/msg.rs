@@ -72,6 +72,7 @@ pub struct BlindBoxInfoResponse {
     pub price: u128,
     pub block_number: u64,
     pub is_random_box: bool,
+    pub is_reward_box: bool,
 }
 
 
@@ -144,6 +145,7 @@ pub struct CheckReferralCodeResponse {
     pub exists: bool,
     pub user: Addr,
 }
+
 #[cw_serde]
 pub struct UserInfoResponse {
     pub referral_code: String,
@@ -196,6 +198,7 @@ pub enum ExecuteMsg {
         receiver_price_addr: Option<Addr>,
         end_mint_time: Option<u64>,
         can_transfer_time: Option<u64>,
+        inviter_reward_box_contract: Option<Addr>,
     },
     UpdateConfigLevel {
         index: u8,
@@ -220,7 +223,12 @@ pub enum ExecuteMsg {
     ModifyRewardTokenType {
         reward_token_type: String,
     },
-    Mint { level_index: u8,mint_num :u128 , recipient: Option<String>, referral_code: Option<String> },
+    DoInviterRewardMint {
+        inviter: Addr,
+        level_index: u8,
+        mint_num: u32,
+    },
+    Mint { level_index: u8, mint_num: u128, recipient: Option<String>, referral_code: Option<String> },
     /// Transfer is a base message to move a token to another account without triggering actions
     TransferNft { recipient: String, token_id: String },
     /// Send is a base message to transfer a token to a contract and trigger an action

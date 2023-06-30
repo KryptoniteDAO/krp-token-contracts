@@ -43,6 +43,7 @@ pub struct BlindBoxInfo {
     pub price: u128,
     pub block_number: u64,
     pub is_random_box: bool,
+    pub is_reward_box: bool,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
@@ -58,6 +59,7 @@ pub struct BlindBoxConfig {
     pub level_infos: Vec<BlindBoxLevel>,
     pub receiver_price_addr: Addr,
     pub can_transfer_time: u64,
+    pub inviter_reward_box_contract: Addr,
 }
 
 
@@ -191,7 +193,8 @@ pub fn read_blind_box_info(storage: &dyn Storage, token_id: String) -> BlindBoxI
         level_index: 0,
         price: 0,
         block_number: 0,
-        is_random_box: false
+        is_random_box: false,
+        is_reward_box: false
     })
 }
 
