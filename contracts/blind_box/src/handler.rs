@@ -116,6 +116,7 @@ pub fn do_mint(mut deps: DepsMut, env: Env, info: MessageInfo,
                 level_index,
                 price: price.clone(),
                 block_number: env.block.height,
+                is_random_box: level_info.is_random_box
             },
         )?;
     }
@@ -271,7 +272,7 @@ fn _do_inviter(deps: DepsMut, env: Env, user: Addr,
         let invitee_exists = check_invitee_existence(deps.as_ref().storage, &inviter_addr, &user)?;
         //Inviter +1
         if !invitee_exists {
-            inviter_info.invitee_count += 1;
+            inviter_info.invitee_count += 1u32;
             let user_referral_level_count = inviter_info.user_referral_level_count.get(&current_inviter_reward_level_index).unwrap_or(&0u32).clone();
             inviter_info.user_referral_level_count.insert(current_inviter_reward_level_index, user_referral_level_count + 1u32);
         }
@@ -289,11 +290,11 @@ fn _do_inviter(deps: DepsMut, env: Env, user: Addr,
             mint_box_level_index: level_index,
             mint_price: amount.u128(),
             mint_pay_amount: paid_amount.u128(),
-            reward_to_inviter_base_amount: mint_discount_rate.u128(),
+            reward_to_inviter_base_amount: inviter_reward_amount.u128(),
         };
 
 
-        store_inviter_record_elem(deps.storage, &inviter_addr, &user, &inviter_referral_record)?;
+        store_inviter_record_elem(deps.storage, &inviter_addr,  &inviter_referral_record)?;
 
 
         store_referral_reward_total_state(deps.storage, &referral_reward_total_state)?;
@@ -424,6 +425,7 @@ pub fn update_config_level(deps: DepsMut, info: MessageInfo, index: u8,
                 mint_total_count: mint_total_count.unwrap(),
                 minted_count: 0,
                 received_total_amount: 0,
+                is_random_box: false
             });
         }
     } else {
@@ -434,6 +436,7 @@ pub fn update_config_level(deps: DepsMut, info: MessageInfo, index: u8,
             mint_total_count: mint_total_count.unwrap_or(level_info.mint_total_count),
             minted_count: level_info.minted_count,
             received_total_amount: level_info.received_total_amount,
+            is_random_box: level_info.is_random_box
         };
     }
 
@@ -586,7 +589,7 @@ mod tests {
             token_id_index: 0,
             start_mint_time: 0,
             end_mint_time: 0,
-            level_infos: vec![BlindBoxLevel { level_index, price: 20000000, mint_total_count: 0, minted_count: 0, received_total_amount: 0 }],
+            level_infos: vec![BlindBoxLevel { level_index, price: 20000000, mint_total_count: 0, minted_count: 0, received_total_amount: 0, is_random_box: false }],
             receiver_price_addr: Addr::unchecked(""),
             can_transfer_time: 0,
         };

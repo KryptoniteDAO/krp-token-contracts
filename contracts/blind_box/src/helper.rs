@@ -18,8 +18,8 @@ pub fn check_referral_code_role(referral_code: String) -> Result<(), ContractErr
         return Err(ContractError::Std(StdError::generic_err("referral_code contains non-alphanumeric characters")));
     }
 
-    if referral_code.len() > 12 {
-        return Err(ContractError::Std(StdError::generic_err("referral_code is too long (max 12 characters)")));
+    if referral_code.len() != 8 {
+        return Err(ContractError::Std(StdError::generic_err("referral_code length is not 8")));
     }
 
     Ok(())

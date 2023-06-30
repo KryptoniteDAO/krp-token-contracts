@@ -12,6 +12,22 @@
         "update_config": {
           "type": "object",
           "properties": {
+            "can_transfer_time": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint64",
+              "minimum": 0.0
+            },
+            "end_mint_time": {
+              "type": [
+                "integer",
+                "null"
+              ],
+              "format": "uint64",
+              "minimum": 0.0
+            },
             "gov": {
               "type": [
                 "string",
@@ -80,7 +96,7 @@
           "properties": {
             "index": {
               "type": "integer",
-              "format": "uint32",
+              "format": "uint8",
               "minimum": 0.0
             },
             "mint_total_count": {
@@ -108,13 +124,133 @@
     {
       "type": "object",
       "required": [
+        "update_reward_token_config"
+      ],
+      "properties": {
+        "update_reward_token_config": {
+          "type": "object",
+          "required": [
+            "conversion_ratio",
+            "reward_token",
+            "reward_token_type"
+          ],
+          "properties": {
+            "conversion_ratio": {
+              "type": "integer",
+              "format": "uint128",
+              "minimum": 0.0
+            },
+            "reward_token": {
+              "type": "string"
+            },
+            "reward_token_type": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "update_referral_level_config"
+      ],
+      "properties": {
+        "update_referral_level_config": {
+          "type": "object",
+          "required": [
+            "referral_level_config_msg"
+          ],
+          "properties": {
+            "referral_level_config_msg": {
+              "$ref": "#/definitions/ReferralLevelConfigMsg"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "update_referral_level_box_config"
+      ],
+      "properties": {
+        "update_referral_level_box_config": {
+          "type": "object",
+          "required": [
+            "level_reward_box_config_msg"
+          ],
+          "properties": {
+            "level_reward_box_config_msg": {
+              "$ref": "#/definitions/ReferralLevelRewardBoxConfigMsg"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "create_referral_info"
+      ],
+      "properties": {
+        "create_referral_info": {
+          "type": "object",
+          "required": [
+            "referral_code",
+            "reward_token_type"
+          ],
+          "properties": {
+            "referral_code": {
+              "type": "string"
+            },
+            "reward_token_type": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "modify_reward_token_type"
+      ],
+      "properties": {
+        "modify_reward_token_type": {
+          "type": "object",
+          "required": [
+            "reward_token_type"
+          ],
+          "properties": {
+            "reward_token_type": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
         "mint"
       ],
       "properties": {
         "mint": {
           "type": "object",
           "required": [
-            "level_index"
+            "level_index",
+            "mint_num"
           ],
           "properties": {
             "level_index": {
@@ -122,7 +258,18 @@
               "format": "uint8",
               "minimum": 0.0
             },
+            "mint_num": {
+              "type": "integer",
+              "format": "uint128",
+              "minimum": 0.0
+            },
             "recipient": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "referral_code": {
               "type": [
                 "string",
                 "null"
@@ -384,6 +531,85 @@
           "additionalProperties": false
         }
       ]
+    },
+    "ReferralLevelConfigMsg": {
+      "type": "object",
+      "required": [
+        "referral_level"
+      ],
+      "properties": {
+        "invitee_discount_rate": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint128",
+          "minimum": 0.0
+        },
+        "inviter_reward_rate": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint128",
+          "minimum": 0.0
+        },
+        "max_referral_total_amount": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint128",
+          "minimum": 0.0
+        },
+        "min_referral_total_amount": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint128",
+          "minimum": 0.0
+        },
+        "referral_level": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        }
+      },
+      "additionalProperties": false
+    },
+    "ReferralLevelRewardBoxConfigMsg": {
+      "type": "object",
+      "required": [
+        "referral_level"
+      ],
+      "properties": {
+        "recommended_quantity": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint128",
+          "minimum": 0.0
+        },
+        "referral_level": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "reward_box": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": {
+            "type": "integer",
+            "format": "uint32",
+            "minimum": 0.0
+          }
+        }
+      },
+      "additionalProperties": false
     },
     "Timestamp": {
       "description": "A point in time in nanosecond precision.\n\nThis type can represent times from 1970-01-01T00:00:00Z to 2554-07-21T23:34:33Z.\n\n## Examples\n\n``` # use cosmwasm_std::Timestamp; let ts = Timestamp::from_nanos(1_000_000_202); assert_eq!(ts.nanos(), 1_000_000_202); assert_eq!(ts.seconds(), 1); assert_eq!(ts.subsec_nanos(), 202);\n\nlet ts = ts.plus_seconds(2); assert_eq!(ts.nanos(), 3_000_000_202); assert_eq!(ts.seconds(), 3); assert_eq!(ts.subsec_nanos(), 202); ```",

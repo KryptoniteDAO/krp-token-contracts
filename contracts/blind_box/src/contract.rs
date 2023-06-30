@@ -57,6 +57,7 @@ pub fn instantiate(
             mint_total_count: level_info.mint_total_count,
             minted_count: 0u128,
             received_total_amount: 0u128,
+            is_random_box: level_info.is_random_box
         });
     }
 
@@ -377,6 +378,7 @@ mod tests {
             level_infos: Some(vec![BlindBoxLevelMsg {
                 price: LEVEL_PRICE,
                 mint_total_count: LEVEL_MINT_TOTAL_COUNT,
+                is_random_box: false
             }]),
             start_mint_time: None,
             receiver_price_addr: Addr::unchecked("receiver"),
@@ -400,6 +402,7 @@ mod tests {
             level_infos: Some(vec![BlindBoxLevelMsg {
                 price: LEVEL_PRICE,
                 mint_total_count: LEVEL_MINT_TOTAL_COUNT,
+                is_random_box: false
             }]),
             start_mint_time: None,
             receiver_price_addr: Addr::unchecked("receiver"),

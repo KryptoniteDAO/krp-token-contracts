@@ -16,6 +16,22 @@
       "token_id_prefix"
     ],
     "properties": {
+      "can_transfer_time": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "format": "uint64",
+        "minimum": 0.0
+      },
+      "end_mint_time": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "format": "uint64",
+        "minimum": 0.0
+      },
       "gov": {
         "anyOf": [
           {
@@ -51,6 +67,16 @@
       "receiver_price_addr": {
         "$ref": "#/definitions/Addr"
       },
+      "referral_reward_config": {
+        "anyOf": [
+          {
+            "$ref": "#/definitions/ReferralRewardConfigMsg"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
       "start_mint_time": {
         "type": [
           "integer",
@@ -76,10 +102,14 @@
       "BlindBoxLevelMsg": {
         "type": "object",
         "required": [
+          "is_random_box",
           "mint_total_count",
           "price"
         ],
         "properties": {
+          "is_random_box": {
+            "type": "boolean"
+          },
           "mint_total_count": {
             "type": "integer",
             "format": "uint128",
@@ -92,6 +122,104 @@
           }
         },
         "additionalProperties": false
+      },
+      "ReferralLevelConfig": {
+        "type": "object",
+        "required": [
+          "invitee_discount_rate",
+          "inviter_reward_rate",
+          "max_referral_total_amount",
+          "min_referral_total_amount",
+          "reward_box_config"
+        ],
+        "properties": {
+          "invitee_discount_rate": {
+            "type": "integer",
+            "format": "uint128",
+            "minimum": 0.0
+          },
+          "inviter_reward_rate": {
+            "type": "integer",
+            "format": "uint128",
+            "minimum": 0.0
+          },
+          "max_referral_total_amount": {
+            "type": "integer",
+            "format": "uint128",
+            "minimum": 0.0
+          },
+          "min_referral_total_amount": {
+            "type": "integer",
+            "format": "uint128",
+            "minimum": 0.0
+          },
+          "reward_box_config": {
+            "$ref": "#/definitions/ReferralLevelRewardBoxConfig"
+          }
+        }
+      },
+      "ReferralLevelRewardBoxConfig": {
+        "type": "object",
+        "required": [
+          "recommended_quantity",
+          "reward_box"
+        ],
+        "properties": {
+          "recommended_quantity": {
+            "type": "integer",
+            "format": "uint128",
+            "minimum": 0.0
+          },
+          "reward_box": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0.0
+            }
+          }
+        }
+      },
+      "ReferralRewardConfigMsg": {
+        "type": "object",
+        "required": [
+          "referral_level_config"
+        ],
+        "properties": {
+          "referral_level_config": {
+            "type": "object",
+            "additionalProperties": {
+              "$ref": "#/definitions/ReferralLevelConfig"
+            }
+          },
+          "reward_token_config": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": {
+              "$ref": "#/definitions/ReferralRewardTokenConfig"
+            }
+          }
+        },
+        "additionalProperties": false
+      },
+      "ReferralRewardTokenConfig": {
+        "type": "object",
+        "required": [
+          "conversion_ratio",
+          "reward_token"
+        ],
+        "properties": {
+          "conversion_ratio": {
+            "type": "integer",
+            "format": "uint128",
+            "minimum": 0.0
+          },
+          "reward_token": {
+            "type": "string"
+          }
+        }
       }
     }
   },
@@ -109,6 +237,22 @@
           "update_config": {
             "type": "object",
             "properties": {
+              "can_transfer_time": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "format": "uint64",
+                "minimum": 0.0
+              },
+              "end_mint_time": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "format": "uint64",
+                "minimum": 0.0
+              },
               "gov": {
                 "type": [
                   "string",
@@ -177,7 +321,7 @@
             "properties": {
               "index": {
                 "type": "integer",
-                "format": "uint32",
+                "format": "uint8",
                 "minimum": 0.0
               },
               "mint_total_count": {
@@ -205,13 +349,133 @@
       {
         "type": "object",
         "required": [
+          "update_reward_token_config"
+        ],
+        "properties": {
+          "update_reward_token_config": {
+            "type": "object",
+            "required": [
+              "conversion_ratio",
+              "reward_token",
+              "reward_token_type"
+            ],
+            "properties": {
+              "conversion_ratio": {
+                "type": "integer",
+                "format": "uint128",
+                "minimum": 0.0
+              },
+              "reward_token": {
+                "type": "string"
+              },
+              "reward_token_type": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "update_referral_level_config"
+        ],
+        "properties": {
+          "update_referral_level_config": {
+            "type": "object",
+            "required": [
+              "referral_level_config_msg"
+            ],
+            "properties": {
+              "referral_level_config_msg": {
+                "$ref": "#/definitions/ReferralLevelConfigMsg"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "update_referral_level_box_config"
+        ],
+        "properties": {
+          "update_referral_level_box_config": {
+            "type": "object",
+            "required": [
+              "level_reward_box_config_msg"
+            ],
+            "properties": {
+              "level_reward_box_config_msg": {
+                "$ref": "#/definitions/ReferralLevelRewardBoxConfigMsg"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "create_referral_info"
+        ],
+        "properties": {
+          "create_referral_info": {
+            "type": "object",
+            "required": [
+              "referral_code",
+              "reward_token_type"
+            ],
+            "properties": {
+              "referral_code": {
+                "type": "string"
+              },
+              "reward_token_type": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "modify_reward_token_type"
+        ],
+        "properties": {
+          "modify_reward_token_type": {
+            "type": "object",
+            "required": [
+              "reward_token_type"
+            ],
+            "properties": {
+              "reward_token_type": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
           "mint"
         ],
         "properties": {
           "mint": {
             "type": "object",
             "required": [
-              "level_index"
+              "level_index",
+              "mint_num"
             ],
             "properties": {
               "level_index": {
@@ -219,7 +483,18 @@
                 "format": "uint8",
                 "minimum": 0.0
               },
+              "mint_num": {
+                "type": "integer",
+                "format": "uint128",
+                "minimum": 0.0
+              },
               "recipient": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              },
+              "referral_code": {
                 "type": [
                   "string",
                   "null"
@@ -481,6 +756,85 @@
             "additionalProperties": false
           }
         ]
+      },
+      "ReferralLevelConfigMsg": {
+        "type": "object",
+        "required": [
+          "referral_level"
+        ],
+        "properties": {
+          "invitee_discount_rate": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "uint128",
+            "minimum": 0.0
+          },
+          "inviter_reward_rate": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "uint128",
+            "minimum": 0.0
+          },
+          "max_referral_total_amount": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "uint128",
+            "minimum": 0.0
+          },
+          "min_referral_total_amount": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "uint128",
+            "minimum": 0.0
+          },
+          "referral_level": {
+            "type": "integer",
+            "format": "uint8",
+            "minimum": 0.0
+          }
+        },
+        "additionalProperties": false
+      },
+      "ReferralLevelRewardBoxConfigMsg": {
+        "type": "object",
+        "required": [
+          "referral_level"
+        ],
+        "properties": {
+          "recommended_quantity": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "uint128",
+            "minimum": 0.0
+          },
+          "referral_level": {
+            "type": "integer",
+            "format": "uint8",
+            "minimum": 0.0
+          },
+          "reward_box": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": {
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0.0
+            }
+          }
+        },
+        "additionalProperties": false
       },
       "Timestamp": {
         "description": "A point in time in nanosecond precision.\n\nThis type can represent times from 1970-01-01T00:00:00Z to 2554-07-21T23:34:33Z.\n\n## Examples\n\n``` # use cosmwasm_std::Timestamp; let ts = Timestamp::from_nanos(1_000_000_202); assert_eq!(ts.nanos(), 1_000_000_202); assert_eq!(ts.seconds(), 1); assert_eq!(ts.subsec_nanos(), 202);\n\nlet ts = ts.plus_seconds(2); assert_eq!(ts.nanos(), 3_000_000_202); assert_eq!(ts.seconds(), 3); assert_eq!(ts.subsec_nanos(), 202); ```",
@@ -850,7 +1204,7 @@
             "properties": {
               "index": {
                 "type": "integer",
-                "format": "uint32",
+                "format": "uint8",
                 "minimum": 0.0
               }
             },
@@ -879,8 +1233,145 @@
           }
         },
         "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "query_all_referral_reward_config"
+        ],
+        "properties": {
+          "query_all_referral_reward_config": {
+            "type": "object",
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "query_inviter_records"
+        ],
+        "properties": {
+          "query_inviter_records": {
+            "type": "object",
+            "required": [
+              "inviter"
+            ],
+            "properties": {
+              "inviter": {
+                "$ref": "#/definitions/Addr"
+              },
+              "limit": {
+                "type": [
+                  "integer",
+                  "null"
+                ],
+                "format": "uint32",
+                "minimum": 0.0
+              },
+              "start_after": {
+                "anyOf": [
+                  {
+                    "$ref": "#/definitions/Addr"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "cal_mint_info"
+        ],
+        "properties": {
+          "cal_mint_info": {
+            "type": "object",
+            "required": [
+              "level_index",
+              "mint_num"
+            ],
+            "properties": {
+              "level_index": {
+                "type": "integer",
+                "format": "uint8",
+                "minimum": 0.0
+              },
+              "mint_num": {
+                "$ref": "#/definitions/Uint128"
+              },
+              "referral_code": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "check_referral_code"
+        ],
+        "properties": {
+          "check_referral_code": {
+            "type": "object",
+            "required": [
+              "referral_code"
+            ],
+            "properties": {
+              "referral_code": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "get_user_info"
+        ],
+        "properties": {
+          "get_user_info": {
+            "type": "object",
+            "required": [
+              "user"
+            ],
+            "properties": {
+              "user": {
+                "$ref": "#/definitions/Addr"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
       }
-    ]
+    ],
+    "definitions": {
+      "Addr": {
+        "description": "A human readable address.\n\nIn Cosmos, this is typically bech32 encoded. But for multi-chain smart contracts no assumptions should be made other than being UTF-8 encoded and of reasonable length.\n\nThis type represents a validated address. It can be created in the following ways 1. Use `Addr::unchecked(input)` 2. Use `let checked: Addr = deps.api.addr_validate(input)?` 3. Use `let checked: Addr = deps.api.addr_humanize(canonical_addr)?` 4. Deserialize from JSON. This must only be done from JSON that was validated before such as a contract's state. `Addr` must not be used in messages sent by the user because this would result in unvalidated instances.\n\nThis type is immutable. If you really need to mutate it (Really? Are you sure?), create a mutable copy using `let mut mutable = Addr::to_string()` and operate on that `String` instance.",
+        "type": "string"
+      },
+      "Uint128": {
+        "description": "A thin wrapper around u128 that is using strings for JSON encoding/decoding, such that the full u128 range can be used for clients that convert JSON numbers to floats, like JavaScript and jq.\n\n# Examples\n\nUse `from` to create instances of this and `u128` to get the value out:\n\n``` # use cosmwasm_std::Uint128; let a = Uint128::from(123u128); assert_eq!(a.u128(), 123);\n\nlet b = Uint128::from(42u64); assert_eq!(b.u128(), 42);\n\nlet c = Uint128::from(70u32); assert_eq!(c.u128(), 70); ```",
+        "type": "string"
+      }
+    }
   },
   "migrate": null,
   "sudo": null,
@@ -1360,6 +1851,88 @@
         }
       }
     },
+    "cal_mint_info": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "CalMintInfoResponse",
+      "type": "object",
+      "required": [
+        "mint_discount_rate",
+        "paid_amount",
+        "price"
+      ],
+      "properties": {
+        "current_inviter_reward_level": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "inviter": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Addr"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "mint_discount_rate": {
+          "$ref": "#/definitions/Uint128"
+        },
+        "next_inviter_reward_level": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "paid_amount": {
+          "$ref": "#/definitions/Uint128"
+        },
+        "price": {
+          "$ref": "#/definitions/Uint128"
+        }
+      },
+      "additionalProperties": false,
+      "definitions": {
+        "Addr": {
+          "description": "A human readable address.\n\nIn Cosmos, this is typically bech32 encoded. But for multi-chain smart contracts no assumptions should be made other than being UTF-8 encoded and of reasonable length.\n\nThis type represents a validated address. It can be created in the following ways 1. Use `Addr::unchecked(input)` 2. Use `let checked: Addr = deps.api.addr_validate(input)?` 3. Use `let checked: Addr = deps.api.addr_humanize(canonical_addr)?` 4. Deserialize from JSON. This must only be done from JSON that was validated before such as a contract's state. `Addr` must not be used in messages sent by the user because this would result in unvalidated instances.\n\nThis type is immutable. If you really need to mutate it (Really? Are you sure?), create a mutable copy using `let mut mutable = Addr::to_string()` and operate on that `String` instance.",
+          "type": "string"
+        },
+        "Uint128": {
+          "description": "A thin wrapper around u128 that is using strings for JSON encoding/decoding, such that the full u128 range can be used for clients that convert JSON numbers to floats, like JavaScript and jq.\n\n# Examples\n\nUse `from` to create instances of this and `u128` to get the value out:\n\n``` # use cosmwasm_std::Uint128; let a = Uint128::from(123u128); assert_eq!(a.u128(), 123);\n\nlet b = Uint128::from(42u64); assert_eq!(b.u128(), 42);\n\nlet c = Uint128::from(70u32); assert_eq!(c.u128(), 70); ```",
+          "type": "string"
+        }
+      }
+    },
+    "check_referral_code": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "CheckReferralCodeResponse",
+      "type": "object",
+      "required": [
+        "exists",
+        "user"
+      ],
+      "properties": {
+        "exists": {
+          "type": "boolean"
+        },
+        "user": {
+          "$ref": "#/definitions/Addr"
+        }
+      },
+      "additionalProperties": false,
+      "definitions": {
+        "Addr": {
+          "description": "A human readable address.\n\nIn Cosmos, this is typically bech32 encoded. But for multi-chain smart contracts no assumptions should be made other than being UTF-8 encoded and of reasonable length.\n\nThis type represents a validated address. It can be created in the following ways 1. Use `Addr::unchecked(input)` 2. Use `let checked: Addr = deps.api.addr_validate(input)?` 3. Use `let checked: Addr = deps.api.addr_humanize(canonical_addr)?` 4. Deserialize from JSON. This must only be done from JSON that was validated before such as a contract's state. `Addr` must not be used in messages sent by the user because this would result in unvalidated instances.\n\nThis type is immutable. If you really need to mutate it (Really? Are you sure?), create a mutable copy using `let mut mutable = Addr::to_string()` and operate on that `String` instance.",
+          "type": "string"
+        }
+      }
+    },
     "contract_info": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "ContractInfoResponse",
@@ -1377,6 +1950,86 @@
         }
       },
       "additionalProperties": false
+    },
+    "get_user_info": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "UserInfoResponse",
+      "type": "object",
+      "required": [
+        "current_reward_level",
+        "invitee_count",
+        "inviter",
+        "inviter_referral_code",
+        "last_mint_discount_rate",
+        "referral_code",
+        "user_referral_level_count",
+        "user_referral_total_amount",
+        "user_reward_box",
+        "user_reward_token_type",
+        "user_reward_total_base_amount"
+      ],
+      "properties": {
+        "current_reward_level": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "invitee_count": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "inviter": {
+          "$ref": "#/definitions/Addr"
+        },
+        "inviter_referral_code": {
+          "type": "string"
+        },
+        "last_mint_discount_rate": {
+          "type": "integer",
+          "format": "uint128",
+          "minimum": 0.0
+        },
+        "referral_code": {
+          "type": "string"
+        },
+        "user_referral_level_count": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "format": "uint32",
+            "minimum": 0.0
+          }
+        },
+        "user_referral_total_amount": {
+          "type": "integer",
+          "format": "uint128",
+          "minimum": 0.0
+        },
+        "user_reward_box": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "format": "uint32",
+            "minimum": 0.0
+          }
+        },
+        "user_reward_token_type": {
+          "type": "string"
+        },
+        "user_reward_total_base_amount": {
+          "type": "integer",
+          "format": "uint128",
+          "minimum": 0.0
+        }
+      },
+      "additionalProperties": false,
+      "definitions": {
+        "Addr": {
+          "description": "A human readable address.\n\nIn Cosmos, this is typically bech32 encoded. But for multi-chain smart contracts no assumptions should be made other than being UTF-8 encoded and of reasonable length.\n\nThis type represents a validated address. It can be created in the following ways 1. Use `Addr::unchecked(input)` 2. Use `let checked: Addr = deps.api.addr_validate(input)?` 3. Use `let checked: Addr = deps.api.addr_humanize(canonical_addr)?` 4. Deserialize from JSON. This must only be done from JSON that was validated before such as a contract's state. `Addr` must not be used in messages sent by the user because this would result in unvalidated instances.\n\nThis type is immutable. If you really need to mutate it (Really? Are you sure?), create a mutable copy using `let mut mutable = Addr::to_string()` and operate on that `String` instance.",
+          "type": "string"
+        }
+      }
     },
     "minter": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -1644,12 +2297,132 @@
         }
       }
     },
+    "query_all_referral_reward_config": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "ReferralRewardConfigResponse",
+      "type": "object",
+      "required": [
+        "referral_level_config",
+        "referral_reward_box_total",
+        "referral_reward_total_base_amount",
+        "reward_token_config"
+      ],
+      "properties": {
+        "referral_level_config": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/ReferralLevelConfigResponse"
+          }
+        },
+        "referral_reward_box_total": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "format": "uint32",
+            "minimum": 0.0
+          }
+        },
+        "referral_reward_total_base_amount": {
+          "type": "integer",
+          "format": "uint128",
+          "minimum": 0.0
+        },
+        "reward_token_config": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/ReferralRewardTokenConfigResponse"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "definitions": {
+        "ReferralLevelConfigResponse": {
+          "type": "object",
+          "required": [
+            "invitee_discount_rate",
+            "inviter_reward_rate",
+            "max_referral_total_amount",
+            "min_referral_total_amount",
+            "reward_box_config"
+          ],
+          "properties": {
+            "invitee_discount_rate": {
+              "type": "integer",
+              "format": "uint128",
+              "minimum": 0.0
+            },
+            "inviter_reward_rate": {
+              "type": "integer",
+              "format": "uint128",
+              "minimum": 0.0
+            },
+            "max_referral_total_amount": {
+              "type": "integer",
+              "format": "uint128",
+              "minimum": 0.0
+            },
+            "min_referral_total_amount": {
+              "type": "integer",
+              "format": "uint128",
+              "minimum": 0.0
+            },
+            "reward_box_config": {
+              "$ref": "#/definitions/ReferralLevelRewardBoxConfigResponse"
+            }
+          },
+          "additionalProperties": false
+        },
+        "ReferralLevelRewardBoxConfigResponse": {
+          "type": "object",
+          "required": [
+            "recommended_quantity",
+            "reward_box"
+          ],
+          "properties": {
+            "recommended_quantity": {
+              "type": "integer",
+              "format": "uint128",
+              "minimum": 0.0
+            },
+            "reward_box": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "integer",
+                "format": "uint32",
+                "minimum": 0.0
+              }
+            }
+          },
+          "additionalProperties": false
+        },
+        "ReferralRewardTokenConfigResponse": {
+          "type": "object",
+          "required": [
+            "conversion_ratio",
+            "reward_token"
+          ],
+          "properties": {
+            "conversion_ratio": {
+              "type": "integer",
+              "format": "uint128",
+              "minimum": 0.0
+            },
+            "reward_token": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      }
+    },
     "query_blind_box_config": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "BlindBoxConfigResponse",
       "type": "object",
       "required": [
+        "can_transfer_time",
         "gov",
+        "level_infos",
         "nft_base_url",
         "nft_uri_suffix",
         "price_token",
@@ -1659,8 +2432,19 @@
         "token_id_prefix"
       ],
       "properties": {
+        "can_transfer_time": {
+          "type": "integer",
+          "format": "uint64",
+          "minimum": 0.0
+        },
         "gov": {
           "type": "string"
+        },
+        "level_infos": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/BlindBoxConfigLevelResponse"
+          }
         },
         "nft_base_url": {
           "type": "string"
@@ -1693,6 +2477,44 @@
         "Addr": {
           "description": "A human readable address.\n\nIn Cosmos, this is typically bech32 encoded. But for multi-chain smart contracts no assumptions should be made other than being UTF-8 encoded and of reasonable length.\n\nThis type represents a validated address. It can be created in the following ways 1. Use `Addr::unchecked(input)` 2. Use `let checked: Addr = deps.api.addr_validate(input)?` 3. Use `let checked: Addr = deps.api.addr_humanize(canonical_addr)?` 4. Deserialize from JSON. This must only be done from JSON that was validated before such as a contract's state. `Addr` must not be used in messages sent by the user because this would result in unvalidated instances.\n\nThis type is immutable. If you really need to mutate it (Really? Are you sure?), create a mutable copy using `let mut mutable = Addr::to_string()` and operate on that `String` instance.",
           "type": "string"
+        },
+        "BlindBoxConfigLevelResponse": {
+          "type": "object",
+          "required": [
+            "level_index",
+            "mint_total_count",
+            "minted_count",
+            "price",
+            "received_total_amount"
+          ],
+          "properties": {
+            "level_index": {
+              "type": "integer",
+              "format": "uint8",
+              "minimum": 0.0
+            },
+            "mint_total_count": {
+              "type": "integer",
+              "format": "uint128",
+              "minimum": 0.0
+            },
+            "minted_count": {
+              "type": "integer",
+              "format": "uint128",
+              "minimum": 0.0
+            },
+            "price": {
+              "type": "integer",
+              "format": "uint128",
+              "minimum": 0.0
+            },
+            "received_total_amount": {
+              "type": "integer",
+              "format": "uint128",
+              "minimum": 0.0
+            }
+          },
+          "additionalProperties": false
         }
       }
     },
@@ -1701,11 +2523,18 @@
       "title": "BlindBoxConfigLevelResponse",
       "type": "object",
       "required": [
+        "level_index",
         "mint_total_count",
         "minted_count",
-        "price"
+        "price",
+        "received_total_amount"
       ],
       "properties": {
+        "level_index": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
         "mint_total_count": {
           "type": "integer",
           "format": "uint128",
@@ -1720,6 +2549,11 @@
           "type": "integer",
           "format": "uint128",
           "minimum": 0.0
+        },
+        "received_total_amount": {
+          "type": "integer",
+          "format": "uint128",
+          "minimum": 0.0
         }
       },
       "additionalProperties": false
@@ -1730,6 +2564,7 @@
       "type": "object",
       "required": [
         "block_number",
+        "is_random_box",
         "level_index",
         "price"
       ],
@@ -1738,6 +2573,9 @@
           "type": "integer",
           "format": "uint64",
           "minimum": 0.0
+        },
+        "is_random_box": {
+          "type": "boolean"
         },
         "level_index": {
           "type": "integer",
@@ -1751,6 +2589,75 @@
         }
       },
       "additionalProperties": false
+    },
+    "query_inviter_records": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "InviterReferralRecordResponse",
+      "type": "object",
+      "required": [
+        "invitee",
+        "invitee_index",
+        "mint_box_level_index",
+        "mint_pay_amount",
+        "mint_price",
+        "mint_time",
+        "reward_level",
+        "reward_to_inviter_base_amount",
+        "token_ids"
+      ],
+      "properties": {
+        "invitee": {
+          "$ref": "#/definitions/Addr"
+        },
+        "invitee_index": {
+          "type": "integer",
+          "format": "uint32",
+          "minimum": 0.0
+        },
+        "mint_box_level_index": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "mint_pay_amount": {
+          "type": "integer",
+          "format": "uint128",
+          "minimum": 0.0
+        },
+        "mint_price": {
+          "type": "integer",
+          "format": "uint128",
+          "minimum": 0.0
+        },
+        "mint_time": {
+          "type": "integer",
+          "format": "uint64",
+          "minimum": 0.0
+        },
+        "reward_level": {
+          "type": "integer",
+          "format": "uint8",
+          "minimum": 0.0
+        },
+        "reward_to_inviter_base_amount": {
+          "type": "integer",
+          "format": "uint128",
+          "minimum": 0.0
+        },
+        "token_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false,
+      "definitions": {
+        "Addr": {
+          "description": "A human readable address.\n\nIn Cosmos, this is typically bech32 encoded. But for multi-chain smart contracts no assumptions should be made other than being UTF-8 encoded and of reasonable length.\n\nThis type represents a validated address. It can be created in the following ways 1. Use `Addr::unchecked(input)` 2. Use `let checked: Addr = deps.api.addr_validate(input)?` 3. Use `let checked: Addr = deps.api.addr_humanize(canonical_addr)?` 4. Deserialize from JSON. This must only be done from JSON that was validated before such as a contract's state. `Addr` must not be used in messages sent by the user because this would result in unvalidated instances.\n\nThis type is immutable. If you really need to mutate it (Really? Are you sure?), create a mutable copy using `let mut mutable = Addr::to_string()` and operate on that `String` instance.",
+          "type": "string"
+        }
+      }
     },
     "tokens": {
       "$schema": "http://json-schema.org/draft-07/schema#",

@@ -1,94 +1,60 @@
 use cosmwasm_schema::{cw_serde, QueryResponses};
 use cosmwasm_std::Addr;
-
-
-#[cw_serde]
-pub struct UserClaimableRewardDetailResponse {
-    pub level_index: u8,
-    pub claimable_reward: u128,
-}
-
-#[cw_serde]
-pub struct UserClaimableRewardsResponse {
-    pub reward_token: String,
-    pub claimable_reward: u128,
-    pub claimable_reward_details: Vec<UserClaimableRewardDetailResponse>,
-}
-
-#[cw_serde]
-pub struct RewardLevelConfigMsg {
-    pub reward_amount: Option<u128>,
-}
-
-#[cw_serde]
-pub struct RewardTokenConfigMsg {
-    pub reward_token: String,
-    pub total_reward_amount: Option<u128>,
-    pub claimable_time: Option<u64>,
-    pub reward_levels: Option<Vec<RewardLevelConfigMsg>>,
-}
+use crate::state::{BoxRewardConfig, BoxRewardConfigState, RewardConfig};
 
 
 #[cw_serde]
 pub struct InstantiateMsg {
     pub gov: Option<Addr>,
     pub nft_contract: Addr,
-    pub reward_token_map_msgs: Vec<RewardTokenConfigMsg>,
+    pub box_config: BoxRewardConfig,
 }
 
 #[cw_serde]
-pub struct BlindBoxConfigResponse {
-    pub gov: Addr,
-    pub nft_contract: Addr,
-    pub reward_token_map_msgs: Vec<RewardTokenConfigResponse>,
+pub struct AllConfigAndStateResponse {
+    pub config: RewardConfig,
+    pub box_config: BoxRewardConfig,
+    pub box_state: BoxRewardConfigState,
 }
 
 #[cw_serde]
-pub struct RewardLevelConfigResponse {
-    pub reward_amount: u128,
-    pub level_total_claimed_amount: u128,
-}
-
-#[cw_serde]
-pub struct RewardTokenConfigResponse {
-    pub reward_token: String,
-    pub total_reward_amount: u128,
-    pub total_claimed_amount: u128,
-    pub total_claimed_count: u128,
-    pub claimable_time: u64,
-    pub reward_levels: Vec<RewardLevelConfigResponse>,
+pub struct BoxOpenInfoResponse {
+    pub token_id: String,
+    pub open_user: Addr,
+    pub open_reward_amount: u128,
+    pub open_box_time: u64,
+    pub is_random_box: bool,
 }
 
 #[cw_serde]
 pub enum ExecuteMsg {
-    UpdateBlindBoxConfig {
+    UpdateRewardConfig {
         gov: Option<Addr>,
         nft_contract: Option<Addr>,
     },
-    UpdateBlindBoxRewardTokenConfig {
-        reward_token: Addr,
-        total_reward_amount: u128,
-        claimable_time: u64,
+    UpdateBoxRewardConfig {
+        box_reward_token: Option<Addr>,
+        box_open_time: Option<u64>,
     },
-    UpdateRewardTokenRewardLevel {
-        reward_token: Addr,
-        reward_level: u8,
-        reward_amount: u128,
-    },
-    ClaimReward {
-        recipient: Option<Addr>,
+    OpenBlindBox {
+        token_ids: Vec<String>,
     },
 }
+
 
 #[cw_serde]
 #[derive(QueryResponses)]
 pub enum QueryMsg {
-    #[returns(Vec < UserClaimableRewardsResponse >)]
-    QueryUserClaimRewards {
-        user_addr: Addr,
+    #[returns(AllConfigAndStateResponse)]
+    QueryAllConfigAndState {},
+    #[returns(Vec < BoxOpenInfoResponse >)]
+    QueryBoxOpenInfo {
+        token_ids: Vec<String>,
     },
-    #[returns(BlindBoxConfigResponse)]
-    QueryBlindBoxConfig {},
+    #[returns(std::collections::HashMap < u64, u64 >)]
+    TestRandom {
+        token_ids: Vec<String>,
+    },
 }
 
 

@@ -27,7 +27,4 @@ pub enum ContractError {
     #[error("ArithmeticUnderflow")]
     ArithmeticUnderflow {},
 
-    #[error("BoxAlreadyOpen")]
-    BoxAlreadyOpen {},
-
 }

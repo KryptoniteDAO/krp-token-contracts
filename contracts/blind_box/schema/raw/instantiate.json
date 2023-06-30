@@ -12,6 +12,22 @@
     "token_id_prefix"
   ],
   "properties": {
+    "can_transfer_time": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "format": "uint64",
+      "minimum": 0.0
+    },
+    "end_mint_time": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "format": "uint64",
+      "minimum": 0.0
+    },
     "gov": {
       "anyOf": [
         {
@@ -47,6 +63,16 @@
     "receiver_price_addr": {
       "$ref": "#/definitions/Addr"
     },
+    "referral_reward_config": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/ReferralRewardConfigMsg"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
     "start_mint_time": {
       "type": [
         "integer",
@@ -72,10 +98,14 @@
     "BlindBoxLevelMsg": {
       "type": "object",
       "required": [
+        "is_random_box",
         "mint_total_count",
         "price"
       ],
       "properties": {
+        "is_random_box": {
+          "type": "boolean"
+        },
         "mint_total_count": {
           "type": "integer",
           "format": "uint128",
@@ -88,6 +118,104 @@
         }
       },
       "additionalProperties": false
+    },
+    "ReferralLevelConfig": {
+      "type": "object",
+      "required": [
+        "invitee_discount_rate",
+        "inviter_reward_rate",
+        "max_referral_total_amount",
+        "min_referral_total_amount",
+        "reward_box_config"
+      ],
+      "properties": {
+        "invitee_discount_rate": {
+          "type": "integer",
+          "format": "uint128",
+          "minimum": 0.0
+        },
+        "inviter_reward_rate": {
+          "type": "integer",
+          "format": "uint128",
+          "minimum": 0.0
+        },
+        "max_referral_total_amount": {
+          "type": "integer",
+          "format": "uint128",
+          "minimum": 0.0
+        },
+        "min_referral_total_amount": {
+          "type": "integer",
+          "format": "uint128",
+          "minimum": 0.0
+        },
+        "reward_box_config": {
+          "$ref": "#/definitions/ReferralLevelRewardBoxConfig"
+        }
+      }
+    },
+    "ReferralLevelRewardBoxConfig": {
+      "type": "object",
+      "required": [
+        "recommended_quantity",
+        "reward_box"
+      ],
+      "properties": {
+        "recommended_quantity": {
+          "type": "integer",
+          "format": "uint128",
+          "minimum": 0.0
+        },
+        "reward_box": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "format": "uint32",
+            "minimum": 0.0
+          }
+        }
+      }
+    },
+    "ReferralRewardConfigMsg": {
+      "type": "object",
+      "required": [
+        "referral_level_config"
+      ],
+      "properties": {
+        "referral_level_config": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/ReferralLevelConfig"
+          }
+        },
+        "reward_token_config": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": {
+            "$ref": "#/definitions/ReferralRewardTokenConfig"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "ReferralRewardTokenConfig": {
+      "type": "object",
+      "required": [
+        "conversion_ratio",
+        "reward_token"
+      ],
+      "properties": {
+        "conversion_ratio": {
+          "type": "integer",
+          "format": "uint128",
+          "minimum": 0.0
+        },
+        "reward_token": {
+          "type": "string"
+        }
+      }
     }
   }
 }

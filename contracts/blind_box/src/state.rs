@@ -34,6 +34,7 @@ pub struct BlindBoxLevel {
     pub mint_total_count: u128,
     pub minted_count: u128,
     pub received_total_amount: u128,
+    pub is_random_box: bool,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
@@ -41,6 +42,7 @@ pub struct BlindBoxInfo {
     pub level_index: u8,
     pub price: u128,
     pub block_number: u64,
+    pub is_random_box: bool,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
@@ -131,7 +133,6 @@ pub struct InviterReferralRecord {
 }
 
 
-
 pub fn store_referral_reward_config(storage: &mut dyn Storage, referral_reward_config: &ReferralRewardConfig) -> StdResult<()> {
     REFERRAL_REWARD_CONFIG.save(storage, referral_reward_config)
 }
@@ -190,6 +191,7 @@ pub fn read_blind_box_info(storage: &dyn Storage, token_id: String) -> BlindBoxI
         level_index: 0,
         price: 0,
         block_number: 0,
+        is_random_box: false
     })
 }
 
@@ -201,27 +203,22 @@ pub fn read_user_referral_code(storage: &dyn Storage, user_referral_code: String
     USER_REFERRAL_CODE.load(storage, user_referral_code).unwrap_or(Addr::unchecked(""))
 }
 
-pub fn store_inviter_record_elem(storage: &mut dyn Storage, inviter: &Addr, invitee: &Addr, record: &InviterReferralRecord) -> StdResult<()> {
+pub fn store_inviter_record_elem(storage: &mut dyn Storage, inviter: &Addr, record: &InviterReferralRecord) -> StdResult<()> {
     let binding = inviter.clone().to_string();
     let namespace = binding.as_bytes();
-    let mut record_bucket = Bucket::new(storage, namespace);
-    record_bucket.save(invitee.as_bytes(), record)
-}
+    let start_token_id = record.token_ids.first().unwrap();
+    let invitee_key = start_token_id.as_bytes();
+    let inviter_namespace = &format!("{}_check", binding);
+    let invitee = record.clone().invitee;
 
-// pub fn read_inviter_record_elem(storage: &dyn Storage, inviter: &Addr, invitee: &Addr) -> StdResult<InviterReferralRecord> {
-//     let binding = inviter.clone().to_string();
-//     let namespace = binding.as_bytes();
-//     let record_bucket = ReadonlyBucket::new(storage, namespace);
-//     match record_bucket.load(invitee.as_bytes()) {
-//         Ok(v) => Ok(v),
-//         _ => Err(StdError::generic_err("record not found")),
-//     }
-// }
+    Bucket::new(storage, inviter_namespace.as_bytes()).save(invitee.as_bytes(), &true)?;
+    Bucket::new(storage, namespace).save(invitee_key, record)
+}
 
 pub fn check_invitee_existence(storage: &dyn Storage, inviter: &Addr, invitee: &Addr) -> StdResult<bool> {
     let binding = inviter.to_string();
-    let namespace = binding.as_bytes();
-    let record_bucket: ReadonlyBucket<InviterReferralRecord> = ReadonlyBucket::new(storage, namespace);
+    let inviter_namespace = &format!("{}_check", binding);
+    let record_bucket: ReadonlyBucket<bool> = ReadonlyBucket::new(storage, inviter_namespace.as_bytes());
     let maybe_record = record_bucket.may_load(invitee.as_bytes())?;
     Ok(maybe_record.is_some())
 }
@@ -240,8 +237,6 @@ pub fn read_inviter_records(
 
     let limit = limit.unwrap_or(DEFAULT_LIMIT).min(MAX_LIMIT) as usize;
     let start = calc_range_start(start_after);
-    println!("start: {:?}", start);
-    println!("limit: {:?}", limit);
     record_bucket
         .range(start.as_deref(), None, Order::Descending)
         .take(limit)
@@ -256,10 +251,11 @@ pub fn read_inviter_records(
                 mint_box_level_index: v.mint_box_level_index,
                 mint_price: v.mint_price,
                 mint_pay_amount: v.mint_pay_amount,
-                reward_to_inviter_base_amount: v.reward_to_inviter_base_amount
+                reward_to_inviter_base_amount: v.reward_to_inviter_base_amount,
             })
         })
         .collect()
 }
+
 
 

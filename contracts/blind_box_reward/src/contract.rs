@@ -1,12 +1,12 @@
+use std::collections::HashMap;
 use cosmwasm_std::{entry_point, DepsMut, Env, MessageInfo, Response, StdResult, StdError, Deps, to_binary, Binary};
 use cw2::set_contract_version;
 use cw_utils::nonpayable;
 use crate::error::ContractError;
-use crate::handler::{claim_reward, update_blind_box_reward_config, update_blind_box_reward_token_config, update_reward_token_reward_level};
+use crate::handler::{open_blind_box, update_box_reward_config, update_reward_config};
 use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
-use crate::querier::{query_blind_box_config, query_user_claim_rewards};
-use crate::state::{BlindBoxRewardConfig, RewardLevelConfig, RewardTokenConfig, store_blind_box_reward_config, store_blind_box_reward_token_config};
-
+use crate::querier::{query_all_config_and_state, query_box_open_info, test_random};
+use crate::state::{BoxRewardConfigState, OrdinaryBoxRewardLevelConfigState, RandomBoxRewardRuleConfigState, RewardConfig, set_box_reward_config, set_box_reward_config_state, set_reward_config};
 
 // version info for migration info
 const CONTRACT_NAME: &str = "kryptonite.finance:blind-box-reward";
@@ -29,45 +29,49 @@ pub fn instantiate(
     } else {
         info.clone().sender
     };
+    set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
 
-
-    let blid_box_reward_config = BlindBoxRewardConfig {
+    let reward_config = RewardConfig {
         gov: gov.clone(),
         nft_contract: msg.nft_contract,
     };
 
-    store_blind_box_reward_config(deps.storage, &blid_box_reward_config)?;
+    // init state
+    let mut ordinary_box_reward_level_config_state_map: HashMap<u8, OrdinaryBoxRewardLevelConfigState> = HashMap::new();
 
-
-    for reward_token_map_msg in msg.reward_token_map_msgs {
-        let mut reward_level_configs = vec![];
-        for reward_level_config_msg in reward_token_map_msg.reward_levels.unwrap_or(vec![]) {
-            let reward_level_config = RewardLevelConfig {
-                reward_amount: reward_level_config_msg.reward_amount.unwrap_or(0),
-                level_total_claimed_amount: 0,
-            };
-            reward_level_configs.push(reward_level_config);
-        }
-
-        let reward_token_config = RewardTokenConfig {
-            total_reward_amount: reward_token_map_msg.total_reward_amount.unwrap_or(0),
-            total_claimed_amount: 0,
-            total_claimed_count: 0,
-            claimable_time: reward_token_map_msg.claimable_time.unwrap_or(0),
-            reward_levels: reward_level_configs,
+    msg.box_config.ordinary_box_reward_level_config.keys().for_each(|k| {
+        let ordinary_box_reward_level_config_state = OrdinaryBoxRewardLevelConfigState {
+            total_reward_amount: 0,
+            total_open_box_count: 0,
         };
+        ordinary_box_reward_level_config_state_map.insert(*k, ordinary_box_reward_level_config_state);
+    });
 
-        store_blind_box_reward_token_config(deps.storage, reward_token_map_msg.reward_token, &reward_token_config)?;
-
-        // set contract version
-        set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
+    let mut random_box_reward_rule_config_state_vec: Vec<RandomBoxRewardRuleConfigState> = vec![];
+    for _ in 0..msg.box_config.random_box_reward_rule_config.len() {
+        let random_box_reward_rule_config_state = RandomBoxRewardRuleConfigState {
+            total_reward_amount: 0,
+            total_open_box_count: 0,
+        };
+        random_box_reward_rule_config_state_vec.push(random_box_reward_rule_config_state);
     }
 
+    let reward_config_state = BoxRewardConfigState {
+        ordinary_total_reward_amount: 0,
+        ordinary_total_open_box_count: 0,
+        ordinary_box_reward_level_config_state: ordinary_box_reward_level_config_state_map,
+        random_total_reward_amount: 0,
+        random_total_open_box_count: 0,
+        random_box_reward_rule_config_state: random_box_reward_rule_config_state_vec,
+    };
 
-    Ok(Response::new().add_attributes(vec![
-        ("action", "instantiate"),
-        ("owner", info.sender.as_str()),
-    ]))
+    let box_reward_config = msg.box_config.clone();
+
+    set_reward_config(deps.storage, &reward_config)?;
+    set_box_reward_config(deps.storage, &box_reward_config)?;
+    set_box_reward_config_state(deps.storage, &reward_config_state)?;
+
+    Ok(Response::new().add_attribute("action", "instantiate"))
 }
 
 
@@ -79,40 +83,30 @@ pub fn execute(
     msg: ExecuteMsg,
 ) -> Result<Response, ContractError> {
     match msg {
-        ExecuteMsg::UpdateBlindBoxConfig {
-            gov,
-            nft_contract
-        } => {
-            update_blind_box_reward_config(deps, info, gov, nft_contract)
+        ExecuteMsg::UpdateRewardConfig { gov, nft_contract } => {
+            update_reward_config(deps, info, gov, nft_contract)
         }
-        ExecuteMsg::UpdateBlindBoxRewardTokenConfig {
-            reward_token,
-            total_reward_amount,
-            claimable_time
-        } => {
-            update_blind_box_reward_token_config(deps, info, reward_token, total_reward_amount, claimable_time)
+        ExecuteMsg::UpdateBoxRewardConfig { box_reward_token, box_open_time } => {
+            update_box_reward_config(deps, info, box_reward_token, box_open_time)
         }
-        ExecuteMsg::UpdateRewardTokenRewardLevel {
-            reward_token,
-            reward_level,
-            reward_amount
-        } => {
-            update_reward_token_reward_level(deps, info, reward_token, reward_level, reward_amount)
-        }
-        ExecuteMsg::ClaimReward { recipient } => {
-            claim_reward(deps, env, info, recipient)
+        ExecuteMsg::OpenBlindBox { token_ids } => {
+            open_blind_box(deps, env, info, token_ids)
         }
     }
 }
 
+
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
-        QueryMsg::QueryUserClaimRewards { user_addr } => {
-            to_binary(&query_user_claim_rewards(deps, env, user_addr.to_string())?)
+        QueryMsg::QueryAllConfigAndState { .. } => {
+            to_binary(&query_all_config_and_state(deps)?)
         }
-        QueryMsg::QueryBlindBoxConfig {} => {
-            to_binary(&query_blind_box_config(deps)?)
+        QueryMsg::QueryBoxOpenInfo { token_ids } => {
+            to_binary(&query_box_open_info(deps, token_ids)?)
+        }
+        QueryMsg::TestRandom { token_ids } => {
+            to_binary(&test_random(env, token_ids)?)
         }
     }
 }
@@ -127,33 +121,31 @@ pub fn migrate(_deps: DepsMut, _env: Env, _msg: MigrateMsg) -> StdResult<Respons
 #[cfg(test)]
 mod tests {
     use super::*;
-    use cosmwasm_std::{ Addr};
     use cosmwasm_std::testing::{mock_dependencies, mock_env, mock_info};
-    use crate::msg::{RewardLevelConfigMsg, RewardTokenConfigMsg};
+    use cosmwasm_std::{Addr};
+    use crate::state::BoxRewardConfig;
 
     #[test]
     fn test_instantiate() {
         let mut deps = mock_dependencies();
+        // Set up the necessary data for testing
         let env = mock_env();
-        let info = mock_info("creator", &[]);
+        let info = mock_info("creator", &vec![]);
         let msg = InstantiateMsg {
-            gov: Some(info.sender.clone()),
+            gov: Some(Addr::unchecked("gov")),
             nft_contract: Addr::unchecked("nft_contract"),
-            reward_token_map_msgs: vec![RewardTokenConfigMsg {
-                reward_token: "reward_token".to_string(),
-                total_reward_amount: Some(100),
-                claimable_time: Some(100),
-                reward_levels: Some(vec![RewardLevelConfigMsg {
-                    reward_amount: Some(100),
-                }]),
-            }
-            ],
+            box_config: BoxRewardConfig {
+                box_reward_token: Addr::unchecked("box_reward_token"),
+                box_open_time: 0,
+                ordinary_box_reward_level_config: HashMap::new(),
+                random_in_box_level_index: 0,
+                random_box_reward_rule_config: vec![],
+            },
         };
-        // positive test case
-        let res = instantiate(deps.as_mut(), env.clone(), info.clone(), msg.clone()).unwrap();
-        assert_eq!(res.attributes.len(), 2);
-        assert_eq!(res.attributes[0], ("action", "instantiate"));
-        assert_eq!(res.attributes[1], ("owner", "creator"));
-
+        // Positive test case
+        let res = instantiate(deps.as_mut(), env, info, msg).unwrap();
+        assert_eq!(res.attributes.len(), 1);
+        assert_eq!(res.attributes[0].key, "action");
+        assert_eq!(res.attributes[0].value, "instantiate");
     }
 }

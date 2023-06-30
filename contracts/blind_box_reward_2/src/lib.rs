@@ -1,4 +1,4 @@
-pub mod state;
+mod state;
 pub mod msg;
 pub mod handler;
 pub mod querier;

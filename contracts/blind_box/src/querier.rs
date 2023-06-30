@@ -26,7 +26,7 @@ pub fn query_blind_box_config(deps: Deps) -> StdResult<BlindBoxConfigResponse> {
         token_id_prefix: blind_box_config.token_id_prefix,
         token_id_index: blind_box_config.token_id_index,
         start_mint_time: blind_box_config.start_mint_time,
-        level_infos: level_infos,
+        level_infos,
         receiver_price_addr: blind_box_config.receiver_price_addr,
         can_transfer_time: blind_box_config.can_transfer_time,
     })
@@ -51,6 +51,7 @@ pub fn query_blind_box_info(deps: Deps, token_id: String) -> StdResult<BlindBoxI
         level_index: blind_box_info.level_index,
         price: blind_box_info.price,
         block_number: blind_box_info.block_number,
+        is_random_box: blind_box_info.is_random_box,
     })
 }
 
@@ -69,7 +70,8 @@ pub fn query_nft_info(deps: Deps, env: Env, token_id: String) -> StdResult<cw721
     let nft_info_bin = cw721_base::entry::query(deps, env, cw721_msg)?;
     let nft_info: cw721::NftInfoResponse<cw721_base::Extension> = from_binary(&nft_info_bin)?;
     let blind_box_config = read_blind_box_config(deps.storage)?;
-    let token_uri = format!("{}{}{}", blind_box_config.nft_base_url, token_id, blind_box_config.nft_uri_suffix);
+    let box_info = read_blind_box_info(deps.storage, token_id.clone());
+    let token_uri = format!("{}{}{}", blind_box_config.nft_base_url, box_info.level_index, blind_box_config.nft_uri_suffix);
     Ok(cw721::NftInfoResponse {
         token_uri: Option::from(token_uri),
         extension: nft_info.extension,
@@ -81,7 +83,8 @@ pub fn query_all_nft_info(deps: Deps, env: Env, token_id: String, include_expire
     let all_nft_info_bin = cw721_base::entry::query(deps, env, cw721_msg)?;
     let all_nft_info: cw721::AllNftInfoResponse<cw721_base::Extension> = from_binary(&all_nft_info_bin)?;
     let blind_box_config = read_blind_box_config(deps.storage)?;
-    let token_uri = format!("{}{}{}", blind_box_config.nft_base_url, token_id, blind_box_config.nft_uri_suffix);
+    let box_info = read_blind_box_info(deps.storage, token_id.clone());
+    let token_uri = format!("{}{}{}", blind_box_config.nft_base_url, box_info.level_index, blind_box_config.nft_uri_suffix);
     Ok(cw721::AllNftInfoResponse {
         access: cw721::OwnerOfResponse { owner: all_nft_info.access.owner, approvals: all_nft_info.access.approvals },
 
@@ -128,7 +131,7 @@ pub fn query_all_referral_reward_config(deps: Deps) -> StdResult<ReferralRewardC
 pub fn query_inviter_records(deps: Deps, inviter: &Addr,
                              start_after: Option<Addr>,
                              limit: Option<u32>) -> StdResult<Vec<InviterReferralRecordResponse>> {
-    let inviter_records = read_inviter_records(deps.storage, inviter, start_after, limit)?;
+    let inviter_records = read_inviter_records(deps.storage, &inviter.clone(), start_after, limit)?;
 
     let mut res = vec![];
     for record_ref in inviter_records.iter() {
@@ -145,7 +148,12 @@ pub fn query_inviter_records(deps: Deps, inviter: &Addr,
             reward_to_inviter_base_amount: record.reward_to_inviter_base_amount,
         })
     }
-
+    // let res_len = res.len();
+    // let show_msg = format!("res_len:{},inviter:{},start_after_msg：{:?},limit_msg：{:?}", res_len,inviter.to_string(),start_after_msg,limit_msg);
+    // println!("{}",show_msg);
+    // if 1<2 {
+    //     return Err(StdError::generic_err(show_msg));
+    // }
     Ok(res)
 }
 
@@ -253,7 +261,7 @@ pub fn get_user_info(deps: Deps, user: Addr) -> StdResult<UserInfoResponse> {
 mod tests {
     use crate::querier::{cal_mint_info, query_inviter_records};
     use crate::msg::{CalMintInfoResponse};
-    use crate::state::{BlindBoxConfig, BlindBoxLevel, InviterReferralRecord, read_inviter_records, ReferralLevelConfig, ReferralLevelRewardBoxConfig, ReferralRewardConfig, store_blind_box_config, store_inviter_record_elem, store_referral_reward_config, store_user_info, store_user_referral_code, UserInfo};
+    use crate::state::{BlindBoxConfig, BlindBoxLevel, check_invitee_existence, InviterReferralRecord, read_inviter_records, ReferralLevelConfig, ReferralLevelRewardBoxConfig, ReferralRewardConfig, store_blind_box_config, store_inviter_record_elem, store_referral_reward_config, store_user_info, store_user_referral_code, UserInfo};
     use cosmwasm_std::{Addr, Uint128};
     use std::collections::HashMap;
     use cosmwasm_std::testing::mock_dependencies;
@@ -275,7 +283,7 @@ mod tests {
             token_id_index: 0,
             start_mint_time: 0,
             end_mint_time: 0,
-            level_infos: vec![BlindBoxLevel { level_index, price: 100, mint_total_count: 0, minted_count: 0, received_total_amount: 0 }],
+            level_infos: vec![BlindBoxLevel { level_index, price: 100, mint_total_count: 0, minted_count: 0, received_total_amount: 0, is_random_box: false }],
             receiver_price_addr: Addr::unchecked(""),
             can_transfer_time: 0,
         };
@@ -336,7 +344,6 @@ mod tests {
         let mut deps = mock_dependencies();
         let inviter = Addr::unchecked("inviter0000".to_string());
         let invitee = Addr::unchecked("invitee0000".to_string());
-        let invitee2 = Addr::unchecked("invitee0002".to_string());
         let record = InviterReferralRecord {
             invitee: invitee.clone(),
             token_ids: vec!["token0001".to_string(), "token0002".to_string()],
@@ -349,7 +356,7 @@ mod tests {
             reward_to_inviter_base_amount: 1000u128,
         };
         let record2 = InviterReferralRecord {
-            invitee: invitee2.clone(),
+            invitee: invitee.clone(),
             token_ids: vec!["token0003".to_string()],
             mint_time: 1626372000,
             reward_level: 1,
@@ -360,7 +367,7 @@ mod tests {
             reward_to_inviter_base_amount: 1000u128,
         };
         // store the record
-        store_inviter_record_elem(&mut deps.storage, &inviter, &invitee, &record).unwrap();
+        store_inviter_record_elem(&mut deps.storage, &inviter, &record).unwrap();
 
         // read the record
         let records = read_inviter_records(&deps.storage, &inviter, None, None).unwrap();
@@ -374,7 +381,7 @@ mod tests {
         assert_eq!(records[0].mint_price, 1000u128);
         assert_eq!(records[0].mint_pay_amount, 1000u128);
         assert_eq!(records[0].reward_to_inviter_base_amount, 1000u128);
-        store_inviter_record_elem(&mut deps.storage, &inviter, &invitee2, &record2).unwrap();
+        store_inviter_record_elem(&mut deps.storage, &inviter, &record2).unwrap();
         println!("records: {:?}", records);
 
         let records = read_inviter_records(&deps.storage, &inviter, None, None).unwrap();
@@ -384,6 +391,8 @@ mod tests {
             println!("record.token_ids: {:?}", record.token_ids);
         }
 
+        let check_invitee = check_invitee_existence(&deps.storage, &inviter, &invitee);
+        println!("check_invitee:{:?}", check_invitee);
     }
 }
 

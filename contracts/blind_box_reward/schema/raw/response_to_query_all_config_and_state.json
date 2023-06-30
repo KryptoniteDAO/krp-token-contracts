@@ -1,27 +1,21 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "InstantiateMsg",
+  "title": "AllConfigAndStateResponse",
   "type": "object",
   "required": [
     "box_config",
-    "nft_contract"
+    "box_state",
+    "config"
   ],
   "properties": {
     "box_config": {
       "$ref": "#/definitions/BoxRewardConfig"
     },
-    "gov": {
-      "anyOf": [
-        {
-          "$ref": "#/definitions/Addr"
-        },
-        {
-          "type": "null"
-        }
-      ]
+    "box_state": {
+      "$ref": "#/definitions/BoxRewardConfigState"
     },
-    "nft_contract": {
-      "$ref": "#/definitions/Addr"
+    "config": {
+      "$ref": "#/definitions/RewardConfig"
     }
   },
   "additionalProperties": false,
@@ -67,6 +61,51 @@
         }
       }
     },
+    "BoxRewardConfigState": {
+      "type": "object",
+      "required": [
+        "ordinary_box_reward_level_config_state",
+        "ordinary_total_open_box_count",
+        "ordinary_total_reward_amount",
+        "random_box_reward_rule_config_state",
+        "random_total_open_box_count",
+        "random_total_reward_amount"
+      ],
+      "properties": {
+        "ordinary_box_reward_level_config_state": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/OrdinaryBoxRewardLevelConfigState"
+          }
+        },
+        "ordinary_total_open_box_count": {
+          "type": "integer",
+          "format": "uint64",
+          "minimum": 0.0
+        },
+        "ordinary_total_reward_amount": {
+          "type": "integer",
+          "format": "uint128",
+          "minimum": 0.0
+        },
+        "random_box_reward_rule_config_state": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/RandomBoxRewardRuleConfigState"
+          }
+        },
+        "random_total_open_box_count": {
+          "type": "integer",
+          "format": "uint64",
+          "minimum": 0.0
+        },
+        "random_total_reward_amount": {
+          "type": "integer",
+          "format": "uint128",
+          "minimum": 0.0
+        }
+      }
+    },
     "OrdinaryBoxRewardLevelConfig": {
       "type": "object",
       "required": [
@@ -80,6 +119,25 @@
           "minimum": 0.0
         },
         "reward_amount": {
+          "type": "integer",
+          "format": "uint128",
+          "minimum": 0.0
+        }
+      }
+    },
+    "OrdinaryBoxRewardLevelConfigState": {
+      "type": "object",
+      "required": [
+        "total_open_box_count",
+        "total_reward_amount"
+      ],
+      "properties": {
+        "total_open_box_count": {
+          "type": "integer",
+          "format": "uint64",
+          "minimum": 0.0
+        },
+        "total_reward_amount": {
           "type": "integer",
           "format": "uint128",
           "minimum": 0.0
@@ -114,6 +172,40 @@
           "type": "integer",
           "format": "uint64",
           "minimum": 0.0
+        }
+      }
+    },
+    "RandomBoxRewardRuleConfigState": {
+      "type": "object",
+      "required": [
+        "total_open_box_count",
+        "total_reward_amount"
+      ],
+      "properties": {
+        "total_open_box_count": {
+          "type": "integer",
+          "format": "uint64",
+          "minimum": 0.0
+        },
+        "total_reward_amount": {
+          "type": "integer",
+          "format": "uint128",
+          "minimum": 0.0
+        }
+      }
+    },
+    "RewardConfig": {
+      "type": "object",
+      "required": [
+        "gov",
+        "nft_contract"
+      ],
+      "properties": {
+        "gov": {
+          "$ref": "#/definitions/Addr"
+        },
+        "nft_contract": {
+          "$ref": "#/definitions/Addr"
         }
       }
     }

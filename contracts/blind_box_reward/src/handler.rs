@@ -1,22 +1,25 @@
-use cosmwasm_std::{Addr, attr, CosmosMsg, DepsMut, Env, MessageInfo, Response, SubMsg, to_binary, Uint128, WasmMsg};
-use cw20::Cw20ExecuteMsg;
+use cosmwasm_std::{Addr, attr, DepsMut, Env, MessageInfo, QueryRequest, Response, StdError, to_binary, WasmQuery};
+use cw721::OwnerOfResponse;
 use crate::error::ContractError;
-use crate::querier::query_user_claim_rewards;
-use crate::state::{read_blind_box_reward_config, read_blind_box_reward_token_config, RewardLevelConfig, store_blind_box_reward_config, store_blind_box_reward_token_config};
+use crate::random_role::find_random_rule;
+use crate::state::{BoxOpenInfo, get_box_reward_config, get_box_reward_config_state, get_reward_config, is_box_open, RandomBoxRewardRuleConfigState, set_box_open_info, set_box_reward_config, set_box_reward_config_state, set_reward_config};
+use crate::third_msg::{BlindBoxInfoResponse, BlindBoxQueryMsg};
 
-pub fn update_blind_box_reward_config(
+//config
+
+pub fn update_reward_config(
     deps: DepsMut,
     info: MessageInfo,
     gov: Option<Addr>,
     nft_contract: Option<Addr>,
 ) -> Result<Response, ContractError> {
-    let mut config = read_blind_box_reward_config(deps.storage)?;
+    let mut config = get_reward_config(deps.storage)?;
     if config.gov.ne(&info.sender.clone()) {
         return Err(ContractError::Unauthorized {});
     }
 
     let mut attrs = vec![
-        attr("action", "update_blind_box_reward_config"),
+        attr("action", "update_reward_config"),
     ];
 
     if let Some(gov) = gov {
@@ -28,107 +31,154 @@ pub fn update_blind_box_reward_config(
         config.nft_contract = nft_contract.clone();
         attrs.push(attr("nft_contract", nft_contract.as_str()));
     }
-    store_blind_box_reward_config(deps.storage, &config)?; // store config
+    set_reward_config(deps.storage, &config)?; // store config
     Ok(Response::new().add_attributes(attrs))
 }
 
-pub fn update_blind_box_reward_token_config(deps: DepsMut, info: MessageInfo,
-                                            reward_token: Addr,
-                                            total_reward_amount: u128,
-                                            claimable_time: u64,
+pub fn update_box_reward_config(
+    deps: DepsMut,
+    info: MessageInfo,
+    box_reward_token: Option<Addr>,
+    box_open_time: Option<u64>,
 ) -> Result<Response, ContractError> {
-    let config = read_blind_box_reward_config(deps.storage)?;
+    let config = get_reward_config(deps.storage)?;
     if config.gov.ne(&info.sender.clone()) {
         return Err(ContractError::Unauthorized {});
     }
-    let mut reward_token_config = read_blind_box_reward_token_config(deps.storage, reward_token.to_string().clone());
-    reward_token_config.total_reward_amount = total_reward_amount.clone();
-    reward_token_config.claimable_time = claimable_time.clone();
 
-    store_blind_box_reward_token_config(deps.storage, reward_token.clone().to_string(), &reward_token_config)?; // store config
+
+    let mut box_config = get_box_reward_config(deps.storage)?;
+    let mut attrs = vec![
+        attr("action", "update_box_reward_config"),
+    ];
+
+    if let Some(box_reward_token) = box_reward_token {
+        box_config.box_reward_token = box_reward_token.clone();
+        attrs.push(attr("box_reward_token", box_reward_token.as_str()));
+    }
+
+    if let Some(box_open_time) = box_open_time {
+        box_config.box_open_time = box_open_time.clone();
+        attrs.push(attr("box_open_time", box_open_time.to_string()));
+    }
+    set_box_reward_config(deps.storage, &box_config)?; // store config
+    Ok(Response::new().add_attributes(attrs))
+}
+
+
+// biz
+
+pub fn open_blind_box(mut deps: DepsMut, env: Env, info: MessageInfo, token_ids: Vec<String>) -> Result<Response, ContractError> {
+
+    // deps.querier.query(&QueryRequest::Bank())
+
+    let block_time = env.block.time.seconds();
+    let user = info.sender.clone();
+
+    if token_ids.len() == 0 {
+        return Err(ContractError::Std(StdError::generic_err("token_ids is empty.")));
+    }
+    for token_id in token_ids.clone() {
+        _open_single_blind_box(deps.branch(), env.clone(), block_time, user.clone(), token_id)?;
+    }
 
     Ok(Response::new().add_attributes(vec![
-        attr("action", "update_blind_box_reward_token_config"),
-        attr("reward_token", reward_token.to_string()),
-        attr("total_reward_amount", total_reward_amount.to_string()),
-        attr("claimable_time", claimable_time.to_string()),
+        attr("action", "open_blind_box"),
+        attr("user", user.as_str()),
+        attr("token_ids", token_ids.join(",").as_str()),
     ]))
 }
 
 
-pub fn update_reward_token_reward_level(deps: DepsMut, info: MessageInfo,
-                                        reward_token: Addr,
-                                        reward_level: u8,
-                                        reward_amount: u128,
-) -> Result<Response, ContractError> {
-    let config = read_blind_box_reward_config(deps.storage)?;
-    if config.gov.ne(&info.sender.clone()) {
-        return Err(ContractError::Unauthorized {});
+fn _open_single_blind_box(deps: DepsMut, env: Env, block_time: u64, user: Addr, token_id: String) -> Result<(), ContractError> {
+    if token_id.len() == 0 {
+        return Err(ContractError::Std(StdError::generic_err("token_id is empty.")));
     }
-    let level_index = reward_level as usize;
+    let is_box_open = is_box_open(deps.storage, token_id.clone())?;
 
-    let mut reward_token_config = read_blind_box_reward_token_config(deps.storage, reward_token.to_string().clone());
-
-    if reward_token_config.claimable_time == 0 {
-        return Err(ContractError::ClaimableTimeNotSet {});
+    if is_box_open {
+        return Err(ContractError::BoxAlreadyOpen {});
     }
+    let config = get_reward_config(deps.storage)?;
 
-    let level_count = reward_token_config.reward_levels.len();
-    // add
-    if level_count == 0 || level_index > (level_count - 1) {
-        reward_token_config.reward_levels.push(RewardLevelConfig {
-            reward_amount: reward_amount.clone(),
-            level_total_claimed_amount: 0,
-        });
-    } else {
-        reward_token_config.reward_levels[level_index].reward_amount = reward_amount.clone();
+    // check nft owner
+    let owner_of_nft_resp: OwnerOfResponse = deps.querier.clone().query(&QueryRequest::Wasm(WasmQuery::Smart {
+        contract_addr: config.nft_contract.to_string(),
+        msg: to_binary(&cw721::Cw721QueryMsg::OwnerOf { token_id: token_id.clone(), include_expired: None })?,
+    }))?;
+
+    if owner_of_nft_resp.owner.ne(&user) {
+        return Err(ContractError::Std(StdError::generic_err("user is not owner of nft.")));
     }
 
-    store_blind_box_reward_token_config(deps.storage, reward_token.clone().to_string(), &reward_token_config)?; // store config
+    // check nft level info
+    let nft_level_info_resp: BlindBoxInfoResponse = deps.querier.clone().query(&QueryRequest::Wasm(WasmQuery::Smart {
+        contract_addr: config.nft_contract.to_string(),
+        msg: to_binary(&BlindBoxQueryMsg::QueryBlindBoxInfo { token_id: token_id.clone() })?,
+    }))?;
 
-    Ok(Response::new().add_attributes(vec![
-        attr("action", "update_reward_token_reward_level"),
-        attr("reward_token", reward_token.to_string()),
-        attr("reward_level", reward_level.to_string()),
-        attr("reward_amount", reward_amount.to_string()),
-    ]))
-}
+    if nft_level_info_resp.block_number == 0u64 {
+        return Err(ContractError::Std(StdError::generic_err("nft level info not found by token id.")));
+    }
 
-pub fn claim_reward(deps: DepsMut, env: Env, info: MessageInfo, recipient: Option<Addr>) -> Result<Response, ContractError> {
-    let sender = info.sender.clone();
-    let claim_rewards = query_user_claim_rewards(deps.as_ref(), env.clone(), sender.clone().to_string())?;
-    let mut sub_msgs = vec![];
-    let _recipient = recipient.unwrap_or(sender.clone());
+    let box_config = get_box_reward_config(deps.storage)?;
+    if block_time < box_config.box_open_time {
+        return Err(ContractError::Std(StdError::generic_err("box not open yet.")));
+    }
 
-    for user_claimable_reward in claim_rewards {
-        let reward_token = user_claimable_reward.reward_token;
-        if user_claimable_reward.claimable_reward > 0 {
-            sub_msgs.push(SubMsg::new(CosmosMsg::Wasm(WasmMsg::Execute {
-                contract_addr: reward_token.to_string(),
-                msg: to_binary(&Cw20ExecuteMsg::Transfer {
-                    recipient: _recipient.clone().to_string(),
-                    amount: Uint128::from(user_claimable_reward.claimable_reward.clone()),
-                })?,
-                funds: vec![],
-            })));
-            let mut reward_token_config = read_blind_box_reward_token_config(deps.storage, reward_token.clone().to_string());
-            reward_token_config.total_claimed_amount += user_claimable_reward.claimable_reward;
-            reward_token_config.total_claimed_count += user_claimable_reward.claimable_reward_details.len() as u128;
-            for reward_detail in user_claimable_reward.claimable_reward_details {
-                let level_index = reward_detail.level_index as usize;
-                reward_token_config.reward_levels[level_index].level_total_claimed_amount += reward_detail.claimable_reward;
-            }
+    let level_index = nft_level_info_resp.level_index;
+    let mut box_config_state = get_box_reward_config_state(deps.storage)?;
 
-            store_blind_box_reward_token_config(deps.storage, reward_token.clone().to_string(), &reward_token_config)?; // store config
+
+    let open_box_amount;
+    if level_index != box_config.random_in_box_level_index {
+        // ordinary box
+        let ordinary_box_level_config = box_config.ordinary_box_reward_level_config.get(&level_index).unwrap();
+
+        let ordinary_box_level_config_state =
+            box_config_state.ordinary_box_reward_level_config_state.get_mut(&level_index).unwrap();
+        if ordinary_box_level_config.max_reward_count <= ordinary_box_level_config_state.total_open_box_count {
+            return Err(ContractError::Std(StdError::generic_err("reward count reach max.")));
         }
+        open_box_amount = ordinary_box_level_config.reward_amount;
+        ordinary_box_level_config_state.total_open_box_count += 1;
+        ordinary_box_level_config_state.total_reward_amount += open_box_amount;
+        box_config_state.ordinary_total_open_box_count += 1;
+        box_config_state.ordinary_total_reward_amount += open_box_amount;
+    } else {
+        //random box
+        let rules = box_config.random_box_reward_rule_config;
+        let mut rules_state = box_config_state.random_box_reward_rule_config_state;
+        let find_rule = find_random_rule(env, token_id.clone(), &rules, &rules_state)?;
+        let find_rules_state_index = find_rule.random_box_index.clone();
+        let find_rules_state: &mut RandomBoxRewardRuleConfigState =
+            rules_state.get_mut(find_rules_state_index as usize).unwrap();
+        if find_rule.max_reward_count <= find_rules_state.total_open_box_count {
+            return Err(ContractError::Std(StdError::generic_err("reward count reach max.")));
+        }
+        open_box_amount = find_rule.random_reward_amount;
+        find_rules_state.total_open_box_count += 1;
+        find_rules_state.total_reward_amount += open_box_amount;
+        box_config_state.random_total_open_box_count += 1;
+        box_config_state.random_total_reward_amount += open_box_amount;
+        rules_state[find_rule.random_box_index as usize] = find_rules_state.clone();
+        box_config_state.random_box_reward_rule_config_state = rules_state;
     }
 
-    Ok(Response::new()
-        .add_attributes(vec![
-            attr("action", "claim_reward"),
-            attr("recipient", _recipient.to_string()),
-        ])
-        .add_submessages(sub_msgs)
-    )
+    //set box info
+    let box_info = BoxOpenInfo {
+        open_user: user.clone(),
+        open_reward_amount: open_box_amount,
+        open_box_time: block_time,
+        is_random_box: nft_level_info_resp.is_random_box
+    };
+
+    set_box_open_info(deps.storage, token_id, &box_info)?;
+
+    // set config state
+    set_box_reward_config_state(deps.storage, &box_config_state)?;
+
+    Ok(())
 }
+
 

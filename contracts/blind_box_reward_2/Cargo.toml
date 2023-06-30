@@ -1,5 +1,5 @@
 [package]
-name = "blind_box_reward"
+name = "blind_box_reward_2"
 version = "0.1.0"
 edition = "2021"
 authors = ["simba.dto"]
@@ -36,7 +36,6 @@ cw721 = "0.17.0"
 cw20 = "1.0.1"
 cw-utils = "1.0.1"
 serde_json = "1.0.64"
-#rand = "0.8.5"
 sha256 = "1.1.4"
 
 [dev-dependencies]

@@ -8,6 +8,7 @@ use crate::state::{ReferralLevelConfig, ReferralRewardTokenConfig};
 pub struct BlindBoxLevelMsg {
     pub price: u128,
     pub mint_total_count: u128,
+    pub is_random_box: bool,
 }
 
 #[cw_serde]
@@ -70,6 +71,7 @@ pub struct BlindBoxInfoResponse {
     pub level_index: u8,
     pub price: u128,
     pub block_number: u64,
+    pub is_random_box: bool,
 }
 
 
