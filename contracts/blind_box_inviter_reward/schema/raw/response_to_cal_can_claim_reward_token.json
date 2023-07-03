@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "CalCanClaimRewardTokenResponse",
+  "type": "object",
+  "required": [
+    "can_claim_token_quantity",
+    "claimed_reward_token_quantity",
+    "total_reward_token_quantity"
+  ],
+  "properties": {
+    "can_claim_token_quantity": {
+      "type": "integer",
+      "format": "uint128",
+      "minimum": 0.0
+    },
+    "claimed_reward_token_quantity": {
+      "type": "integer",
+      "format": "uint128",
+      "minimum": 0.0
+    },
+    "total_reward_token_quantity": {
+      "type": "integer",
+      "format": "uint128",
+      "minimum": 0.0
+    }
+  },
+  "additionalProperties": false
+}

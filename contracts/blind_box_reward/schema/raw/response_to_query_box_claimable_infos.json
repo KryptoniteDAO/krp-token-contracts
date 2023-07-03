@@ -1,0 +1,55 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "QueryBoxClaimableInfoResponse",
+  "type": "object",
+  "required": [
+    "box_claimable_infos",
+    "next_reward_claim_index",
+    "total_claimable_amount",
+    "total_claimable_distribute_amount"
+  ],
+  "properties": {
+    "box_claimable_infos": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/BoxClaimableAmountInfoResponse"
+      }
+    },
+    "next_reward_claim_index": {
+      "type": "integer",
+      "format": "uint128",
+      "minimum": 0.0
+    },
+    "total_claimable_amount": {
+      "type": "integer",
+      "format": "uint128",
+      "minimum": 0.0
+    },
+    "total_claimable_distribute_amount": {
+      "type": "integer",
+      "format": "uint128",
+      "minimum": 0.0
+    }
+  },
+  "additionalProperties": false,
+  "definitions": {
+    "BoxClaimableAmountInfoResponse": {
+      "type": "object",
+      "required": [
+        "claimable_amount",
+        "token_id"
+      ],
+      "properties": {
+        "claimable_amount": {
+          "type": "integer",
+          "format": "uint128",
+          "minimum": 0.0
+        },
+        "token_id": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

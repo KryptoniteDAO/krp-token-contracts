@@ -21,6 +21,10 @@ pub struct BoxRewardConfig {
     // nft box level index
     pub random_in_box_level_index: u8,
     pub random_box_reward_rule_config: Vec<RandomBoxRewardRuleConfig>,
+
+    pub box_reward_distribute_addr: Addr,
+    pub box_reward_distribute_rule_type: String,
+    pub global_reward_total_amount: u128,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
@@ -32,6 +36,11 @@ pub struct BoxRewardConfigState {
     pub random_total_reward_amount: u128,
     pub random_total_open_box_count: u64,
     pub random_box_reward_rule_config_state: Vec<RandomBoxRewardRuleConfigState>,
+
+
+    pub global_reward_claim_index: u128,
+    pub global_reward_claim_total_amount: u128,
+
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
@@ -72,6 +81,9 @@ pub struct BoxOpenInfo {
     pub open_reward_amount: u128,
     pub open_box_time: u64,
     pub is_random_box: bool,
+    pub is_reward_box: bool,
+    pub reward_claim_index: u128,
+    pub reward_claimed_amount: u128,
 }
 
 //RewardConfig
@@ -119,7 +131,10 @@ pub fn get_box_open_info(storage: &dyn Storage, key: String) -> StdResult<BoxOpe
         open_user: Addr::unchecked(""),
         open_reward_amount: 0,
         open_box_time: 0,
-        is_random_box: false
+        is_random_box: false,
+        is_reward_box: false,
+        reward_claim_index: 0,
+        reward_claimed_amount: 0
     });
     Ok(res)
 }

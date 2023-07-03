@@ -209,6 +209,7 @@ fn _do_inviter(deps: DepsMut, env: Env, user: Addr,
     let mint_num = Uint128::from(token_ids.len() as u128);
     let mint_info = cal_mint_info(deps.as_ref(), level_index.clone(), mint_num, referral_code_opt)?;
     let paid_amount = mint_info.paid_amount;
+
     let mint_discount_rate = mint_info.mint_discount_rate;
     let mut inviter: Option<Addr> = mint_info.inviter;
     let current_inviter_reward_level = mint_info.next_inviter_reward_level;
@@ -230,8 +231,9 @@ fn _do_inviter(deps: DepsMut, env: Env, user: Addr,
         // inviter_info.current_reward_level = next_inviter_reward_level_index.clone();
         inviter_info.current_reward_level = current_inviter_reward_level_index.clone();
 
+        let amount = mint_info.price.mul(mint_num);
         // calculate inviter reward amount
-        let inviter_reward_amount = paid_amount.multiply_ratio(inviter_current_referral_level_config.inviter_reward_rate, BASE_RATE);
+        let inviter_reward_amount = amount.multiply_ratio(inviter_current_referral_level_config.inviter_reward_rate, BASE_RATE);
         inviter_info.user_reward_total_base_amount += inviter_reward_amount.clone().u128();
 
         //save total
@@ -242,7 +244,7 @@ fn _do_inviter(deps: DepsMut, env: Env, user: Addr,
         // update inviter referral level map
 
         // add sell amount
-        let amount = mint_info.price.mul(mint_num);
+
         inviter_info.user_referral_total_amount += amount.clone().u128();
         // current level reward box
         let box_mul = inviter_info.user_referral_total_amount.clone() / inviter_current_referral_level_config.clone().reward_box_config.recommended_quantity;

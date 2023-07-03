@@ -3,9 +3,9 @@ use cosmwasm_std::{entry_point, DepsMut, Env, MessageInfo, Response, StdResult, 
 use cw2::set_contract_version;
 use cw_utils::nonpayable;
 use crate::error::ContractError;
-use crate::handler::{open_blind_box, update_box_reward_config, update_reward_config};
+use crate::handler::{open_blind_box, receive_cw20, update_box_reward_config, update_reward_config, user_claim_nft_reward};
 use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
-use crate::querier::{query_all_config_and_state, query_box_open_info, test_random};
+use crate::querier::{query_all_config_and_state, query_box_claimable_infos, query_box_open_info, test_random};
 use crate::state::{BoxRewardConfigState, OrdinaryBoxRewardLevelConfigState, RandomBoxRewardRuleConfigState, RewardConfig, set_box_reward_config, set_box_reward_config_state, set_reward_config};
 
 // version info for migration info
@@ -63,6 +63,8 @@ pub fn instantiate(
         random_total_reward_amount: 0,
         random_total_open_box_count: 0,
         random_box_reward_rule_config_state: random_box_reward_rule_config_state_vec,
+        global_reward_claim_index: 0,
+        global_reward_claim_total_amount: 0
     };
 
     let box_reward_config = msg.box_config.clone();
@@ -92,6 +94,12 @@ pub fn execute(
         ExecuteMsg::OpenBlindBox { token_ids } => {
             open_blind_box(deps, env, info, token_ids)
         }
+        ExecuteMsg::UserClaimNftReward { token_ids } => {
+            user_claim_nft_reward(deps, info, token_ids)
+        }
+        ExecuteMsg::Receive(msg) => {
+            receive_cw20(deps, env, info, msg)
+        }
     }
 }
 
@@ -107,6 +115,9 @@ pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
         }
         QueryMsg::TestRandom { token_ids } => {
             to_binary(&test_random(env, token_ids)?)
+        }
+        QueryMsg::QueryBoxClaimableInfos { token_ids } => {
+            to_binary(&query_box_claimable_infos(deps, token_ids)?)
         }
     }
 }
@@ -140,6 +151,9 @@ mod tests {
                 ordinary_box_reward_level_config: HashMap::new(),
                 random_in_box_level_index: 0,
                 random_box_reward_rule_config: vec![],
+                box_reward_distribute_addr: Addr::unchecked("box_reward_distribute_addr"),
+                box_reward_distribute_rule_type: "".to_string(),
+                global_reward_total_amount: 0,
             },
         };
         // Positive test case

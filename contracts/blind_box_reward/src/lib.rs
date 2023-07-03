@@ -6,3 +6,4 @@ pub mod contract;
 pub mod error;
 pub mod third_msg;
 mod random_role;
+mod helper;

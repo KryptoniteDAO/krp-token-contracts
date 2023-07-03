@@ -34,7 +34,10 @@
       "type": "object",
       "required": [
         "box_open_time",
+        "box_reward_distribute_addr",
+        "box_reward_distribute_rule_type",
         "box_reward_token",
+        "global_reward_total_amount",
         "ordinary_box_reward_level_config",
         "random_box_reward_rule_config",
         "random_in_box_level_index"
@@ -45,8 +48,19 @@
           "format": "uint64",
           "minimum": 0.0
         },
+        "box_reward_distribute_addr": {
+          "$ref": "#/definitions/Addr"
+        },
+        "box_reward_distribute_rule_type": {
+          "type": "string"
+        },
         "box_reward_token": {
           "$ref": "#/definitions/Addr"
+        },
+        "global_reward_total_amount": {
+          "type": "integer",
+          "format": "uint128",
+          "minimum": 0.0
         },
         "ordinary_box_reward_level_config": {
           "type": "object",

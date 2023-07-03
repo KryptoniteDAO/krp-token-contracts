@@ -15,4 +15,28 @@ pub struct BlindBoxInfoResponse {
     pub price: u128,
     pub block_number: u64,
     pub is_random_box: bool,
+    pub is_reward_box: bool,
+}
+
+#[cw_serde]
+pub enum DistributeExecuteMsg {
+    Claim {
+        rule_type: String,
+    },
+}
+
+
+#[cw_serde]
+pub struct QueryClaimableInfoResponse {
+    pub can_claim_amount: u128,
+    pub release_amount: u128,
+    pub linear_release_amount: u128,
+}
+#[cw_serde]
+#[derive(QueryResponses)]
+pub enum DistributeQueryMsg {
+    #[returns(QueryClaimableInfoResponse)]
+    QueryClaimableInfo {
+        rule_type: String,
+    },
 }
