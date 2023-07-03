@@ -57,6 +57,21 @@ pub fn query_blind_box_info(deps: Deps, token_id: String) -> StdResult<BlindBoxI
     })
 }
 
+pub fn query_blind_box_infos(deps: Deps, token_ids: Vec<String>) -> StdResult<Vec<BlindBoxInfoResponse>> {
+    let mut res = vec![];
+    for token_id in token_ids {
+        let blind_box_info = read_blind_box_info(deps.storage, token_id.clone());
+        res.push(BlindBoxInfoResponse {
+            level_index: blind_box_info.level_index,
+            price: blind_box_info.price,
+            block_number: blind_box_info.block_number,
+            is_random_box: blind_box_info.is_random_box,
+            is_reward_box: blind_box_info.is_reward_box,
+        });
+    };
+    Ok(res)
+}
+
 pub fn query_tokens(deps: Deps, env: Env,
                     owner: String,
                     start_after: Option<String>,

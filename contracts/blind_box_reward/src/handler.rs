@@ -175,6 +175,7 @@ fn _open_single_blind_box(deps: DepsMut, env: Env, block_time: u64, user: Addr, 
         is_reward_box: nft_level_info_resp.is_reward_box,
         reward_claim_index: 0,
         reward_claimed_amount: 0,
+        box_level_index: level_index,
     };
 
     set_box_open_info(deps.storage, token_id, &box_info)?;

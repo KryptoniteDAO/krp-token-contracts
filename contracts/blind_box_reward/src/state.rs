@@ -84,6 +84,7 @@ pub struct BoxOpenInfo {
     pub is_reward_box: bool,
     pub reward_claim_index: u128,
     pub reward_claimed_amount: u128,
+    pub box_level_index: u8,
 }
 
 //RewardConfig
@@ -134,7 +135,8 @@ pub fn get_box_open_info(storage: &dyn Storage, key: String) -> StdResult<BoxOpe
         is_random_box: false,
         is_reward_box: false,
         reward_claim_index: 0,
-        reward_claimed_amount: 0
+        reward_claimed_amount: 0,
+        box_level_index: 0
     });
     Ok(res)
 }

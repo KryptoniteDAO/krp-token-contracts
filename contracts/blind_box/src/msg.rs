@@ -357,6 +357,9 @@ pub enum QueryMsg {
     #[returns(BlindBoxInfoResponse)]
     QueryBlindBoxInfo { token_id: String },
 
+    #[returns(Vec<BlindBoxInfoResponse>)]
+    QueryBlindBoxInfos { token_ids: Vec<String> },
+
     #[returns(ReferralRewardConfigResponse)]
     QueryAllReferralRewardConfig {},
 

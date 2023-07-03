@@ -385,6 +385,30 @@
     {
       "type": "object",
       "required": [
+        "query_blind_box_infos"
+      ],
+      "properties": {
+        "query_blind_box_infos": {
+          "type": "object",
+          "required": [
+            "token_ids"
+          ],
+          "properties": {
+            "token_ids": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
         "query_all_referral_reward_config"
       ],
       "properties": {

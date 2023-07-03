@@ -39,6 +39,7 @@ pub struct BoxOpenInfoResponse {
     pub open_box_time: u64,
     pub is_random_box: bool,
     pub is_reward_box: bool,
+    pub box_level_index: u8,
 }
 
 #[cw_serde]

@@ -4,7 +4,7 @@ use cw721_base::ContractError;
 use cw_utils::nonpayable;
 use crate::handler::{create_referral_info, do_inviter_reward_mint, do_mint, modify_reward_token_type, update_blind_box_config, update_config_level, update_referral_level_box_config, update_referral_level_config, update_reward_token_config};
 use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
-use crate::querier::{cal_mint_info, check_referral_code, get_user_info, query_all_nft_info, query_all_referral_reward_config, query_blind_box_config, query_blind_box_config_level, query_blind_box_info, query_inviter_records, query_nft_info};
+use crate::querier::{cal_mint_info, check_referral_code, get_user_info, query_all_nft_info, query_all_referral_reward_config, query_blind_box_config, query_blind_box_config_level, query_blind_box_info, query_blind_box_infos, query_inviter_records, query_nft_info};
 use crate::state::{BlindBoxConfig, BlindBoxLevel, ReferralRewardConfig, store_blind_box_config, store_referral_reward_config};
 
 
@@ -341,6 +341,9 @@ pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
         }
         QueryMsg::GetUserInfo { user } => {
             to_binary(&get_user_info(deps, user)?)
+        }
+        QueryMsg::QueryBlindBoxInfos { token_ids } => {
+            to_binary(&query_blind_box_infos(deps, token_ids)?)
         }
     }
 }

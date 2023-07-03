@@ -28,6 +28,7 @@ pub fn query_box_open_info(deps: Deps, token_ids: Vec<String>) -> StdResult<Vec<
             open_box_time: box_open_info.open_box_time,
             is_random_box: box_open_info.is_random_box,
             is_reward_box: box_open_info.is_reward_box,
+            box_level_index: box_open_info.box_level_index,
         });
     }
     Ok(res)
