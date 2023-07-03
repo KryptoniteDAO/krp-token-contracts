@@ -37,9 +37,11 @@ pub fn mint_reward_box(deps: DepsMut, env: Env, info: MessageInfo, level_index: 
 
     let mut zero = 0u32;
 
-    let mint_box_level_detail = user_opt_detail.mint_box_level_detail;
-    let mut  user_level_quantity = mint_box_level_detail.get(&level_index).unwrap_or(&mut zero);
-    user_level_quantity += mint_num;
+    let mut mint_box_level_detail = user_opt_detail.mint_box_level_detail;
+    let user_level_quantity = mint_box_level_detail.get(&level_index).unwrap_or(&mut zero);
+
+    mint_box_level_detail.insert(level_index, user_level_quantity.clone() + mint_num);
+
 
     user_opt_detail.mint_box_level_detail = mint_box_level_detail;
 
