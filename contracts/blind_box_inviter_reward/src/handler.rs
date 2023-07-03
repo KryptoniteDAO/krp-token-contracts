@@ -30,14 +30,20 @@ pub fn mint_reward_box(deps: DepsMut, env: Env, info: MessageInfo, level_index: 
     }
 
     // save user state
+
+
     let mut user_opt_detail = read_inviter_opt_detail(deps.storage, &user)?;
     user_opt_detail.mint_box_count += mint_num;
 
     let mut zero = 0u32;
 
-    let user_level_quantity = user_opt_detail.mint_box_level_detail.get_mut(&level_index).unwrap_or(&mut zero);
-    *user_level_quantity += mint_num;
+    let mint_box_level_detail = user_opt_detail.mint_box_level_detail;
+    let mut  user_level_quantity = mint_box_level_detail.get(&level_index).unwrap_or(&mut zero);
+    user_level_quantity += mint_num;
 
+    user_opt_detail.mint_box_level_detail = mint_box_level_detail;
+
+    //
     store_inviter_opt_detail(deps.storage, &user, &user_opt_detail)?;
 
     // save config state
