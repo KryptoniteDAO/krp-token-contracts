@@ -2638,7 +2638,8 @@
         "is_random_box",
         "is_reward_box",
         "level_index",
-        "price"
+        "price",
+        "token_id"
       ],
       "properties": {
         "block_number": {
@@ -2661,6 +2662,9 @@
           "type": "integer",
           "format": "uint128",
           "minimum": 0.0
+        },
+        "token_id": {
+          "type": "string"
         }
       },
       "additionalProperties": false
@@ -2680,7 +2684,8 @@
             "is_random_box",
             "is_reward_box",
             "level_index",
-            "price"
+            "price",
+            "token_id"
           ],
           "properties": {
             "block_number": {
@@ -2703,6 +2708,9 @@
               "type": "integer",
               "format": "uint128",
               "minimum": 0.0
+            },
+            "token_id": {
+              "type": "string"
             }
           },
           "additionalProperties": false

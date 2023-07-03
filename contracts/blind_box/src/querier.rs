@@ -47,8 +47,9 @@ pub fn query_blind_box_config_level(deps: Deps, index: u8) -> StdResult<BlindBox
 }
 
 pub fn query_blind_box_info(deps: Deps, token_id: String) -> StdResult<BlindBoxInfoResponse> {
-    let blind_box_info = read_blind_box_info(deps.storage, token_id);
+    let blind_box_info = read_blind_box_info(deps.storage, token_id.clone());
     Ok(BlindBoxInfoResponse {
+        token_id,
         level_index: blind_box_info.level_index,
         price: blind_box_info.price,
         block_number: blind_box_info.block_number,
@@ -62,6 +63,7 @@ pub fn query_blind_box_infos(deps: Deps, token_ids: Vec<String>) -> StdResult<Ve
     for token_id in token_ids {
         let blind_box_info = read_blind_box_info(deps.storage, token_id.clone());
         res.push(BlindBoxInfoResponse {
+            token_id,
             level_index: blind_box_info.level_index,
             price: blind_box_info.price,
             block_number: blind_box_info.block_number,

@@ -69,6 +69,7 @@ pub struct BlindBoxConfigLevelResponse {
 
 #[cw_serde]
 pub struct BlindBoxInfoResponse {
+    pub token_id: String,
     pub level_index: u8,
     pub price: u128,
     pub block_number: u64,
