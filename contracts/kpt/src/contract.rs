@@ -65,6 +65,7 @@ pub fn instantiate(
         max_supply: msg.max_supply,
         kpt_fund: Addr::unchecked(""),
         gov,
+        kpt_distribute: msg.kpt_distribute.unwrap_or(Addr::unchecked("")),
     };
 
     store_kpt_config(deps.storage, &kpt_config)?;
@@ -83,8 +84,8 @@ pub fn execute(
     msg: ExecuteMsg,
 ) -> Result<Response, ContractError> {
     match msg {
-        ExecuteMsg::UpdateConfig { max_supply, kpt_fund, gov } => {
-            update_config(deps, info, max_supply, kpt_fund, gov)
+        ExecuteMsg::UpdateConfig { max_supply, kpt_fund, gov, kpt_distribute } => {
+            update_config(deps, info, max_supply, kpt_fund, gov, kpt_distribute)
         }
         ExecuteMsg::Mint { recipient, amount } => {
             let recipient = deps.api.addr_validate(&recipient)?;
@@ -170,14 +171,14 @@ pub fn execute(
                 return Err(ContractError::Std(StdError::generic_err(res.err().unwrap().to_string())));
             }
             Ok(res.unwrap())
-        },
+        }
         ExecuteMsg::UploadLogo(logo) => {
             let res = execute_upload_logo(deps, env, info, logo);
             if res.is_err() {
                 return Err(ContractError::Std(StdError::generic_err(res.err().unwrap().to_string())));
             }
             Ok(res.unwrap())
-        },
+        }
         ExecuteMsg::UpdateMinter { new_minter } => {
             let res = execute_update_minter(deps, env, info, new_minter);
             if res.is_err() {
@@ -259,7 +260,8 @@ mod tests {
         let msg = InstantiateMsg {
             cw20_init_msg,
             max_supply,
-            gov: None
+            gov: None,
+            kpt_distribute: None
         };
         // Positive test case
         let res = instantiate(deps.as_mut(), env.clone(), info.clone(), msg.clone()).unwrap();
@@ -270,6 +272,5 @@ mod tests {
         assert_eq!(kpt_config.max_supply, max_supply);
         assert_eq!(kpt_config.kpt_fund, Addr::unchecked(""));
         assert_eq!(kpt_config.gov, info.sender);
-
     }
 }

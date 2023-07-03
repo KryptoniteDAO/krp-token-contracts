@@ -10,6 +10,7 @@ pub struct InstantiateMsg {
     pub max_supply: u128,
     // default msg.sender
     pub gov: Option<Addr>,
+    pub kpt_distribute: Option<Addr>,
 }
 
 #[cw_serde]
@@ -18,6 +19,7 @@ pub enum ExecuteMsg {
         max_supply: Option<Uint128>,
         kpt_fund: Option<Addr>,
         gov: Option<Addr>,
+        kpt_distribute: Option<Addr>,
     },
     Mint { recipient: String, amount: Uint128 },
     /// Implements CW20. Burn is a base message to destroy tokens forever

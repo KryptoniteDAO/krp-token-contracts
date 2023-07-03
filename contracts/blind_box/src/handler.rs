@@ -349,12 +349,17 @@ pub fn do_inviter_reward_mint(mut deps: DepsMut, env: Env, info: MessageInfo, in
 
     let msg_sender = info.clone().sender;
     let inviter_reward_box_contract = blind_box_config.clone().inviter_reward_box_contract;
-    if is_empty_address(inviter_reward_box_contract.clone().as_str())
-        || msg_sender.ne(&inviter_reward_box_contract) {
+    if is_empty_address(inviter_reward_box_contract.clone().as_str()) {
         return Err(ContractError::Std(StdError::generic_err(
-            "Only inviter_reward_box_contract can call this method",
+            "No inviter reward contract address",
         )));
     }
+
+    if msg_sender.ne(&inviter_reward_box_contract) {
+        let err_msg = format!("Only inviter_reward_box_contract can call this method, current sender is {}", msg_sender);
+        return Err(ContractError::Std(StdError::generic_err(err_msg.as_str())));
+    }
+
     let inviter_info = read_user_info(deps.storage, &inviter);
     if inviter_info.user_reward_box.is_empty() || inviter_info.referral_code.is_empty() {
         return Err(ContractError::Std(StdError::generic_err(

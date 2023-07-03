@@ -1,0 +1,28 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "QueryClaimableInfoResponse",
+  "type": "object",
+  "required": [
+    "can_claim_amount",
+    "linear_release_amount",
+    "release_amount"
+  ],
+  "properties": {
+    "can_claim_amount": {
+      "type": "integer",
+      "format": "uint128",
+      "minimum": 0.0
+    },
+    "linear_release_amount": {
+      "type": "integer",
+      "format": "uint128",
+      "minimum": 0.0
+    },
+    "release_amount": {
+      "type": "integer",
+      "format": "uint128",
+      "minimum": 0.0
+    }
+  },
+  "additionalProperties": false
+}

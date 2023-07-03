@@ -29,6 +29,7 @@ pub fn query_blind_box_config(deps: Deps) -> StdResult<BlindBoxConfigResponse> {
         level_infos,
         receiver_price_addr: blind_box_config.receiver_price_addr,
         can_transfer_time: blind_box_config.can_transfer_time,
+        inviter_reward_box_contract: blind_box_config.inviter_reward_box_contract,
     })
 }
 
@@ -52,7 +53,7 @@ pub fn query_blind_box_info(deps: Deps, token_id: String) -> StdResult<BlindBoxI
         price: blind_box_info.price,
         block_number: blind_box_info.block_number,
         is_random_box: blind_box_info.is_random_box,
-        is_reward_box: blind_box_info.is_reward_box
+        is_reward_box: blind_box_info.is_reward_box,
     })
 }
 

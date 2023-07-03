@@ -38,7 +38,7 @@ pub fn query_claimable_info(deps: Deps, env: Env, rule_type: String) -> StdResul
     }
 
     //Calculate the linear release amount
-    if rule_config.start_linear_release_time > block_time {
+    if block_time > rule_config.start_linear_release_time {
         let start_calc_time = if rule_config_state.last_claim_linear_release_time > rule_config.start_linear_release_time {
             rule_config_state.last_claim_linear_release_time
         } else {

@@ -21,6 +21,16 @@
                 }
               ]
             },
+            "kpt_distribute": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Addr"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
             "kpt_fund": {
               "anyOf": [
                 {

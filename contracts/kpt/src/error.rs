@@ -15,4 +15,7 @@ pub enum ContractError {
     #[error("Invalid input")]
     InvalidInput {},
 
+    #[error("Mint Contract Not Config")]
+    MintContractNotConfig {},
+
 }

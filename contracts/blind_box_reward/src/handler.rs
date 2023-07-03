@@ -210,6 +210,10 @@ pub fn user_claim_nft_reward(deps: DepsMut, info: MessageInfo, token_ids: Vec<St
         if user.ne(&ntf_owner) {
             return Err(ContractError::Std(StdError::generic_err("user is not nft owner.")));
         }
+        let box_open_info = get_box_open_info(deps.storage, token_id.clone())?;
+        if is_empty_str(box_open_info.open_user.as_str()) {
+            return Err(ContractError::Std(StdError::generic_err("box not open.")));
+        }
     }
 
     let box_claimable_infos = query_box_claimable_infos(deps.as_ref(), token_ids.clone())?;

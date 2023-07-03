@@ -8,6 +8,7 @@ pub struct KptConfig {
     pub max_supply: u128,
     pub kpt_fund: Addr,
     pub gov: Addr,
+    pub kpt_distribute:Addr,
 }
 
 const KPT_CONFIG: Item<KptConfig> = Item::new("kpt_config");

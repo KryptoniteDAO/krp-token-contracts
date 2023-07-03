@@ -66,7 +66,6 @@ pub fn query_box_claimable_infos(deps: Deps, token_ids: Vec<String>) -> StdResul
             let box_open_info = get_box_open_info(deps.storage, token_id.clone())?;
             // let diff_index = global_reward_claim_index - box_open_info.reward_claim_index;
             // let claimable_amount = box_open_info.open_reward_amount * diff_index / BASE_RATE_12;
-
             let claimable_amount = calc_claim_amount(global_reward_claim_index,
                                                      box_open_info.open_reward_amount, box_open_info.reward_claim_index)?;
 

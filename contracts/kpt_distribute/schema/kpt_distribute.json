@@ -1,0 +1,557 @@
+{
+  "contract_name": "kpt_distribute",
+  "contract_version": "0.1.0",
+  "idl_version": "1.0.0",
+  "instantiate": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "InstantiateMsg",
+    "type": "object",
+    "required": [
+      "distribute_token",
+      "rule_configs_map",
+      "total_amount"
+    ],
+    "properties": {
+      "distribute_token": {
+        "$ref": "#/definitions/Addr"
+      },
+      "gov": {
+        "anyOf": [
+          {
+            "$ref": "#/definitions/Addr"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "rule_configs_map": {
+        "type": "object",
+        "additionalProperties": {
+          "$ref": "#/definitions/RuleConfigMsg"
+        }
+      },
+      "total_amount": {
+        "type": "integer",
+        "format": "uint128",
+        "minimum": 0.0
+      }
+    },
+    "additionalProperties": false,
+    "definitions": {
+      "Addr": {
+        "description": "A human readable address.\n\nIn Cosmos, this is typically bech32 encoded. But for multi-chain smart contracts no assumptions should be made other than being UTF-8 encoded and of reasonable length.\n\nThis type represents a validated address. It can be created in the following ways 1. Use `Addr::unchecked(input)` 2. Use `let checked: Addr = deps.api.addr_validate(input)?` 3. Use `let checked: Addr = deps.api.addr_humanize(canonical_addr)?` 4. Deserialize from JSON. This must only be done from JSON that was validated before such as a contract's state. `Addr` must not be used in messages sent by the user because this would result in unvalidated instances.\n\nThis type is immutable. If you really need to mutate it (Really? Are you sure?), create a mutable copy using `let mut mutable = Addr::to_string()` and operate on that `String` instance.",
+        "type": "string"
+      },
+      "RuleConfigMsg": {
+        "type": "object",
+        "required": [
+          "lock_end_time",
+          "lock_start_time",
+          "rule_name",
+          "rule_owner",
+          "rule_total_amount",
+          "start_linear_release_time",
+          "start_release_amount",
+          "unlock_linear_release_amount",
+          "unlock_linear_release_time"
+        ],
+        "properties": {
+          "lock_end_time": {
+            "type": "integer",
+            "format": "uint64",
+            "minimum": 0.0
+          },
+          "lock_start_time": {
+            "type": "integer",
+            "format": "uint64",
+            "minimum": 0.0
+          },
+          "rule_name": {
+            "type": "string"
+          },
+          "rule_owner": {
+            "$ref": "#/definitions/Addr"
+          },
+          "rule_total_amount": {
+            "type": "integer",
+            "format": "uint128",
+            "minimum": 0.0
+          },
+          "start_linear_release_time": {
+            "type": "integer",
+            "format": "uint64",
+            "minimum": 0.0
+          },
+          "start_release_amount": {
+            "type": "integer",
+            "format": "uint128",
+            "minimum": 0.0
+          },
+          "unlock_linear_release_amount": {
+            "type": "integer",
+            "format": "uint128",
+            "minimum": 0.0
+          },
+          "unlock_linear_release_time": {
+            "type": "integer",
+            "format": "uint64",
+            "minimum": 0.0
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "execute": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "ExecuteMsg",
+    "oneOf": [
+      {
+        "type": "object",
+        "required": [
+          "claim"
+        ],
+        "properties": {
+          "claim": {
+            "type": "object",
+            "required": [
+              "rule_type"
+            ],
+            "properties": {
+              "rule_type": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "update_config"
+        ],
+        "properties": {
+          "update_config": {
+            "type": "object",
+            "properties": {
+              "distribute_token": {
+                "anyOf": [
+                  {
+                    "$ref": "#/definitions/Addr"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "gov": {
+                "anyOf": [
+                  {
+                    "$ref": "#/definitions/Addr"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "update_rule_config"
+        ],
+        "properties": {
+          "update_rule_config": {
+            "type": "object",
+            "required": [
+              "update_rule_msg"
+            ],
+            "properties": {
+              "update_rule_msg": {
+                "$ref": "#/definitions/UpdateRuleConfigMsg"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "add_rule_config"
+        ],
+        "properties": {
+          "add_rule_config": {
+            "type": "object",
+            "required": [
+              "rule_msg",
+              "rule_type"
+            ],
+            "properties": {
+              "rule_msg": {
+                "$ref": "#/definitions/RuleConfigMsg"
+              },
+              "rule_type": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      }
+    ],
+    "definitions": {
+      "Addr": {
+        "description": "A human readable address.\n\nIn Cosmos, this is typically bech32 encoded. But for multi-chain smart contracts no assumptions should be made other than being UTF-8 encoded and of reasonable length.\n\nThis type represents a validated address. It can be created in the following ways 1. Use `Addr::unchecked(input)` 2. Use `let checked: Addr = deps.api.addr_validate(input)?` 3. Use `let checked: Addr = deps.api.addr_humanize(canonical_addr)?` 4. Deserialize from JSON. This must only be done from JSON that was validated before such as a contract's state. `Addr` must not be used in messages sent by the user because this would result in unvalidated instances.\n\nThis type is immutable. If you really need to mutate it (Really? Are you sure?), create a mutable copy using `let mut mutable = Addr::to_string()` and operate on that `String` instance.",
+        "type": "string"
+      },
+      "RuleConfigMsg": {
+        "type": "object",
+        "required": [
+          "lock_end_time",
+          "lock_start_time",
+          "rule_name",
+          "rule_owner",
+          "rule_total_amount",
+          "start_linear_release_time",
+          "start_release_amount",
+          "unlock_linear_release_amount",
+          "unlock_linear_release_time"
+        ],
+        "properties": {
+          "lock_end_time": {
+            "type": "integer",
+            "format": "uint64",
+            "minimum": 0.0
+          },
+          "lock_start_time": {
+            "type": "integer",
+            "format": "uint64",
+            "minimum": 0.0
+          },
+          "rule_name": {
+            "type": "string"
+          },
+          "rule_owner": {
+            "$ref": "#/definitions/Addr"
+          },
+          "rule_total_amount": {
+            "type": "integer",
+            "format": "uint128",
+            "minimum": 0.0
+          },
+          "start_linear_release_time": {
+            "type": "integer",
+            "format": "uint64",
+            "minimum": 0.0
+          },
+          "start_release_amount": {
+            "type": "integer",
+            "format": "uint128",
+            "minimum": 0.0
+          },
+          "unlock_linear_release_amount": {
+            "type": "integer",
+            "format": "uint128",
+            "minimum": 0.0
+          },
+          "unlock_linear_release_time": {
+            "type": "integer",
+            "format": "uint64",
+            "minimum": 0.0
+          }
+        },
+        "additionalProperties": false
+      },
+      "UpdateRuleConfigMsg": {
+        "type": "object",
+        "required": [
+          "rule_type"
+        ],
+        "properties": {
+          "rule_name": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "rule_owner": {
+            "anyOf": [
+              {
+                "$ref": "#/definitions/Addr"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "rule_type": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "query": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "QueryMsg",
+    "oneOf": [
+      {
+        "type": "object",
+        "required": [
+          "query_claimable_info"
+        ],
+        "properties": {
+          "query_claimable_info": {
+            "type": "object",
+            "required": [
+              "rule_type"
+            ],
+            "properties": {
+              "rule_type": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "query_rule_info"
+        ],
+        "properties": {
+          "query_rule_info": {
+            "type": "object",
+            "required": [
+              "rule_type"
+            ],
+            "properties": {
+              "rule_type": {
+                "type": "string"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "query_config"
+        ],
+        "properties": {
+          "query_config": {
+            "type": "object",
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      }
+    ]
+  },
+  "migrate": null,
+  "sudo": null,
+  "responses": {
+    "query_claimable_info": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "QueryClaimableInfoResponse",
+      "type": "object",
+      "required": [
+        "can_claim_amount",
+        "linear_release_amount",
+        "release_amount"
+      ],
+      "properties": {
+        "can_claim_amount": {
+          "type": "integer",
+          "format": "uint128",
+          "minimum": 0.0
+        },
+        "linear_release_amount": {
+          "type": "integer",
+          "format": "uint128",
+          "minimum": 0.0
+        },
+        "release_amount": {
+          "type": "integer",
+          "format": "uint128",
+          "minimum": 0.0
+        }
+      },
+      "additionalProperties": false
+    },
+    "query_config": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "QueryConfigResponse",
+      "type": "object",
+      "required": [
+        "distribute_token",
+        "gov",
+        "rules_total_amount",
+        "total_amount"
+      ],
+      "properties": {
+        "distribute_token": {
+          "$ref": "#/definitions/Addr"
+        },
+        "gov": {
+          "$ref": "#/definitions/Addr"
+        },
+        "rules_total_amount": {
+          "type": "integer",
+          "format": "uint128",
+          "minimum": 0.0
+        },
+        "total_amount": {
+          "type": "integer",
+          "format": "uint128",
+          "minimum": 0.0
+        }
+      },
+      "additionalProperties": false,
+      "definitions": {
+        "Addr": {
+          "description": "A human readable address.\n\nIn Cosmos, this is typically bech32 encoded. But for multi-chain smart contracts no assumptions should be made other than being UTF-8 encoded and of reasonable length.\n\nThis type represents a validated address. It can be created in the following ways 1. Use `Addr::unchecked(input)` 2. Use `let checked: Addr = deps.api.addr_validate(input)?` 3. Use `let checked: Addr = deps.api.addr_humanize(canonical_addr)?` 4. Deserialize from JSON. This must only be done from JSON that was validated before such as a contract's state. `Addr` must not be used in messages sent by the user because this would result in unvalidated instances.\n\nThis type is immutable. If you really need to mutate it (Really? Are you sure?), create a mutable copy using `let mut mutable = Addr::to_string()` and operate on that `String` instance.",
+          "type": "string"
+        }
+      }
+    },
+    "query_rule_info": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "QueryRuleInfoResponse",
+      "type": "object",
+      "required": [
+        "rule_config",
+        "rule_config_state"
+      ],
+      "properties": {
+        "rule_config": {
+          "$ref": "#/definitions/RuleConfig"
+        },
+        "rule_config_state": {
+          "$ref": "#/definitions/RuleConfigState"
+        }
+      },
+      "additionalProperties": false,
+      "definitions": {
+        "Addr": {
+          "description": "A human readable address.\n\nIn Cosmos, this is typically bech32 encoded. But for multi-chain smart contracts no assumptions should be made other than being UTF-8 encoded and of reasonable length.\n\nThis type represents a validated address. It can be created in the following ways 1. Use `Addr::unchecked(input)` 2. Use `let checked: Addr = deps.api.addr_validate(input)?` 3. Use `let checked: Addr = deps.api.addr_humanize(canonical_addr)?` 4. Deserialize from JSON. This must only be done from JSON that was validated before such as a contract's state. `Addr` must not be used in messages sent by the user because this would result in unvalidated instances.\n\nThis type is immutable. If you really need to mutate it (Really? Are you sure?), create a mutable copy using `let mut mutable = Addr::to_string()` and operate on that `String` instance.",
+          "type": "string"
+        },
+        "RuleConfig": {
+          "type": "object",
+          "required": [
+            "end_linear_release_time",
+            "linear_release_per_second",
+            "lock_end_time",
+            "lock_start_time",
+            "rule_name",
+            "rule_owner",
+            "rule_total_amount",
+            "start_linear_release_time",
+            "start_release_amount",
+            "unlock_linear_release_amount",
+            "unlock_linear_release_time"
+          ],
+          "properties": {
+            "end_linear_release_time": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            },
+            "linear_release_per_second": {
+              "type": "integer",
+              "format": "uint128",
+              "minimum": 0.0
+            },
+            "lock_end_time": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            },
+            "lock_start_time": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            },
+            "rule_name": {
+              "type": "string"
+            },
+            "rule_owner": {
+              "$ref": "#/definitions/Addr"
+            },
+            "rule_total_amount": {
+              "type": "integer",
+              "format": "uint128",
+              "minimum": 0.0
+            },
+            "start_linear_release_time": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            },
+            "start_release_amount": {
+              "type": "integer",
+              "format": "uint128",
+              "minimum": 0.0
+            },
+            "unlock_linear_release_amount": {
+              "type": "integer",
+              "format": "uint128",
+              "minimum": 0.0
+            },
+            "unlock_linear_release_time": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            }
+          }
+        },
+        "RuleConfigState": {
+          "type": "object",
+          "required": [
+            "claimed_amount",
+            "is_start_release",
+            "last_claim_linear_release_time",
+            "released_amount"
+          ],
+          "properties": {
+            "claimed_amount": {
+              "type": "integer",
+              "format": "uint128",
+              "minimum": 0.0
+            },
+            "is_start_release": {
+              "type": "boolean"
+            },
+            "last_claim_linear_release_time": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            },
+            "released_amount": {
+              "type": "integer",
+              "format": "uint128",
+              "minimum": 0.0
+            }
+          }
+        }
+      }
+    }
+  }
+}

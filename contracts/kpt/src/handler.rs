@@ -1,9 +1,10 @@
 use cosmwasm_std::{Addr, attr, DepsMut, Env, MessageInfo, Response, StdError, Uint128};
 use cw20_base::contract::{execute_burn, execute_mint};
 use crate::error::ContractError;
+use crate::helper::is_empty_str;
 use crate::state::{read_kpt_config, store_kpt_config};
 
-pub fn update_config(deps: DepsMut, info: MessageInfo, max_supply: Option<Uint128>, kpt_fund: Option<Addr>, gov: Option<Addr>) -> Result<Response, ContractError> {
+pub fn update_config(deps: DepsMut, info: MessageInfo, max_supply: Option<Uint128>, kpt_fund: Option<Addr>, gov: Option<Addr>, kpt_distribute: Option<Addr>) -> Result<Response, ContractError> {
     let mut kpt_config = read_kpt_config(deps.storage)?;
 
     if info.sender != kpt_config.gov {
@@ -23,6 +24,10 @@ pub fn update_config(deps: DepsMut, info: MessageInfo, max_supply: Option<Uint12
         kpt_config.gov = gov.clone();
         attrs.push(attr("gov", gov.to_string()));
     }
+    if let Some(kpt_distribute) = kpt_distribute {
+        kpt_config.kpt_distribute = kpt_distribute.clone();
+        attrs.push(attr("kpt_distribute", kpt_distribute.to_string()));
+    }
 
     store_kpt_config(deps.storage, &kpt_config)?;
 
@@ -31,11 +36,19 @@ pub fn update_config(deps: DepsMut, info: MessageInfo, max_supply: Option<Uint12
 
 pub fn mint(deps: DepsMut, env: Env, info: MessageInfo, user: Addr, amount: u128) -> Result<Response, ContractError> {
     let msg_sender = info.sender.clone();
-    let kpt_fund = read_kpt_config(deps.storage)?.kpt_fund.clone();
+    let kpt_config = read_kpt_config(deps.storage)?;
+    let kpt_fund = kpt_config.kpt_fund.clone();
+    let kpt_distribute = kpt_config.kpt_distribute.clone();
 
-    if msg_sender.ne(&kpt_fund.clone()) {
+
+    if is_empty_str(kpt_fund.as_str()) && is_empty_str(kpt_distribute.as_str()) {
+        return Err(ContractError::MintContractNotConfig {});
+    }
+
+    if msg_sender.ne(&kpt_fund.clone()) && msg_sender.ne(&kpt_distribute.clone()) {
         return Err(ContractError::Unauthorized {});
     }
+
     let sub_info = MessageInfo {
         sender: env.contract.address.clone(),
         funds: vec![],

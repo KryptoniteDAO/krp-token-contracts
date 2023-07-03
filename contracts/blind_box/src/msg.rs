@@ -55,6 +55,7 @@ pub struct BlindBoxConfigResponse {
     pub level_infos: Vec<BlindBoxConfigLevelResponse>,
     pub receiver_price_addr: Addr,
     pub can_transfer_time: u64,
+    pub inviter_reward_box_contract: Addr,
 }
 
 #[cw_serde]

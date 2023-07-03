@@ -24,6 +24,16 @@
           }
         ]
       },
+      "kpt_distribute": {
+        "anyOf": [
+          {
+            "$ref": "#/definitions/Addr"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
       "max_supply": {
         "type": "integer",
         "format": "uint128",
@@ -244,6 +254,16 @@
             "type": "object",
             "properties": {
               "gov": {
+                "anyOf": [
+                  {
+                    "$ref": "#/definitions/Addr"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "kpt_distribute": {
                 "anyOf": [
                   {
                     "$ref": "#/definitions/Addr"

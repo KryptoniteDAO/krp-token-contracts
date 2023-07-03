@@ -2465,6 +2465,7 @@
       "required": [
         "can_transfer_time",
         "gov",
+        "inviter_reward_box_contract",
         "level_infos",
         "nft_base_url",
         "nft_uri_suffix",
@@ -2482,6 +2483,9 @@
         },
         "gov": {
           "type": "string"
+        },
+        "inviter_reward_box_contract": {
+          "$ref": "#/definitions/Addr"
         },
         "level_infos": {
           "type": "array",
