@@ -4,11 +4,15 @@
   "type": "object",
   "required": [
     "gov",
+    "kpt_distribute",
     "kpt_fund",
     "max_supply"
   ],
   "properties": {
     "gov": {
+      "$ref": "#/definitions/Addr"
+    },
+    "kpt_distribute": {
       "$ref": "#/definitions/Addr"
     },
     "kpt_fund": {
