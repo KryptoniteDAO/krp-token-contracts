@@ -152,6 +152,7 @@ pub enum KptFundMsg {
 pub struct KptConfigResponse {
     pub max_supply: u128,
     pub kpt_fund: Addr,
+    pub kpt_distribute: Addr,
     pub gov: Addr,
 }
 

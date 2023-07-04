@@ -7,6 +7,7 @@ pub fn query_kpt_config(deps: Deps) -> StdResult<KptConfigResponse> {
     Ok(KptConfigResponse {
         max_supply: config.max_supply,
         kpt_fund: config.kpt_fund,
+        kpt_distribute: config.kpt_distribute,
         gov: config.gov,
     })
 }
