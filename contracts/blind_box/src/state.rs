@@ -34,7 +34,6 @@ pub struct BlindBoxLevel {
     pub mint_total_count: u128,
     pub minted_count: u128,
     pub received_total_amount: u128,
-    pub is_random_box: bool,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
@@ -42,7 +41,6 @@ pub struct BlindBoxInfo {
     pub level_index: u8,
     pub price: u128,
     pub block_number: u64,
-    pub is_random_box: bool,
     pub is_reward_box: bool,
 }
 
@@ -82,15 +80,7 @@ pub struct ReferralLevelConfig {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-pub struct ReferralRewardTokenConfig {
-    pub reward_token: String,
-    pub conversion_ratio: u128,
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct ReferralRewardConfig {
-    //reward_token_type => ReferralRewardTokenConfig
-    pub reward_token_config: HashMap<String, ReferralRewardTokenConfig>,
     //referral_level => ReferralLevelConfig
     pub referral_level_config: HashMap<u8, ReferralLevelConfig>,
 }
@@ -112,7 +102,7 @@ pub struct UserInfo {
     pub invitee_count: u32,
     pub last_mint_discount_rate: u128,
     pub current_reward_level: u8,
-    pub user_reward_token_type: String,
+    // pub user_reward_token_type: String,
     pub user_reward_total_base_amount: u128,
     pub user_referral_total_amount: u128,
     // referral_level => invitee count
@@ -166,7 +156,7 @@ pub fn read_user_info(storage: &dyn Storage, user_addr: &Addr) -> UserInfo {
         invitee_count: 0,
         last_mint_discount_rate: 0,
         current_reward_level: 0,
-        user_reward_token_type: Default::default(),
+        // user_reward_token_type: Default::default(),
         user_reward_total_base_amount: 0,
         user_referral_total_amount: 0,
         user_referral_level_count: Default::default(),
@@ -193,7 +183,6 @@ pub fn read_blind_box_info(storage: &dyn Storage, token_id: String) -> BlindBoxI
         level_index: 0,
         price: 0,
         block_number: 0,
-        is_random_box: false,
         is_reward_box: false
     })
 }

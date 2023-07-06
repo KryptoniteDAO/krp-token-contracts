@@ -102,14 +102,10 @@
       "BlindBoxLevelMsg": {
         "type": "object",
         "required": [
-          "is_random_box",
           "mint_total_count",
           "price"
         ],
         "properties": {
-          "is_random_box": {
-            "type": "boolean"
-          },
           "mint_total_count": {
             "type": "integer",
             "format": "uint128",
@@ -191,35 +187,9 @@
             "additionalProperties": {
               "$ref": "#/definitions/ReferralLevelConfig"
             }
-          },
-          "reward_token_config": {
-            "type": [
-              "object",
-              "null"
-            ],
-            "additionalProperties": {
-              "$ref": "#/definitions/ReferralRewardTokenConfig"
-            }
           }
         },
         "additionalProperties": false
-      },
-      "ReferralRewardTokenConfig": {
-        "type": "object",
-        "required": [
-          "conversion_ratio",
-          "reward_token"
-        ],
-        "properties": {
-          "conversion_ratio": {
-            "type": "integer",
-            "format": "uint128",
-            "minimum": 0.0
-          },
-          "reward_token": {
-            "type": "string"
-          }
-        }
       }
     }
   },
@@ -304,12 +274,6 @@
                 ],
                 "format": "uint64",
                 "minimum": 0.0
-              },
-              "token_id_prefix": {
-                "type": [
-                  "string",
-                  "null"
-                ]
               }
             },
             "additionalProperties": false
@@ -349,37 +313,6 @@
                 ],
                 "format": "uint128",
                 "minimum": 0.0
-              }
-            },
-            "additionalProperties": false
-          }
-        },
-        "additionalProperties": false
-      },
-      {
-        "type": "object",
-        "required": [
-          "update_reward_token_config"
-        ],
-        "properties": {
-          "update_reward_token_config": {
-            "type": "object",
-            "required": [
-              "conversion_ratio",
-              "reward_token",
-              "reward_token_type"
-            ],
-            "properties": {
-              "conversion_ratio": {
-                "type": "integer",
-                "format": "uint128",
-                "minimum": 0.0
-              },
-              "reward_token": {
-                "type": "string"
-              },
-              "reward_token_type": {
-                "type": "string"
               }
             },
             "additionalProperties": false
@@ -438,35 +371,10 @@
           "create_referral_info": {
             "type": "object",
             "required": [
-              "referral_code",
-              "reward_token_type"
+              "referral_code"
             ],
             "properties": {
               "referral_code": {
-                "type": "string"
-              },
-              "reward_token_type": {
-                "type": "string"
-              }
-            },
-            "additionalProperties": false
-          }
-        },
-        "additionalProperties": false
-      },
-      {
-        "type": "object",
-        "required": [
-          "modify_reward_token_type"
-        ],
-        "properties": {
-          "modify_reward_token_type": {
-            "type": "object",
-            "required": [
-              "reward_token_type"
-            ],
-            "properties": {
-              "reward_token_type": {
                 "type": "string"
               }
             },
@@ -2032,7 +1940,6 @@
         "user_referral_level_count",
         "user_referral_total_amount",
         "user_reward_box",
-        "user_reward_token_type",
         "user_reward_total_base_amount"
       ],
       "properties": {
@@ -2080,9 +1987,6 @@
             "format": "uint32",
             "minimum": 0.0
           }
-        },
-        "user_reward_token_type": {
-          "type": "string"
         },
         "user_reward_total_base_amount": {
           "type": "integer",
@@ -2371,8 +2275,7 @@
       "required": [
         "referral_level_config",
         "referral_reward_box_total",
-        "referral_reward_total_base_amount",
-        "reward_token_config"
+        "referral_reward_total_base_amount"
       ],
       "properties": {
         "referral_level_config": {
@@ -2393,12 +2296,6 @@
           "type": "integer",
           "format": "uint128",
           "minimum": 0.0
-        },
-        "reward_token_config": {
-          "type": "object",
-          "additionalProperties": {
-            "$ref": "#/definitions/ReferralRewardTokenConfigResponse"
-          }
         }
       },
       "additionalProperties": false,
@@ -2458,24 +2355,6 @@
                 "format": "uint32",
                 "minimum": 0.0
               }
-            }
-          },
-          "additionalProperties": false
-        },
-        "ReferralRewardTokenConfigResponse": {
-          "type": "object",
-          "required": [
-            "conversion_ratio",
-            "reward_token"
-          ],
-          "properties": {
-            "conversion_ratio": {
-              "type": "integer",
-              "format": "uint128",
-              "minimum": 0.0
-            },
-            "reward_token": {
-              "type": "string"
             }
           },
           "additionalProperties": false
@@ -2635,7 +2514,6 @@
       "type": "object",
       "required": [
         "block_number",
-        "is_random_box",
         "is_reward_box",
         "level_index",
         "price",
@@ -2646,9 +2524,6 @@
           "type": "integer",
           "format": "uint64",
           "minimum": 0.0
-        },
-        "is_random_box": {
-          "type": "boolean"
         },
         "is_reward_box": {
           "type": "boolean"
@@ -2681,7 +2556,6 @@
           "type": "object",
           "required": [
             "block_number",
-            "is_random_box",
             "is_reward_box",
             "level_index",
             "price",
@@ -2692,9 +2566,6 @@
               "type": "integer",
               "format": "uint64",
               "minimum": 0.0
-            },
-            "is_random_box": {
-              "type": "boolean"
             },
             "is_reward_box": {
               "type": "boolean"

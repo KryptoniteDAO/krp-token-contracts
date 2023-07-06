@@ -1,19 +1,17 @@
 use cosmwasm_std::{entry_point, DepsMut, Env, MessageInfo, Response, Addr, StdResult, StdError, Deps, Binary, to_binary};
 use cosmwasm_std::Uint128;
 use cw20::MinterResponse;
-use cw20_base::allowances::query_allowance;
-use cw20_base::contract::{execute_update_marketing, execute_update_minter, execute_upload_logo, query_balance, query_download_logo, query_marketing_info, query_minter, query_token_info};
+use cw20_base::contract::{execute_update_marketing, execute_upload_logo, query_balance, query_download_logo, query_marketing_info, query_minter, query_token_info};
 use cw2::set_contract_version;
-use cw_utils::nonpayable;
 use crate::error::ContractError;
 use crate::handler::{burn, mint, set_minters, update_config};
 use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 use crate::querier::{query_is_minter, query_vote_config};
 use crate::state::{store_vote_config, VoteConfig};
-use crate::ve_querier::{checkpoints, delegates, get_past_total_supply, get_past_votes, get_votes, num_checkpoints};
+use crate::ve_querier::{checkpoints, get_past_total_supply, get_past_votes, get_votes, num_checkpoints};
 use cw20_base::msg::{InstantiateMsg as Cw20InstantiateMsg, InstantiateMarketingInfo};
 use cw20_base::contract::instantiate as cw20_instantiate;
-use cw20_base::enumerable::{query_all_accounts, query_owner_allowances, query_spender_allowances};
+use cw20_base::enumerable::{query_all_accounts};
 
 // version info for migration info
 const CONTRACT_NAME: &str = "kryptonite.finance:cw20-ve-kpt";
@@ -26,18 +24,9 @@ pub fn instantiate(
     info: MessageInfo,
     msg: InstantiateMsg,
 ) -> Result<Response, ContractError> {
-    let r = nonpayable(&info.clone());
-    if r.is_err(){
-        return Err(ContractError::Std(StdError::generic_err(r.err().unwrap().to_string())));
-    }
-
     let mut cw20_instantiate_msg: Cw20InstantiateMsg = msg.cw20_init_msg;
 
-    let gov = if let Some(gov_addr) = msg.gov {
-        Addr::unchecked(gov_addr)
-    } else {
-        info.clone().sender
-    };
+    let gov = msg.gov.unwrap_or_else(|| info.sender.clone());
 
     cw20_instantiate_msg.mint = Some(MinterResponse {
         minter: env.contract.address.to_string(),
@@ -100,64 +89,6 @@ pub fn execute(
             let user = deps.api.addr_validate(&user)?;
             burn(deps, env, info, user, amount.u128())
         }
-        ExecuteMsg::BurnFrom { owner: _, amount: _ } => {
-            return Err(ContractError::Std(StdError::generic_err(
-                "BurnFrom not supported",
-            )));
-        }
-
-        // these all come from cw20-base to implement the cw20 standard
-        ExecuteMsg::Transfer { recipient: _, amount: _ } => {
-            return Err(ContractError::Std(StdError::generic_err(
-                "Transfer not supported",
-            )));
-        }
-        ExecuteMsg::Send {
-            contract: _,
-            amount: _,
-            msg: _,
-        } => {
-            return Err(ContractError::Std(StdError::generic_err(
-                "Send not supported",
-            )));
-        }
-        ExecuteMsg::IncreaseAllowance {
-            spender: _,
-            amount: _,
-            expires: _,
-        } => {
-            return Err(ContractError::Std(StdError::generic_err(
-                "IncreaseAllowance not supported",
-            )));
-        }
-        ExecuteMsg::DecreaseAllowance {
-            spender: _,
-            amount: _,
-            expires: _,
-        } => {
-            return Err(ContractError::Std(StdError::generic_err(
-                "DecreaseAllowance not supported",
-            )));
-        }
-        ExecuteMsg::TransferFrom {
-            owner: _,
-            recipient: _,
-            amount: _,
-        } => {
-            return Err(ContractError::Std(StdError::generic_err(
-                "TransferFrom not supported",
-            )));
-        }
-        ExecuteMsg::SendFrom {
-            owner: _,
-            contract: _,
-            amount: _,
-            msg: _,
-        } => {
-            return Err(ContractError::Std(StdError::generic_err(
-                "SendFrom not supported",
-            )));
-        }
         ExecuteMsg::UpdateMarketing {
             project,
             description,
@@ -168,16 +99,9 @@ pub fn execute(
                 return Err(ContractError::Std(StdError::generic_err(res.err().unwrap().to_string())));
             }
             Ok(res.unwrap())
-        },
+        }
         ExecuteMsg::UploadLogo(logo) => {
             let res = execute_upload_logo(deps, env, info, logo);
-            if res.is_err() {
-                return Err(ContractError::Std(StdError::generic_err(res.err().unwrap().to_string())));
-            }
-            Ok(res.unwrap())
-        },
-        ExecuteMsg::UpdateMinter { new_minter } => {
-            let res = execute_update_minter(deps, env, info, new_minter);
             if res.is_err() {
                 return Err(ContractError::Std(StdError::generic_err(res.err().unwrap().to_string())));
             }
@@ -194,7 +118,7 @@ pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
         QueryMsg::IsMinter { address } => to_binary(&query_is_minter(deps, deps.api.addr_validate(&address)?)?),
         QueryMsg::Checkpoints { account, pos } => to_binary(&checkpoints(deps, account, pos)?),
         QueryMsg::NumCheckpoints { account } => to_binary(&num_checkpoints(deps, account)?),
-        QueryMsg::Delegates { account } => to_binary(&delegates(deps, account)?),
+        // QueryMsg::Delegates { account } => to_binary(&delegates(deps, account)?),
         QueryMsg::GetVotes { account } => to_binary(&get_votes(deps, account)?),
         QueryMsg::GetPastVotes { account, block_number } => to_binary(&get_past_votes(deps, env, account, block_number)?),
         QueryMsg::GetPastTotalSupply { block_number } => to_binary(&get_past_total_supply(deps, env, block_number)?),
@@ -203,24 +127,24 @@ pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
         QueryMsg::Balance { address } => to_binary(&query_balance(deps, address)?),
         QueryMsg::TokenInfo {} => to_binary(&query_token_info(deps)?),
         QueryMsg::Minter {} => to_binary(&query_minter(deps)?),
-        QueryMsg::Allowance { owner, spender } => {
-            to_binary(&query_allowance(deps, owner, spender)?)
-        }
-        QueryMsg::AllAllowances {
-            owner,
-            start_after,
-            limit,
-        } => to_binary(&query_owner_allowances(deps, owner, start_after, limit)?),
-        QueryMsg::AllSpenderAllowances {
-            spender,
-            start_after,
-            limit,
-        } => to_binary(&query_spender_allowances(
-            deps,
-            spender,
-            start_after,
-            limit,
-        )?),
+        // QueryMsg::Allowance { owner, spender } => {
+        //     to_binary(&query_allowance(deps, owner, spender)?)
+        // }
+        // QueryMsg::AllAllowances {
+        //     owner,
+        //     start_after,
+        //     limit,
+        // } => to_binary(&query_owner_allowances(deps, owner, start_after, limit)?),
+        // QueryMsg::AllSpenderAllowances {
+        //     spender,
+        //     start_after,
+        //     limit,
+        // } => to_binary(&query_spender_allowances(
+        //     deps,
+        //     spender,
+        //     start_after,
+        //     limit,
+        // )?),
         QueryMsg::AllAccounts { start_after, limit } => {
             to_binary(&query_all_accounts(deps, start_after, limit)?)
         }
@@ -238,7 +162,7 @@ pub fn migrate(_deps: DepsMut, _env: Env, _msg: MigrateMsg) -> StdResult<Respons
 mod tests {
     use super::*;
     use cosmwasm_std::testing::{mock_dependencies, mock_env, mock_info};
-    use cosmwasm_std::{Addr, Coin, Response, StdError, Uint128};
+    use cosmwasm_std::{Addr, Response, Uint128};
     use crate::msg::{InstantiateMsg};
     use crate::state::{read_vote_config};
     use cw20_base::msg::{InstantiateMsg as Cw20InitMsg};
@@ -270,16 +194,12 @@ mod tests {
             max_supply,
             max_minted,
             gov: Some(gov.clone()),
-            cw20_init_msg:cw20_instantiate_msg,
+            cw20_init_msg: cw20_instantiate_msg,
         };
         // test positive case
         let res = instantiate(deps.as_mut(), env.clone(), info.clone(), msg.clone()).unwrap();
         assert_eq!(res, Response::default());
-        // test negative case: invalid nonpayable message
-        let invalid_info = mock_info("creator", &vec![Coin::new(1000, "invalid")]);
-        let res = instantiate(deps.as_mut(), env.clone(), invalid_info.clone(), msg.clone());
-        assert!(res.is_err());
-        assert_eq!(res.unwrap_err(), ContractError::Std(StdError::generic_err("This message does no accept funds")));
+
         // test negative case: cw20_instantiate error
         let marketing = InstantiateMarketingInfo {
             project: Option::from("Test Project".to_string()),

@@ -2,6 +2,7 @@ use std::ops::Add;
 use cosmwasm_std::{Addr, attr, CosmosMsg, DepsMut, Env, from_binary, MessageInfo, QueryRequest, Response, StdError, SubMsg, to_binary, Uint128, Uint256, WasmMsg, WasmQuery};
 use cw20::{Cw20ExecuteMsg, Cw20ReceiveMsg};
 use crate::error::ContractError;
+use crate::helper::BASE_RATE_12;
 use crate::msg::{Cw20HookMsg, UpdateStakingConfigStruct};
 use crate::querier::{earned, is_empty_address, last_time_reward_applicable, reward_per_token};
 use crate::state::{read_balance_of, read_rewards, read_staking_config, read_staking_state, store_balance_of, store_rewards, store_staking_config, store_staking_state, store_user_reward_per_token_paid, store_user_updated_at};
@@ -190,18 +191,6 @@ pub fn receive_cw20(
             }
             stake(deps, env, msg_sender, cw20_msg.amount)
         }
-        // Ok(Cw20HookMsg::Withdraw {}) => {
-        //     // let staking_config = read_staking_config(deps.storage)?;
-        //     // if contract_addr.ne(&staking_config.staking_token) {
-        //     //     return Err(StdError::generic_err("not staking token"));
-        //     // }
-        //     // withdraw(deps, info, contract_addr.clone(), msg_sender, cw20_msg.amount)
-        //     Ok(Response::new().add_attributes(vec![
-        //         attr("action", "withdraw"),
-        //         attr("user", msg_sender.to_string()),
-        //         attr("amount", cw20_msg.amount.to_string()),
-        //     ]))
-        // }
         Err(_) => Err(ContractError::Std(StdError::generic_err(
             "data should be given",
         ))),
@@ -277,14 +266,14 @@ pub fn notify_reward_amount(mut deps: DepsMut, env: Env, info: MessageInfo, amou
         if current_time >= staking_state.finish_at {
             // staking_state.reward_rate = amount / staking_state.duration;
             staking_state.reward_rate = Uint256::from(amount)
-                .multiply_ratio(Uint256::from(1000000000000u128), Uint256::from(staking_state.duration));
+                .multiply_ratio(Uint256::from(BASE_RATE_12), Uint256::from(staking_state.duration));
         } else {
             // let remaining_rewards = (staking_state.finish_at - current_time) * staking_state.reward_rate;
             let remaining_rewards = Uint256::from(staking_state.finish_at - current_time)
-                .multiply_ratio( staking_state.reward_rate,Uint256::from(1000000000000u128));
+                .multiply_ratio( staking_state.reward_rate,Uint256::from(BASE_RATE_12));
             // staking_state.reward_rate = (amount + remaining_rewards) / staking_state.duration;
             staking_state.reward_rate = (Uint256::from(amount).add(remaining_rewards))
-                .multiply_ratio(Uint256::from(1000000000000u128), Uint256::from(staking_state.duration));
+                .multiply_ratio(Uint256::from(BASE_RATE_12), Uint256::from(staking_state.duration));
         }
         if staking_state.reward_rate.is_zero() {
             return Err(ContractError::Std(StdError::generic_err(

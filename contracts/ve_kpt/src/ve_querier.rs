@@ -1,7 +1,7 @@
 use std::ops::{Add, Div, Sub};
 use cosmwasm_std::{Addr, Deps, Env, Isqrt, StdError, StdResult};
-use crate::msg::{DelegatesResponse, GetPastTotalSupplyResponse, GetPastVotesResponse, GetVotesResponse, NumCheckpointsResponse};
-use crate::state::{Checkpoint, read_checkpoints_default, read_delegates_default, read_vote_info_default};
+use crate::msg::{GetPastTotalSupplyResponse, GetPastVotesResponse, GetVotesResponse, NumCheckpointsResponse};
+use crate::state::{Checkpoint, read_checkpoints_default, read_vote_info_default};
 
 
 /**
@@ -25,13 +25,13 @@ pub fn num_checkpoints(deps: Deps, account: Addr) -> StdResult<NumCheckpointsRes
 }
 
 
-/**
- * @dev Get the address `account` is currently delegating to.
- */
-pub fn delegates(deps: Deps, account: Addr) -> StdResult<DelegatesResponse> {
-    let delegate = read_delegates_default(deps.storage, account)?;
-    Ok(DelegatesResponse { delegate })
-}
+// /**
+//  * @dev Get the address `account` is currently delegating to.
+//  */
+// pub fn delegates(deps: Deps, account: Addr) -> StdResult<DelegatesResponse> {
+//     let delegate = read_delegates_default(deps.storage, account)?;
+//     Ok(DelegatesResponse { delegate })
+// }
 
 /**
  * @dev Gets the current votes balance for `account`
@@ -128,6 +128,7 @@ fn _check_points_lookup(check_points: Vec<Checkpoint>, block_number: u64) -> u12
 mod tests {
     use std::ops::Sub;
     use super::*;
+
     #[test]
     fn test_check_points_lookup() {
         // Positive test case
@@ -138,12 +139,11 @@ mod tests {
             Checkpoint { from_block: 300, votes: 400 },
         ];
         let pos = check_points.len();
-        let s :usize = 1usize;
+        let s: usize = 1usize;
         println!("check_points: {:?}", check_points[pos.sub(s)]);
         assert_eq!(_check_points_lookup(check_points.clone(), 50), 100);
         assert_eq!(_check_points_lookup(check_points.clone(), 150), 200);
         assert_eq!(_check_points_lookup(check_points.clone(), 250), 300);
         assert_eq!(_check_points_lookup(check_points.clone(), 350), 400);
-
     }
 }

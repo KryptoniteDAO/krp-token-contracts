@@ -2,13 +2,12 @@ use std::collections::HashMap;
 use cosmwasm_schema::{cw_serde, QueryResponses};
 use cosmwasm_std::{Addr, Binary, Uint128};
 use cw_utils::Expiration;
-use crate::state::{ReferralLevelConfig, ReferralRewardTokenConfig};
+use crate::state::{ReferralLevelConfig};
 
 #[cw_serde]
 pub struct BlindBoxLevelMsg {
     pub price: u128,
     pub mint_total_count: u128,
-    pub is_random_box: bool,
 }
 
 #[cw_serde]
@@ -29,16 +28,7 @@ pub struct ReferralLevelConfigMsg {
 }
 
 #[cw_serde]
-pub struct ReferralRewardTokenConfigMsg {
-    pub reward_token_type: String,
-    pub reward_token: Option<String>,
-    pub conversion_ratio: Option<u128>,
-}
-
-#[cw_serde]
 pub struct ReferralRewardConfigMsg {
-    //reward_token_type => ReferralRewardTokenConfig
-    pub reward_token_config: Option<HashMap<String, ReferralRewardTokenConfig>>,
     //referral_level => ReferralLevelConfig
     pub referral_level_config: HashMap<u8, ReferralLevelConfig>,
 }
@@ -73,7 +63,6 @@ pub struct BlindBoxInfoResponse {
     pub level_index: u8,
     pub price: u128,
     pub block_number: u64,
-    pub is_random_box: bool,
     pub is_reward_box: bool,
 }
 
@@ -95,15 +84,7 @@ pub struct ReferralLevelConfigResponse {
 }
 
 #[cw_serde]
-pub struct ReferralRewardTokenConfigResponse {
-    pub reward_token: String,
-    pub conversion_ratio: u128,
-}
-
-#[cw_serde]
 pub struct ReferralRewardConfigResponse {
-    //reward_token_type => ReferralRewardTokenConfig
-    pub reward_token_config: HashMap<String, ReferralRewardTokenConfigResponse>,
     //referral_level => ReferralLevelConfig
     pub referral_level_config: HashMap<u8, ReferralLevelConfigResponse>,
     pub referral_reward_total_base_amount: u128,
@@ -156,7 +137,6 @@ pub struct UserInfoResponse {
     pub invitee_count: u32,
     pub last_mint_discount_rate: u128,
     pub current_reward_level: u8,
-    pub user_reward_token_type: String,
     pub user_reward_total_base_amount: u128,
     pub user_referral_total_amount: u128,
     // referral_level => invitee count
@@ -195,7 +175,6 @@ pub enum ExecuteMsg {
         nft_uri_suffix: Option<String>,
         gov: Option<String>,
         price_token: Option<String>,
-        token_id_prefix: Option<String>,
         start_mint_time: Option<u64>,
         receiver_price_addr: Option<Addr>,
         end_mint_time: Option<u64>,
@@ -207,11 +186,6 @@ pub enum ExecuteMsg {
         price: Option<u128>,
         mint_total_count: Option<u128>,
     },
-    UpdateRewardTokenConfig {
-        reward_token_type: String,
-        reward_token: String,
-        conversion_ratio: u128,
-    },
     UpdateReferralLevelConfig {
         referral_level_config_msg: ReferralLevelConfigMsg,
     },
@@ -220,10 +194,6 @@ pub enum ExecuteMsg {
     },
     CreateReferralInfo {
         referral_code: String,
-        reward_token_type: String,
-    },
-    ModifyRewardTokenType {
-        reward_token_type: String,
     },
     DoInviterRewardMint {
         inviter: Addr,

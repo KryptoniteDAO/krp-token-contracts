@@ -26,26 +26,26 @@ pub struct VoteConfig {
     pub total_minted:Uint128,
 }
 
-const DELEGATES: Map<Addr, Addr> = Map::new("delegates");
+// const DELEGATES: Map<Addr, Addr> = Map::new("delegates");
 const CHECK_POINTS: Map<Addr, Vec<Checkpoint>> = Map::new("checkpoints");
 const VOTE_INFO: Item<VoteInfo> = Item::new("vote_info");
 const VOTE_CONFIG: Item<VoteConfig> = Item::new("vote_config");
 const MINTERS: Map<Addr, bool> = Map::new("minters");
 
 
-pub fn store_delegates(storage: &mut dyn Storage, delegator: Addr, delegate: &Addr) -> StdResult<()> {
-    DELEGATES.save(storage, delegator, delegate)?;
-    Ok(())
-}
+// pub fn store_delegates(storage: &mut dyn Storage, delegator: Addr, delegate: &Addr) -> StdResult<()> {
+//     DELEGATES.save(storage, delegator, delegate)?;
+//     Ok(())
+// }
 
 // pub fn read_delegates(storage: &dyn Storage, delegator: Addr) -> StdResult<Addr> {
 //     DELEGATES.may_load(storage, delegator)?.ok_or_else(|| StdError::generic_err("Delegate not found"))
 // }
 
 
-pub fn read_delegates_default(storage: &dyn Storage, delegator: Addr) -> StdResult<Addr> {
-    Ok(DELEGATES.may_load(storage, delegator)?.unwrap_or(Addr::unchecked("")))
-}
+// pub fn read_delegates_default(storage: &dyn Storage, delegator: Addr) -> StdResult<Addr> {
+//     Ok(DELEGATES.may_load(storage, delegator)?.unwrap_or(Addr::unchecked("")))
+// }
 
 pub fn store_checkpoints(storage: &mut dyn Storage, delegator: Addr, checkpoints: &Vec<Checkpoint>) -> StdResult<()> {
     CHECK_POINTS.save(storage, delegator, checkpoints)?;

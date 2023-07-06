@@ -11,7 +11,6 @@ pub struct UserInfoResponse {
     pub invitee_count: u32,
     pub last_mint_discount_rate: u128,
     pub current_reward_level: u8,
-    pub user_reward_token_type: String,
     pub user_reward_total_base_amount: u128,
     pub user_referral_total_amount: u128,
     // referral_level => invitee count

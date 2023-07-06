@@ -1,8 +1,7 @@
 use cosmwasm_std::{entry_point, DepsMut, Env, MessageInfo, Response, StdResult, StdError, Deps, to_binary, Binary, Addr};
 use cw2::set_contract_version;
 use cw721_base::ContractError;
-use cw_utils::nonpayable;
-use crate::handler::{create_referral_info, do_inviter_reward_mint, do_mint, modify_reward_token_type, update_blind_box_config, update_config_level, update_referral_level_box_config, update_referral_level_config, update_reward_token_config};
+use crate::handler::{create_referral_info, do_inviter_reward_mint, do_mint, update_blind_box_config, update_config_level, update_referral_level_box_config, update_referral_level_config};
 use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 use crate::querier::{cal_mint_info, check_referral_code, get_user_info, query_all_nft_info, query_all_referral_reward_config, query_blind_box_config, query_blind_box_config_level, query_blind_box_info, query_blind_box_infos, query_inviter_records, query_nft_info};
 use crate::state::{BlindBoxConfig, BlindBoxLevel, ReferralRewardConfig, store_blind_box_config, store_referral_reward_config};
@@ -19,16 +18,9 @@ pub fn instantiate(
     info: MessageInfo,
     msg: InstantiateMsg,
 ) -> StdResult<Response> {
-    let r = nonpayable(&info.clone());
-    if r.is_err() {
-        return Err(StdError::generic_err(r.err().unwrap().to_string()));
-    }
 
-    let gov = if let Some(gov_addr) = msg.gov {
-        gov_addr
-    } else {
-        info.clone().sender
-    };
+    let sender = info.clone().sender;
+    let gov = msg.gov.unwrap_or(sender.clone());
 
     let mut blind_box_config = BlindBoxConfig {
         nft_base_url: msg.nft_base_url,
@@ -58,7 +50,6 @@ pub fn instantiate(
             mint_total_count: level_info.mint_total_count,
             minted_count: 0u128,
             received_total_amount: 0u128,
-            is_random_box: level_info.is_random_box,
         });
     }
 
@@ -67,12 +58,11 @@ pub fn instantiate(
         let referral_reward_config_msg = msg.referral_reward_config.unwrap();
 
         referral_reward_config = ReferralRewardConfig {
-            reward_token_config: referral_reward_config_msg.reward_token_config.unwrap_or(Default::default()),
+            // reward_token_config: referral_reward_config_msg.reward_token_config.unwrap_or(Default::default()),
             referral_level_config: referral_reward_config_msg.referral_level_config,
         };
     } else {
         referral_reward_config = ReferralRewardConfig {
-            reward_token_config: Default::default(),
             referral_level_config: Default::default(),
         };
     }
@@ -93,7 +83,7 @@ pub fn instantiate(
 
     Ok(Response::new().add_attributes(vec![
         ("action", "instantiate"),
-        ("owner", info.sender.as_str()),
+        ("owner", sender.as_str()),
     ]))
 }
 
@@ -191,14 +181,13 @@ pub fn execute(
             nft_uri_suffix,
             gov,
             price_token,
-            token_id_prefix,
             start_mint_time,
             receiver_price_addr,
             end_mint_time,
             can_transfer_time,
             inviter_reward_box_contract,
         } => {
-            update_blind_box_config(deps, info, nft_base_url, nft_uri_suffix, gov, price_token, token_id_prefix,
+            update_blind_box_config(deps, info, nft_base_url, nft_uri_suffix, gov, price_token,
                                     start_mint_time, receiver_price_addr, end_mint_time, can_transfer_time, inviter_reward_box_contract)
         }
         ExecuteMsg::UpdateConfigLevel {
@@ -208,22 +197,14 @@ pub fn execute(
         } => {
             update_config_level(deps, info, index, price, mint_total_count)
         }
-        ExecuteMsg::UpdateRewardTokenConfig {
-            reward_token_type, reward_token, conversion_ratio
-        } => {
-            update_reward_token_config(deps, info, reward_token_type, reward_token, conversion_ratio)
-        }
         ExecuteMsg::UpdateReferralLevelConfig { referral_level_config_msg } => {
             update_referral_level_config(deps, info, referral_level_config_msg)
         }
         ExecuteMsg::UpdateReferralLevelBoxConfig { level_reward_box_config_msg } => {
             update_referral_level_box_config(deps, info, level_reward_box_config_msg)
         }
-        ExecuteMsg::CreateReferralInfo { referral_code, reward_token_type } => {
-            create_referral_info(deps, env, info, referral_code, reward_token_type)
-        }
-        ExecuteMsg::ModifyRewardTokenType { reward_token_type } => {
-            modify_reward_token_type(deps, env, info, reward_token_type)
+        ExecuteMsg::CreateReferralInfo { referral_code } => {
+            create_referral_info(deps, env, info, referral_code)
         }
         ExecuteMsg::DoInviterRewardMint { inviter, level_index, mint_num } => {
             do_inviter_reward_mint(deps, env, info, inviter, level_index, mint_num)
@@ -359,7 +340,7 @@ pub fn migrate(_deps: DepsMut, _env: Env, _msg: MigrateMsg) -> StdResult<Respons
 mod tests {
     use super::*;
     use cosmwasm_std::testing::{mock_dependencies, mock_env, mock_info};
-    use cosmwasm_std::{Addr, coin, StdError};
+    use cosmwasm_std::{Addr, coin};
     use crate::msg::BlindBoxLevelMsg;
 
     const TOKEN_ID_PREFIX: &str = "prefix";
@@ -386,7 +367,6 @@ mod tests {
             level_infos: Some(vec![BlindBoxLevelMsg {
                 price: LEVEL_PRICE,
                 mint_total_count: LEVEL_MINT_TOTAL_COUNT,
-                is_random_box: false,
             }]),
             start_mint_time: None,
             receiver_price_addr: Addr::unchecked("receiver"),
@@ -410,7 +390,6 @@ mod tests {
             level_infos: Some(vec![BlindBoxLevelMsg {
                 price: LEVEL_PRICE,
                 mint_total_count: LEVEL_MINT_TOTAL_COUNT,
-                is_random_box: false,
             }]),
             start_mint_time: None,
             receiver_price_addr: Addr::unchecked("receiver"),
@@ -419,11 +398,6 @@ mod tests {
             referral_reward_config: None,
         };
         let res = instantiate(deps.as_mut(), env, info, msg);
-        match res {
-            Err(StdError::GenericErr { msg, .. }) => {
-                assert_eq!(msg, "This message does no accept funds")
-            }
-            _ => panic!("Unexpected error"),
-        }
+        println!("{:?}", res);
     }
 }

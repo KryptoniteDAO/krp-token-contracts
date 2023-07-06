@@ -1,6 +1,6 @@
 use std::ops::Add;
 use cosmwasm_std::{Addr, attr, DepsMut, Env, MessageInfo, QueryRequest, Response, StdError, StdResult, SubMsg, to_binary, Uint128, Uint256, WasmMsg, WasmQuery};
-use crate::msg::{LastTimeRewardApplicableResponse, RewardPerTokenResponse, UpdateMinerConfigStruct, UpdateMinerStateStruct};
+use crate::msg::{LastTimeRewardApplicableResponse, RewardPerTokenResponse, UpdateMinerConfigStruct};
 use crate::querier::{earned, is_empty_address, last_time_reward_applicable, reward_per_token};
 use crate::state::{read_miner_config, read_miner_state, read_rewards, store_is_redemption_provider, store_miner_config, store_miner_state, store_rewards, store_user_reward_per_token_paid, store_user_updated_at};
 use crate::third_msg::{GetUnlockTimeResponse, KptFundExecuteMsg, VeKptBoostQueryMsg, VeKptExecuteMsg};
@@ -44,40 +44,6 @@ pub fn update_miner_config(deps: DepsMut, info: MessageInfo,
     }
 
     store_miner_config(deps.storage, &miner_config)?; // update config
-
-    Ok(Response::new().add_attributes(attrs))
-}
-
-pub fn update_miner_state(deps: DepsMut, env: Env, info: MessageInfo, update_struct: UpdateMinerStateStruct) -> StdResult<Response> {
-    let miner_config = read_miner_config(deps.storage)?;
-    let mut miner_state = read_miner_state(deps.storage)?;
-    if info.sender.ne(&miner_config.gov) {
-        return Err(StdError::generic_err("unauthorized"));
-    }
-
-    let mut attrs = vec![];
-    attrs.push(attr("action", "update_miner_state"));
-    if let Some(duration) = update_struct.duration {
-        let current_time = Uint128::from(env.block.time.seconds());
-        if miner_state.finish_at > current_time {
-            return Err(StdError::generic_err("duration can only be updated after the end of the current period"));
-        }
-        miner_state.duration = duration.clone();
-        attrs.push(attr("duration", duration.to_string()));
-    }
-
-
-    if let Some(extra_rate) = update_struct.extra_rate {
-        miner_state.extra_rate = extra_rate.clone();
-        attrs.push(attr("extra_rate", extra_rate.to_string()));
-    }
-
-    if let Some(lockdown_period) = update_struct.lockdown_period {
-        miner_state.lockdown_period = lockdown_period.clone();
-        attrs.push(attr("lockdown_period", lockdown_period.to_string()));
-    }
-
-    store_miner_state(deps.storage, &miner_state)?; // update state
 
     Ok(Response::new().add_attributes(attrs))
 }

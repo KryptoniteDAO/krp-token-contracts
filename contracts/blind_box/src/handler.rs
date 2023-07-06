@@ -6,7 +6,7 @@ use crate::msg::{ReferralLevelConfigMsg, ReferralLevelRewardBoxConfigMsg};
 use crate::querier::{cal_mint_info, query_tokens};
 use crate::state::{BlindBoxConfig, BlindBoxInfo, BlindBoxLevel, check_invitee_existence, InviterReferralRecord, read_blind_box_config, read_referral_reward_config, read_referral_reward_total_state, read_user_info, read_user_referral_code, store_blind_box_config, store_blind_box_info, store_inviter_record_elem, store_referral_reward_config, store_referral_reward_total_state, store_user_info, store_user_referral_code};
 
-pub fn create_referral_info(deps: DepsMut, env: Env, info: MessageInfo, referral_code: String, reward_token_type: String) -> Result<Response, ContractError> {
+pub fn create_referral_info(deps: DepsMut, env: Env, info: MessageInfo, referral_code: String) -> Result<Response, ContractError> {
     check_referral_code_role(referral_code.clone())?;
 
     let user_addr = info.sender.clone();
@@ -22,18 +22,12 @@ pub fn create_referral_info(deps: DepsMut, env: Env, info: MessageInfo, referral
         return Err(ContractError::Std(StdError::generic_err("referral_code already exists")));
     }
 
-    let reward_token_config = read_referral_reward_config(deps.storage)?.reward_token_config;
-    if !reward_token_config.contains_key(reward_token_type.as_str()) {
-        return Err(ContractError::Std(StdError::generic_err("selected reward_token_type exists")));
-    }
-
     let inviter = read_user_referral_code(deps.storage, referral_code.clone());
     if !is_empty_address(&inviter.to_string()) {
         return Err(ContractError::Std(StdError::generic_err("referral_code exists")));
     }
 
     user_info.referral_code = referral_code.clone();
-    user_info.user_reward_token_type = reward_token_type.clone();
     store_user_info(deps.storage, &user_addr, &user_info)?;
 
     store_user_referral_code(deps.storage, referral_code.clone(), &user_addr)?;
@@ -42,37 +36,9 @@ pub fn create_referral_info(deps: DepsMut, env: Env, info: MessageInfo, referral
     Ok(Response::new().add_attributes(vec![
         ("action", "set_referral_code"),
         ("referral_code", referral_code.as_str()),
-        ("reward_token_type", reward_token_type.as_str()),
     ]))
 }
 
-
-pub fn modify_reward_token_type(deps: DepsMut, env: Env, info: MessageInfo, reward_token_type: String) -> Result<Response, ContractError> {
-    let user_addr = info.sender.clone();
-    let mut user_info = read_user_info(deps.storage, &user_addr);
-    if !user_info.user_reward_token_type.is_empty() {
-        return Err(ContractError::Std(StdError::generic_err("user_reward_token_type not exists")));
-    }
-
-    let reward_token_config = read_referral_reward_config(deps.storage)?.reward_token_config;
-    if !reward_token_config.contains_key(reward_token_type.as_str()) {
-        return Err(ContractError::Std(StdError::generic_err("selected reward_token_type exists")));
-    }
-
-    let end_mint_time = read_blind_box_config(deps.storage)?.end_mint_time;
-
-    if end_mint_time < env.block.time.seconds() {
-        return Err(ContractError::Std(StdError::generic_err("end_mint_time < block time, modifying the reward type is not allowed.")));
-    }
-
-    user_info.user_reward_token_type = reward_token_type.clone();
-    store_user_info(deps.storage, &user_addr, &user_info)?;
-
-    Ok(Response::new().add_attributes(vec![
-        ("action", "modify_reward_token_type"),
-        ("reward_token_type", reward_token_type.as_str()),
-    ]))
-}
 
 pub fn do_mint(mut deps: DepsMut, env: Env, info: MessageInfo,
                level_index: u8, mint_num: u128,
@@ -125,7 +91,6 @@ pub fn do_mint(mut deps: DepsMut, env: Env, info: MessageInfo,
                 level_index,
                 price: price.clone(),
                 block_number: env.block.height,
-                is_random_box: level_info.is_random_box,
                 is_reward_box: false,
             },
         )?;
@@ -366,14 +331,12 @@ pub fn do_inviter_reward_mint(mut deps: DepsMut, env: Env, info: MessageInfo, in
             "No reward box",
         )));
     }
-    let user_max_reward_box_quantity = inviter_info.user_reward_box.get(&level_index).unwrap_or(&0u32).clone();
+    let user_max_reward_box_quantity = inviter_info.clone().user_reward_box.get(&level_index).unwrap_or(&0u32).clone();
     if user_max_reward_box_quantity < mint_num {
         return Err(ContractError::Std(StdError::generic_err(
             "No reward box",
         )));
     }
-
-    let level_info = blind_box_config.clone().level_infos[_level_index].clone();
 
     let start_token_id_index = blind_box_config.clone().token_id_index + 1;
     let token_id_prefix = blind_box_config.clone().token_id_prefix;
@@ -392,7 +355,6 @@ pub fn do_inviter_reward_mint(mut deps: DepsMut, env: Env, info: MessageInfo, in
                 level_index,
                 price: 0u128,
                 block_number: env.block.height,
-                is_random_box: level_info.is_random_box.clone(),
                 is_reward_box: true,
             },
         )?;
@@ -414,7 +376,6 @@ pub fn update_blind_box_config(deps: DepsMut, info: MessageInfo,
                                nft_uri_suffix: Option<String>,
                                gov: Option<String>,
                                price_token: Option<String>,
-                               token_id_prefix: Option<String>,
                                start_mint_time: Option<u64>,
                                receiver_price_addr: Option<Addr>,
                                end_mint_time: Option<u64>,
@@ -449,11 +410,6 @@ pub fn update_blind_box_config(deps: DepsMut, info: MessageInfo,
     if let Some(price_token) = price_token {
         blind_box_config.price_token = price_token.clone();
         attrs.push(attr("price_token", price_token));
-    }
-
-    if let Some(token_id_prefix) = token_id_prefix {
-        blind_box_config.token_id_prefix = token_id_prefix.clone();
-        attrs.push(attr("token_id_prefix", token_id_prefix));
     }
 
     if let Some(start_mint_time) = start_mint_time {
@@ -508,7 +464,6 @@ pub fn update_config_level(deps: DepsMut, info: MessageInfo, index: u8,
                 mint_total_count: mint_total_count.unwrap(),
                 minted_count: 0,
                 received_total_amount: 0,
-                is_random_box: false,
             });
         }
     } else {
@@ -519,7 +474,6 @@ pub fn update_config_level(deps: DepsMut, info: MessageInfo, index: u8,
             mint_total_count: mint_total_count.unwrap_or(level_info.mint_total_count),
             minted_count: level_info.minted_count,
             received_total_amount: level_info.received_total_amount,
-            is_random_box: level_info.is_random_box,
         };
     }
 
@@ -533,34 +487,6 @@ pub fn update_config_level(deps: DepsMut, info: MessageInfo, index: u8,
         ]))
 }
 
-
-pub fn update_reward_token_config(deps: DepsMut, info: MessageInfo,
-                                  reward_token_type: String, reward_token: String, conversion_ratio: u128)
-                                  -> Result<Response, ContractError> {
-    let blind_box_config = read_blind_box_config(deps.storage)?;
-
-    if info.sender.ne(&blind_box_config.gov) {
-        return Err(ContractError::Std(StdError::generic_err("not gov")));
-    }
-
-    let mut referral_reward_config = read_referral_reward_config(deps.storage)?;
-    let reward_token_config = referral_reward_config.reward_token_config.get_mut(&reward_token_type).unwrap();
-    let mut attrs = vec![];
-    attrs.push(attr("action", "update_reward_token_config"));
-    attrs.push(attr("reward_token_type", reward_token_type.clone()));
-
-    reward_token_config.reward_token = reward_token.clone();
-    attrs.push(attr("reward_token", reward_token));
-
-    reward_token_config.conversion_ratio = conversion_ratio.clone();
-    attrs.push(attr("conversion_ratio", conversion_ratio.to_string()));
-
-    // referral_reward_config.reward_token_config.insert(reward_token_type.clone(), reward_token_config.clone());
-    store_referral_reward_config(deps.storage, &referral_reward_config)?;
-
-    Ok(Response::new()
-        .add_attributes(attrs))
-}
 
 pub fn update_referral_level_config(deps: DepsMut, info: MessageInfo, referral_level_config_msg: ReferralLevelConfigMsg) -> Result<Response, ContractError> {
     let blind_box_config = read_blind_box_config(deps.storage)?;
@@ -577,7 +503,8 @@ pub fn update_referral_level_config(deps: DepsMut, info: MessageInfo, referral_l
     let mut referral_reward_config = read_referral_reward_config(deps.storage)?;
 
     let mut referral_level_config = referral_reward_config.referral_level_config
-        .get_mut(&referral_level_index).unwrap();
+        .get(&referral_level_index).unwrap().clone();
+
 
     if let Some(min_referral_total_amount) = referral_level_config_msg.min_referral_total_amount {
         referral_level_config.min_referral_total_amount = min_referral_total_amount.clone();
@@ -598,6 +525,8 @@ pub fn update_referral_level_config(deps: DepsMut, info: MessageInfo, referral_l
         referral_level_config.invitee_discount_rate = invitee_discount_rate.clone();
         attrs.push(attr("invitee_discount_rate", invitee_discount_rate.to_string()));
     }
+
+    referral_reward_config.referral_level_config.insert(referral_level_index, referral_level_config.clone());
 
     // referral_reward_config.referral_level_config.insert(referral_level_index.clone(), referral_level_config.clone());
     store_referral_reward_config(deps.storage, &referral_reward_config)?;
@@ -672,14 +601,13 @@ mod tests {
             token_id_index: 0,
             start_mint_time: 0,
             end_mint_time: 0,
-            level_infos: vec![BlindBoxLevel { level_index, price: 20000000, mint_total_count: 0, minted_count: 0, received_total_amount: 0, is_random_box: false }],
+            level_infos: vec![BlindBoxLevel { level_index, price: 20000000, mint_total_count: 0, minted_count: 0, received_total_amount: 0 }],
             receiver_price_addr: Addr::unchecked(""),
             can_transfer_time: 0,
             inviter_reward_box_contract: Addr::unchecked(""),
         };
         store_blind_box_config(&mut deps.storage, &config).unwrap();
         let referral_reward_config = ReferralRewardConfig {
-            reward_token_config: Default::default(),
             referral_level_config: {
                 let mut config = HashMap::new();
                 let mut reward_box_map_0 = HashMap::new();
@@ -719,7 +647,6 @@ mod tests {
             invitee_count: 0,
             last_mint_discount_rate: 0,
             current_reward_level: 0,
-            user_reward_token_type: "".to_string(),
             user_reward_total_base_amount: 0,
             user_referral_total_amount: 9990000000,
             user_referral_level_count: Default::default(),

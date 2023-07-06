@@ -12,7 +12,6 @@
     "user_referral_level_count",
     "user_referral_total_amount",
     "user_reward_box",
-    "user_reward_token_type",
     "user_reward_total_base_amount"
   ],
   "properties": {
@@ -60,9 +59,6 @@
         "format": "uint32",
         "minimum": 0.0
       }
-    },
-    "user_reward_token_type": {
-      "type": "string"
     },
     "user_reward_total_base_amount": {
       "type": "integer",

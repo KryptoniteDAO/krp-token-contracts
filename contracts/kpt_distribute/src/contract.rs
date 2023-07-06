@@ -1,12 +1,11 @@
-use cosmwasm_std::{entry_point, DepsMut, Env, MessageInfo, Response, StdResult, StdError, Deps, to_binary, Binary};
+use cosmwasm_std::{entry_point, DepsMut, Env, MessageInfo, Response, StdResult, Deps, to_binary, Binary, StdError};
 use cw2::set_contract_version;
-use cw_utils::nonpayable;
 use crate::error::ContractError;
 use crate::handler::{add_rule_config, claim, update_config, update_rule_config};
 use crate::helper::BASE_RATE_12;
 use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 use crate::querier::{query_claimable_info, query_config, query_rule_info};
-use crate::state::{ DistributeConfig, RuleConfig, RuleConfigState, store_distribute_config, store_rule_config, store_rule_config_state};
+use crate::state::{DistributeConfig, RuleConfig, RuleConfigState, store_distribute_config, store_rule_config, store_rule_config_state};
 
 
 // version info for migration info
@@ -20,22 +19,11 @@ pub fn instantiate(
     info: MessageInfo,
     msg: InstantiateMsg,
 ) -> StdResult<Response> {
-    let r = nonpayable(&info.clone());
-    if r.is_err() {
-        return Err(StdError::generic_err(r.err().unwrap().to_string()));
-    }
-
-    let gov = if let Some(gov_addr) = msg.gov {
-        gov_addr
-    } else {
-        info.clone().sender
-    };
-
+    let gov = msg.gov.unwrap_or_else(|| info.sender.clone());
 
     // init rule config && state
     let mut rule_total_amount = 0u128;
     for (rule_type, rule_msg) in msg.rule_configs_map {
-
         rule_total_amount += rule_msg.rule_total_amount.clone();
         let end_linear_release_time = rule_msg.start_linear_release_time + rule_msg.unlock_linear_release_time;
         let linear_release_per_second = rule_msg.unlock_linear_release_amount * BASE_RATE_12 / u128::from(rule_msg.unlock_linear_release_time);
@@ -179,6 +167,5 @@ mod tests {
 
         println!("{:?}", res);
         assert!(res.is_err());
-
     }
 }

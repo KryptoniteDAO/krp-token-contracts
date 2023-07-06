@@ -10,7 +10,6 @@
       "type": "object",
       "required": [
         "block_number",
-        "is_random_box",
         "is_reward_box",
         "level_index",
         "price",
@@ -21,9 +20,6 @@
           "type": "integer",
           "format": "uint64",
           "minimum": 0.0
-        },
-        "is_random_box": {
-          "type": "boolean"
         },
         "is_reward_box": {
           "type": "boolean"

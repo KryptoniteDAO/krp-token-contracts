@@ -5,8 +5,7 @@
   "required": [
     "referral_level_config",
     "referral_reward_box_total",
-    "referral_reward_total_base_amount",
-    "reward_token_config"
+    "referral_reward_total_base_amount"
   ],
   "properties": {
     "referral_level_config": {
@@ -27,12 +26,6 @@
       "type": "integer",
       "format": "uint128",
       "minimum": 0.0
-    },
-    "reward_token_config": {
-      "type": "object",
-      "additionalProperties": {
-        "$ref": "#/definitions/ReferralRewardTokenConfigResponse"
-      }
     }
   },
   "additionalProperties": false,
@@ -92,24 +85,6 @@
             "format": "uint32",
             "minimum": 0.0
           }
-        }
-      },
-      "additionalProperties": false
-    },
-    "ReferralRewardTokenConfigResponse": {
-      "type": "object",
-      "required": [
-        "conversion_ratio",
-        "reward_token"
-      ],
-      "properties": {
-        "conversion_ratio": {
-          "type": "integer",
-          "format": "uint128",
-          "minimum": 0.0
-        },
-        "reward_token": {
-          "type": "string"
         }
       },
       "additionalProperties": false

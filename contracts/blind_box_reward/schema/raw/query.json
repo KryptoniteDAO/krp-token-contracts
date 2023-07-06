@@ -42,30 +42,6 @@
     {
       "type": "object",
       "required": [
-        "test_random"
-      ],
-      "properties": {
-        "test_random": {
-          "type": "object",
-          "required": [
-            "token_ids"
-          ],
-          "properties": {
-            "token_ids": {
-              "type": "array",
-              "items": {
-                "type": "string"
-              }
-            }
-          },
-          "additionalProperties": false
-        }
-      },
-      "additionalProperties": false
-    },
-    {
-      "type": "object",
-      "required": [
         "query_box_claimable_infos"
       ],
       "properties": {

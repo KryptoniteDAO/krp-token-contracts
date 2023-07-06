@@ -1,6 +1,5 @@
-use cosmwasm_std::{entry_point, DepsMut, Env, MessageInfo, Response, StdResult, StdError, Deps, to_binary, Binary};
+use cosmwasm_std::{entry_point, DepsMut, Env, MessageInfo, Response, StdResult, Deps, to_binary, Binary};
 use cw2::set_contract_version;
-use cw_utils::nonpayable;
 use crate::error::ContractError;
 use crate::handler::{claim_reward_token, mint_reward_box, update_config};
 use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
@@ -19,16 +18,8 @@ pub fn instantiate(
     info: MessageInfo,
     msg: InstantiateMsg,
 ) -> StdResult<Response> {
-    let r = nonpayable(&info.clone());
-    if r.is_err() {
-        return Err(StdError::generic_err(r.err().unwrap().to_string()));
-    }
+    let gov = msg.gov.unwrap_or(info.sender);
 
-    let gov = if let Some(gov_addr) = msg.gov {
-        gov_addr
-    } else {
-        info.clone().sender
-    };
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
 
     let inviter_reward_config = InviterRewardConfig {

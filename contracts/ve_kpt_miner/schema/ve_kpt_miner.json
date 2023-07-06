@@ -162,51 +162,6 @@
       {
         "type": "object",
         "required": [
-          "update_miner_state"
-        ],
-        "properties": {
-          "update_miner_state": {
-            "type": "object",
-            "properties": {
-              "duration": {
-                "anyOf": [
-                  {
-                    "$ref": "#/definitions/Uint128"
-                  },
-                  {
-                    "type": "null"
-                  }
-                ]
-              },
-              "extra_rate": {
-                "anyOf": [
-                  {
-                    "$ref": "#/definitions/Uint128"
-                  },
-                  {
-                    "type": "null"
-                  }
-                ]
-              },
-              "lockdown_period": {
-                "anyOf": [
-                  {
-                    "$ref": "#/definitions/Uint128"
-                  },
-                  {
-                    "type": "null"
-                  }
-                ]
-              }
-            },
-            "additionalProperties": false
-          }
-        },
-        "additionalProperties": false
-      },
-      {
-        "type": "object",
-        "required": [
           "set_is_redemption_provider"
         ],
         "properties": {

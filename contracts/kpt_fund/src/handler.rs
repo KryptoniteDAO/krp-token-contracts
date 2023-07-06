@@ -42,11 +42,6 @@ pub fn update_kpt_fund_config(
         config.kusd_reward_addr = kusd_reward_addr.clone();
         attrs.push(attr("kusd_reward_addr", kusd_reward_addr.to_string()));
     }
-
-    if let Some(exit_cycle) = msg.exit_cycle {
-        config.exit_cycle = exit_cycle.clone();
-        attrs.push(attr("exit_cycle", exit_cycle.to_string()));
-    }
     if let Some(claim_able_time) = msg.claim_able_time {
         config.claim_able_time = claim_able_time.clone();
         attrs.push(attr("claim_able_time", claim_able_time.to_string()));

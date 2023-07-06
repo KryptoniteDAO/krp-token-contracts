@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::ops::Mul;
 use cosmwasm_std::{Addr, Deps, Env, from_binary, StdError, StdResult, Uint128};
 use crate::helper::{BASE_RATE, is_empty_address};
-use crate::msg::{BlindBoxConfigLevelResponse, BlindBoxConfigResponse, BlindBoxInfoResponse, CalMintInfoResponse, CheckReferralCodeResponse, InviterReferralRecordResponse, ReferralLevelConfigResponse, ReferralLevelRewardBoxConfigResponse, ReferralRewardConfigResponse, ReferralRewardTokenConfigResponse, UserInfoResponse};
+use crate::msg::{BlindBoxConfigLevelResponse, BlindBoxConfigResponse, BlindBoxInfoResponse, CalMintInfoResponse, CheckReferralCodeResponse, InviterReferralRecordResponse, ReferralLevelConfigResponse, ReferralLevelRewardBoxConfigResponse, ReferralRewardConfigResponse, UserInfoResponse};
 use crate::state::{read_blind_box_config, read_blind_box_info, read_inviter_records, read_referral_reward_config, read_referral_reward_total_state, read_user_info, read_user_referral_code, ReferralLevelConfig};
 
 pub fn query_blind_box_config(deps: Deps) -> StdResult<BlindBoxConfigResponse> {
@@ -53,7 +53,6 @@ pub fn query_blind_box_info(deps: Deps, token_id: String) -> StdResult<BlindBoxI
         level_index: blind_box_info.level_index,
         price: blind_box_info.price,
         block_number: blind_box_info.block_number,
-        is_random_box: blind_box_info.is_random_box,
         is_reward_box: blind_box_info.is_reward_box,
     })
 }
@@ -67,7 +66,6 @@ pub fn query_blind_box_infos(deps: Deps, token_ids: Vec<String>) -> StdResult<Ve
             level_index: blind_box_info.level_index,
             price: blind_box_info.price,
             block_number: blind_box_info.block_number,
-            is_random_box: blind_box_info.is_random_box,
             is_reward_box: blind_box_info.is_reward_box,
         });
     };
@@ -113,15 +111,7 @@ pub fn query_all_nft_info(deps: Deps, env: Env, token_id: String, include_expire
 
 pub fn query_all_referral_reward_config(deps: Deps) -> StdResult<ReferralRewardConfigResponse> {
     let referral_reward_config = read_referral_reward_config(deps.storage)?;
-    let reward_token_config = referral_reward_config.reward_token_config;
-    let mut reward_token_config_res = HashMap::new();
-    for (key, value_ref) in reward_token_config.iter() {
-        let value = value_ref.clone();
-        reward_token_config_res.insert(key.clone(), ReferralRewardTokenConfigResponse {
-            reward_token: value.reward_token.clone(),
-            conversion_ratio: value.conversion_ratio.clone(),
-        });
-    }
+
     let referral_level_config = referral_reward_config.referral_level_config;
     let mut referral_level_config_res = HashMap::new();
     for (key, value_ref) in referral_level_config.iter() {
@@ -140,7 +130,6 @@ pub fn query_all_referral_reward_config(deps: Deps) -> StdResult<ReferralRewardC
 
     let referral_reward_total_state = read_referral_reward_total_state(deps.storage);
     Ok(ReferralRewardConfigResponse {
-        reward_token_config: reward_token_config_res,
         referral_level_config: referral_level_config_res,
         referral_reward_total_base_amount: referral_reward_total_state.referral_reward_total_base_amount,
         referral_reward_box_total: referral_reward_total_state.referral_reward_box_total,
@@ -167,12 +156,7 @@ pub fn query_inviter_records(deps: Deps, inviter: &Addr,
             reward_to_inviter_base_amount: record.reward_to_inviter_base_amount,
         })
     }
-    // let res_len = res.len();
-    // let show_msg = format!("res_len:{},inviter:{},start_after_msg：{:?},limit_msg：{:?}", res_len,inviter.to_string(),start_after_msg,limit_msg);
-    // println!("{}",show_msg);
-    // if 1<2 {
-    //     return Err(StdError::generic_err(show_msg));
-    // }
+
     Ok(res)
 }
 
@@ -268,7 +252,6 @@ pub fn get_user_info(deps: Deps, user: Addr) -> StdResult<UserInfoResponse> {
         invitee_count: user_info.invitee_count,
         last_mint_discount_rate: user_info.last_mint_discount_rate,
         current_reward_level: user_info.current_reward_level,
-        user_reward_token_type: user_info.user_reward_token_type,
         user_reward_total_base_amount: user_info.user_reward_total_base_amount,
         user_referral_total_amount: user_info.user_referral_total_amount,
         user_referral_level_count: user_info.user_referral_level_count,
@@ -302,14 +285,13 @@ mod tests {
             token_id_index: 0,
             start_mint_time: 0,
             end_mint_time: 0,
-            level_infos: vec![BlindBoxLevel { level_index, price: 100, mint_total_count: 0, minted_count: 0, received_total_amount: 0, is_random_box: false }],
+            level_infos: vec![BlindBoxLevel { level_index, price: 100, mint_total_count: 0, minted_count: 0, received_total_amount: 0 }],
             receiver_price_addr: Addr::unchecked(""),
             can_transfer_time: 0,
             inviter_reward_box_contract: Addr::unchecked(""),
         };
         store_blind_box_config(&mut deps.storage, &config).unwrap();
         let referral_reward_config = ReferralRewardConfig {
-            reward_token_config: Default::default(),
             referral_level_config: {
                 let mut config = HashMap::new();
                 config.insert(
@@ -334,7 +316,6 @@ mod tests {
             invitee_count: 0,
             last_mint_discount_rate: 0,
             current_reward_level: 0,
-            user_reward_token_type: "".to_string(),
             user_reward_total_base_amount: 0,
             user_referral_total_amount: 500,
             user_referral_level_count: Default::default(),

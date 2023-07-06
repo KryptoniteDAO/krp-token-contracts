@@ -21,11 +21,6 @@ pub enum ExecuteMsg {
         duration: Uint128,
         mining_boost: Uint128,
     },
-    ModifyLockSetting {
-        index: u32,
-        duration: Uint128,
-        mining_boost: Uint128,
-    },
     ChangeGov {
         gov: Addr,
     },

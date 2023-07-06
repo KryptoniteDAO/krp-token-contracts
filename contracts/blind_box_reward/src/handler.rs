@@ -5,8 +5,7 @@ use crate::error::ContractError;
 use crate::helper::{calc_claim_amount, calc_claim_index, is_empty_str};
 use crate::msg::Cw20HookMsg;
 use crate::querier::{query_box_claimable_infos};
-use crate::random_role::find_random_rule;
-use crate::state::{BoxOpenInfo, get_box_open_info, get_box_reward_config, get_box_reward_config_state, get_reward_config, is_box_open, RandomBoxRewardRuleConfigState, set_box_open_info, set_box_reward_config, set_box_reward_config_state, set_reward_config};
+use crate::state::{BoxOpenInfo, get_box_open_info, get_box_reward_config, get_box_reward_config_state, get_reward_config, is_box_open, set_box_open_info, set_box_reward_config, set_box_reward_config_state, set_reward_config};
 use crate::third_msg::{BlindBoxInfoResponse, BlindBoxQueryMsg, DistributeExecuteMsg};
 
 //config
@@ -83,7 +82,7 @@ pub fn open_blind_box(mut deps: DepsMut, env: Env, info: MessageInfo, token_ids:
         return Err(ContractError::Std(StdError::generic_err("token_ids is empty.")));
     }
     for token_id in token_ids.clone() {
-        _open_single_blind_box(deps.branch(), env.clone(), block_time, user.clone(), token_id)?;
+        _open_single_blind_box(deps.branch(), block_time, user.clone(), token_id)?;
     }
 
     Ok(Response::new().add_attributes(vec![
@@ -94,7 +93,7 @@ pub fn open_blind_box(mut deps: DepsMut, env: Env, info: MessageInfo, token_ids:
 }
 
 
-fn _open_single_blind_box(deps: DepsMut, env: Env, block_time: u64, user: Addr, token_id: String) -> Result<(), ContractError> {
+fn _open_single_blind_box(deps: DepsMut, block_time: u64, user: Addr, token_id: String) -> Result<(), ContractError> {
     if token_id.len() == 0 {
         return Err(ContractError::Std(StdError::generic_err("token_id is empty.")));
     }
@@ -131,47 +130,26 @@ fn _open_single_blind_box(deps: DepsMut, env: Env, block_time: u64, user: Addr, 
     let mut box_config_state = get_box_reward_config_state(deps.storage)?;
 
 
-    let open_box_amount;
-    if level_index != box_config.random_in_box_level_index {
-        // ordinary box
-        let ordinary_box_level_config = box_config.ordinary_box_reward_level_config.get(&level_index).unwrap();
+    // ordinary box
+    let ordinary_box_level_config = box_config.ordinary_box_reward_level_config.get(&level_index).unwrap();
 
-        let ordinary_box_level_config_state =
-            box_config_state.ordinary_box_reward_level_config_state.get_mut(&level_index).unwrap();
-        if ordinary_box_level_config.max_reward_count <= ordinary_box_level_config_state.total_open_box_count {
-            return Err(ContractError::Std(StdError::generic_err("reward count reach max.")));
-        }
-        open_box_amount = ordinary_box_level_config.reward_amount;
-        ordinary_box_level_config_state.total_open_box_count += 1;
-        ordinary_box_level_config_state.total_reward_amount += open_box_amount;
-        box_config_state.ordinary_total_open_box_count += 1;
-        box_config_state.ordinary_total_reward_amount += open_box_amount;
-    } else {
-        //random box
-        let rules = box_config.random_box_reward_rule_config;
-        let mut rules_state = box_config_state.random_box_reward_rule_config_state;
-        let find_rule = find_random_rule(env, token_id.clone(), &rules, &rules_state)?;
-        let find_rules_state_index = find_rule.random_box_index.clone();
-        let find_rules_state: &mut RandomBoxRewardRuleConfigState =
-            rules_state.get_mut(find_rules_state_index as usize).unwrap();
-        if find_rule.max_reward_count <= find_rules_state.total_open_box_count {
-            return Err(ContractError::Std(StdError::generic_err("reward count reach max.")));
-        }
-        open_box_amount = find_rule.random_reward_amount;
-        find_rules_state.total_open_box_count += 1;
-        find_rules_state.total_reward_amount += open_box_amount;
-        box_config_state.random_total_open_box_count += 1;
-        box_config_state.random_total_reward_amount += open_box_amount;
-        rules_state[find_rule.random_box_index as usize] = find_rules_state.clone();
-        box_config_state.random_box_reward_rule_config_state = rules_state;
+    let ordinary_box_level_config_state =
+        box_config_state.ordinary_box_reward_level_config_state.get_mut(&level_index).unwrap();
+    if ordinary_box_level_config.max_reward_count <= ordinary_box_level_config_state.total_open_box_count {
+        return Err(ContractError::Std(StdError::generic_err("reward count reach max.")));
     }
+    let open_box_amount = ordinary_box_level_config.reward_amount;
+    ordinary_box_level_config_state.total_open_box_count += 1;
+    ordinary_box_level_config_state.total_reward_amount += open_box_amount;
+    box_config_state.ordinary_total_open_box_count += 1;
+    box_config_state.ordinary_total_reward_amount += open_box_amount;
+
 
     //set box info
     let box_info = BoxOpenInfo {
         open_user: user.clone(),
         open_reward_amount: open_box_amount,
         open_box_time: block_time,
-        is_random_box: nft_level_info_resp.is_random_box,
         is_reward_box: nft_level_info_resp.is_reward_box,
         reward_claim_index: 0,
         reward_claimed_amount: 0,

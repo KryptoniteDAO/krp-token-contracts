@@ -4,7 +4,7 @@ use crate::error::ContractError;
 use crate::helper::is_empty_str;
 use crate::state::{read_kpt_config, store_kpt_config};
 
-pub fn update_config(deps: DepsMut, info: MessageInfo, max_supply: Option<Uint128>, kpt_fund: Option<Addr>, gov: Option<Addr>, kpt_distribute: Option<Addr>) -> Result<Response, ContractError> {
+pub fn update_config(deps: DepsMut, info: MessageInfo, kpt_fund: Option<Addr>, gov: Option<Addr>, kpt_distribute: Option<Addr>) -> Result<Response, ContractError> {
     let mut kpt_config = read_kpt_config(deps.storage)?;
 
     if info.sender != kpt_config.gov {
@@ -12,10 +12,7 @@ pub fn update_config(deps: DepsMut, info: MessageInfo, max_supply: Option<Uint12
     }
 
     let mut attrs = vec![attr("action", "update_config"), attr("sender", info.sender.to_string())];
-    if let Some(max_supply) = max_supply {
-        kpt_config.max_supply = max_supply.clone().u128();
-        attrs.push(attr("max_supply", max_supply.to_string()));
-    }
+
     if let Some(kpt_fund) = kpt_fund {
         kpt_config.kpt_fund = kpt_fund.clone();
         attrs.push(attr("kpt_fund", kpt_fund.to_string()));
@@ -35,17 +32,17 @@ pub fn update_config(deps: DepsMut, info: MessageInfo, max_supply: Option<Uint12
 }
 
 pub fn mint(deps: DepsMut, env: Env, info: MessageInfo, user: Addr, amount: u128) -> Result<Response, ContractError> {
-    let msg_sender = info.sender.clone();
+    let msg_sender = info.sender;
     let kpt_config = read_kpt_config(deps.storage)?;
-    let kpt_fund = kpt_config.kpt_fund.clone();
-    let kpt_distribute = kpt_config.kpt_distribute.clone();
+    let kpt_fund = kpt_config.kpt_fund;
+    let kpt_distribute = kpt_config.kpt_distribute;
 
 
     if is_empty_str(kpt_fund.as_str()) && is_empty_str(kpt_distribute.as_str()) {
         return Err(ContractError::MintContractNotConfig {});
     }
 
-    if msg_sender.ne(&kpt_fund.clone()) && msg_sender.ne(&kpt_distribute.clone()) {
+    if msg_sender.ne(&kpt_fund.clone()) && msg_sender.ne(&kpt_distribute) {
         return Err(ContractError::Unauthorized {});
     }
 
@@ -66,7 +63,7 @@ pub fn mint(deps: DepsMut, env: Env, info: MessageInfo, user: Addr, amount: u128
 
 pub fn burn(deps: DepsMut, env: Env, info: MessageInfo, user: Addr, amount: u128) -> Result<Response, ContractError> {
     let kpt_config = read_kpt_config(deps.storage)?;
-    let msg_sender = info.sender.clone();
+    let msg_sender = info.sender;
     let kpt_fund = kpt_config.kpt_fund;
 
     if msg_sender != kpt_fund.clone() {
@@ -74,7 +71,7 @@ pub fn burn(deps: DepsMut, env: Env, info: MessageInfo, user: Addr, amount: u128
     }
 
     let sub_info = MessageInfo {
-        sender: user.clone(),
+        sender: user,
         funds: vec![],
     };
     let cw20_res = execute_burn(deps, env.clone(), sub_info, Uint128::from(amount));

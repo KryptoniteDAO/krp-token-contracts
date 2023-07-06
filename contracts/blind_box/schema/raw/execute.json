@@ -79,12 +79,6 @@
               ],
               "format": "uint64",
               "minimum": 0.0
-            },
-            "token_id_prefix": {
-              "type": [
-                "string",
-                "null"
-              ]
             }
           },
           "additionalProperties": false
@@ -124,37 +118,6 @@
               ],
               "format": "uint128",
               "minimum": 0.0
-            }
-          },
-          "additionalProperties": false
-        }
-      },
-      "additionalProperties": false
-    },
-    {
-      "type": "object",
-      "required": [
-        "update_reward_token_config"
-      ],
-      "properties": {
-        "update_reward_token_config": {
-          "type": "object",
-          "required": [
-            "conversion_ratio",
-            "reward_token",
-            "reward_token_type"
-          ],
-          "properties": {
-            "conversion_ratio": {
-              "type": "integer",
-              "format": "uint128",
-              "minimum": 0.0
-            },
-            "reward_token": {
-              "type": "string"
-            },
-            "reward_token_type": {
-              "type": "string"
             }
           },
           "additionalProperties": false
@@ -213,35 +176,10 @@
         "create_referral_info": {
           "type": "object",
           "required": [
-            "referral_code",
-            "reward_token_type"
+            "referral_code"
           ],
           "properties": {
             "referral_code": {
-              "type": "string"
-            },
-            "reward_token_type": {
-              "type": "string"
-            }
-          },
-          "additionalProperties": false
-        }
-      },
-      "additionalProperties": false
-    },
-    {
-      "type": "object",
-      "required": [
-        "modify_reward_token_type"
-      ],
-      "properties": {
-        "modify_reward_token_type": {
-          "type": "object",
-          "required": [
-            "reward_token_type"
-          ],
-          "properties": {
-            "reward_token_type": {
               "type": "string"
             }
           },

@@ -30,37 +30,6 @@
     {
       "type": "object",
       "required": [
-        "modify_lock_setting"
-      ],
-      "properties": {
-        "modify_lock_setting": {
-          "type": "object",
-          "required": [
-            "duration",
-            "index",
-            "mining_boost"
-          ],
-          "properties": {
-            "duration": {
-              "$ref": "#/definitions/Uint128"
-            },
-            "index": {
-              "type": "integer",
-              "format": "uint32",
-              "minimum": 0.0
-            },
-            "mining_boost": {
-              "$ref": "#/definitions/Uint128"
-            }
-          },
-          "additionalProperties": false
-        }
-      },
-      "additionalProperties": false
-    },
-    {
-      "type": "object",
-      "required": [
         "change_gov"
       ],
       "properties": {

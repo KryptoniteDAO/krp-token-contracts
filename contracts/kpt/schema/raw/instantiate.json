@@ -20,16 +20,6 @@
         }
       ]
     },
-    "kpt_distribute": {
-      "anyOf": [
-        {
-          "$ref": "#/definitions/Addr"
-        },
-        {
-          "type": "null"
-        }
-      ]
-    },
     "max_supply": {
       "type": "integer",
       "format": "uint128",

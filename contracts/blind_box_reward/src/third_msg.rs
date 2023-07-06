@@ -14,7 +14,6 @@ pub struct BlindBoxInfoResponse {
     pub level_index: u8,
     pub price: u128,
     pub block_number: u64,
-    pub is_random_box: bool,
     pub is_reward_box: bool,
 }
 

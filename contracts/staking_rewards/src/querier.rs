@@ -1,5 +1,6 @@
 use std::str::FromStr;
 use cosmwasm_std::{Addr, Deps, Env, QueryRequest, StdResult, to_binary, Uint128, Uint256, WasmQuery};
+use crate::helper::{BASE_RATE_12, BASE_RATE_6};
 use crate::msg::{BalanceOfResponse, EarnedResponse, GetBoostResponse, GetUserRewardPerTokenPaidResponse, GetUserUpdatedAtResponse, LastTimeRewardApplicableResponse, RewardPerTokenResponse, StakingConfigResponse, StakingStateResponse};
 use crate::state::{read_balance_of, read_rewards, read_staking_config, read_staking_state, read_user_reward_per_token_paid, read_user_updated_at};
 use crate::third_msg::{GetUserBoostResponse, VeKptBoostQueryMsg};
@@ -57,7 +58,7 @@ pub fn get_boost(deps: Deps, account: Addr) -> StdResult<GetBoostResponse> {
     })).unwrap();
 
     let user_boost = get_user_boost_res.user_boost;
-    let boost = Uint128::new(100u128) * Uint128::new(1000000u128) + user_boost;
+    let boost = Uint128::new(100u128) * Uint128::new(BASE_RATE_6) + user_boost;
     Ok(GetBoostResponse {
         boost,
     })
@@ -72,7 +73,7 @@ pub fn earned(deps: Deps, env: Env, account: Addr) -> StdResult<EarnedResponse> 
 
     let boost = get_boost(deps, account.clone()).unwrap().boost;
     let earned = ((balance_of * boost * (reward_per_token - user_reward_per_token_paid))
-        / Uint128::new(1000000000000u128)) + rewards;
+        / Uint128::new(BASE_RATE_12)) + rewards;
     Ok(EarnedResponse {
         earned,
     })

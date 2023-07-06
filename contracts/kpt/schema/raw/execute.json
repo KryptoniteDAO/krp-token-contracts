@@ -40,16 +40,6 @@
                   "type": "null"
                 }
               ]
-            },
-            "max_supply": {
-              "anyOf": [
-                {
-                  "$ref": "#/definitions/Uint128"
-                },
-                {
-                  "type": "null"
-                }
-              ]
             }
           },
           "additionalProperties": false

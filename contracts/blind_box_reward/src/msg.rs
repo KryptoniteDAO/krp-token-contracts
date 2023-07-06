@@ -37,7 +37,6 @@ pub struct BoxOpenInfoResponse {
     pub open_user: Addr,
     pub open_reward_amount: u128,
     pub open_box_time: u64,
-    pub is_random_box: bool,
     pub is_reward_box: bool,
     pub box_level_index: u8,
 }
@@ -70,10 +69,6 @@ pub enum QueryMsg {
     QueryAllConfigAndState {},
     #[returns(Vec < BoxOpenInfoResponse >)]
     QueryBoxOpenInfo {
-        token_ids: Vec<String>,
-    },
-    #[returns(std::collections::HashMap < u64, u64 >)]
-    TestRandom {
         token_ids: Vec<String>,
     },
     #[returns(QueryBoxClaimableInfoResponse)]

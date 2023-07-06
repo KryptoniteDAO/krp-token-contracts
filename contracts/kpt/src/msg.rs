@@ -1,7 +1,7 @@
 use cosmwasm_std::{Addr, Binary, Uint128};
 use cw_utils::Expiration;
 use cosmwasm_schema::{cw_serde, QueryResponses};
-use cw20::{ Logo};
+use cw20::{Logo};
 use cw20_base::msg::{InstantiateMsg as Cw20InstantiateMsg};
 
 #[cw_serde]
@@ -10,13 +10,11 @@ pub struct InstantiateMsg {
     pub max_supply: u128,
     // default msg.sender
     pub gov: Option<Addr>,
-    pub kpt_distribute: Option<Addr>,
 }
 
 #[cw_serde]
 pub enum ExecuteMsg {
     UpdateConfig {
-        max_supply: Option<Uint128>,
         kpt_fund: Option<Addr>,
         gov: Option<Addr>,
         kpt_distribute: Option<Addr>,

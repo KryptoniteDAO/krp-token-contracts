@@ -14,7 +14,6 @@
       "type": "object",
       "required": [
         "box_level_index",
-        "is_random_box",
         "is_reward_box",
         "open_box_time",
         "open_reward_amount",
@@ -26,9 +25,6 @@
           "type": "integer",
           "format": "uint8",
           "minimum": 0.0
-        },
-        "is_random_box": {
-          "type": "boolean"
         },
         "is_reward_box": {
           "type": "boolean"

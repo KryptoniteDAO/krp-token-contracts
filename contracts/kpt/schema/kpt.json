@@ -24,16 +24,6 @@
           }
         ]
       },
-      "kpt_distribute": {
-        "anyOf": [
-          {
-            "$ref": "#/definitions/Addr"
-          },
-          {
-            "type": "null"
-          }
-        ]
-      },
       "max_supply": {
         "type": "integer",
         "format": "uint128",
@@ -277,16 +267,6 @@
                 "anyOf": [
                   {
                     "$ref": "#/definitions/Addr"
-                  },
-                  {
-                    "type": "null"
-                  }
-                ]
-              },
-              "max_supply": {
-                "anyOf": [
-                  {
-                    "$ref": "#/definitions/Uint128"
                   },
                   {
                     "type": "null"

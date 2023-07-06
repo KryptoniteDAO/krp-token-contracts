@@ -1,6 +1,5 @@
-use cosmwasm_std::{entry_point, DepsMut, Env, MessageInfo, Response, StdResult, StdError, Deps, to_binary, Binary, Addr, Uint128, Uint256};
+use cosmwasm_std::{entry_point, DepsMut, Env, MessageInfo, Response, StdResult, Deps, to_binary, Binary, Uint128, Uint256};
 use cw2::set_contract_version;
-use cw_utils::nonpayable;
 use crate::error::ContractError;
 use crate::handler::{get_reward, notify_reward_amount, receive_cw20, update_staking_config, update_staking_duration, withdraw};
 use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg, UpdateStakingConfigStruct};
@@ -19,18 +18,9 @@ pub fn instantiate(
     info: MessageInfo,
     msg: InstantiateMsg,
 ) -> Result<Response, ContractError> {
-    let r = nonpayable(&info);
-    if r.is_err() {
-        return Err(ContractError::Std(StdError::generic_err("nonpayable")));
-    }
+    let gov = msg.gov.unwrap_or_else(|| info.sender.clone());
 
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
-
-    let gov = if let Some(gov_addr) = msg.gov {
-        Addr::unchecked(gov_addr)
-    } else {
-        info.sender.clone()
-    };
 
     let staking_config = StakingConfig {
         gov,
@@ -145,7 +135,7 @@ pub fn migrate(_deps: DepsMut, _env: Env, _msg: MigrateMsg) -> StdResult<Respons
 mod tests {
     use super::*;
     use cosmwasm_std::testing::{mock_dependencies, mock_env, mock_info};
-    use cosmwasm_std::{Uint128, Uint256};
+    use cosmwasm_std::{Addr, Uint128, Uint256};
     use cw2::get_contract_version;
     use crate::state::{read_staking_config, read_staking_state};
 
@@ -185,5 +175,4 @@ mod tests {
         assert_eq!(contract_version.contract, CONTRACT_NAME.to_string());
         assert_eq!(contract_version.version, CONTRACT_VERSION.to_string());
     }
-
 }

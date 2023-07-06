@@ -98,14 +98,10 @@
     "BlindBoxLevelMsg": {
       "type": "object",
       "required": [
-        "is_random_box",
         "mint_total_count",
         "price"
       ],
       "properties": {
-        "is_random_box": {
-          "type": "boolean"
-        },
         "mint_total_count": {
           "type": "integer",
           "format": "uint128",
@@ -187,35 +183,9 @@
           "additionalProperties": {
             "$ref": "#/definitions/ReferralLevelConfig"
           }
-        },
-        "reward_token_config": {
-          "type": [
-            "object",
-            "null"
-          ],
-          "additionalProperties": {
-            "$ref": "#/definitions/ReferralRewardTokenConfig"
-          }
         }
       },
       "additionalProperties": false
-    },
-    "ReferralRewardTokenConfig": {
-      "type": "object",
-      "required": [
-        "conversion_ratio",
-        "reward_token"
-      ],
-      "properties": {
-        "conversion_ratio": {
-          "type": "integer",
-          "format": "uint128",
-          "minimum": 0.0
-        },
-        "reward_token": {
-          "type": "string"
-        }
-      }
     }
   }
 }

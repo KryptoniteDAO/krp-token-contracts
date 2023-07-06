@@ -17,10 +17,6 @@ pub struct BoxRewardConfig {
     pub box_open_time: u64,
 
     pub ordinary_box_reward_level_config: HashMap<u8, OrdinaryBoxRewardLevelConfig>,
-    // random box config
-    // nft box level index
-    pub random_in_box_level_index: u8,
-    pub random_box_reward_rule_config: Vec<RandomBoxRewardRuleConfig>,
 
     pub box_reward_distribute_addr: Addr,
     pub box_reward_distribute_rule_type: String,
@@ -32,11 +28,6 @@ pub struct BoxRewardConfigState {
     pub ordinary_total_reward_amount: u128,
     pub ordinary_total_open_box_count: u64,
     pub ordinary_box_reward_level_config_state: HashMap<u8, OrdinaryBoxRewardLevelConfigState>,
-
-    pub random_total_reward_amount: u128,
-    pub random_total_open_box_count: u64,
-    pub random_box_reward_rule_config_state: Vec<RandomBoxRewardRuleConfigState>,
-
 
     pub global_reward_claim_index: u128,
     pub global_reward_claim_total_amount: u128,
@@ -57,22 +48,6 @@ pub struct OrdinaryBoxRewardLevelConfigState {
     pub total_open_box_count: u64,
 }
 
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-pub struct RandomBoxRewardRuleConfig {
-    // array index
-    pub random_box_index: u8,
-    pub random_total_count: u64,
-    pub random_reward_amount: u128,
-    pub max_reward_count: u64,
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-pub struct RandomBoxRewardRuleConfigState {
-    pub total_reward_amount: u128,
-    pub total_open_box_count: u64,
-}
-
-
 // user reward info
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
@@ -80,7 +55,6 @@ pub struct BoxOpenInfo {
     pub open_user: Addr,
     pub open_reward_amount: u128,
     pub open_box_time: u64,
-    pub is_random_box: bool,
     pub is_reward_box: bool,
     pub reward_claim_index: u128,
     pub reward_claimed_amount: u128,
@@ -132,7 +106,6 @@ pub fn get_box_open_info(storage: &dyn Storage, key: String) -> StdResult<BoxOpe
         open_user: Addr::unchecked(""),
         open_reward_amount: 0,
         open_box_time: 0,
-        is_random_box: false,
         is_reward_box: false,
         reward_claim_index: 0,
         reward_claimed_amount: 0,

@@ -26,27 +26,6 @@ pub fn add_lock_setting(deps: DepsMut, info: MessageInfo, duration: Uint128, min
     ]))
 }
 
-pub fn modify_lock_setting(deps: DepsMut, info: MessageInfo, index: usize, duration: Uint128, mining_boost: Uint128) -> StdResult<Response> {
-    let mut config = read_boost_config(deps.storage)?;
-    if info.sender != config.gov {
-        return Err(StdError::generic_err("unauthorized"));
-    }
-
-    let mut ve_kpt_lock_settings = config.ve_kpt_lock_settings;
-    ve_kpt_lock_settings[index] = VeKptLockSetting {
-        duration,
-        mining_boost,
-    };
-
-    config.ve_kpt_lock_settings = ve_kpt_lock_settings;
-    store_boost_config(deps.storage, &config)?;
-    Ok(Response::new().add_attributes(vec![
-        ("action", "modify_lock_setting"),
-        ("index", index.to_string().as_str()),
-        ("duration", duration.to_string().as_str()),
-        ("mining_boost", mining_boost.to_string().as_str()),
-    ]))
-}
 
 pub fn change_gov(deps: DepsMut, info: MessageInfo, gov: Addr) -> StdResult<Response> {
     let mut config = read_boost_config(deps.storage)?;
