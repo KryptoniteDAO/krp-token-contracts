@@ -54,7 +54,7 @@ pub fn mint(deps: DepsMut, env: Env, info: MessageInfo, user: Addr, amount: u128
     let msg_sender = info.sender.clone();
     let kpt_fund = vote_config.kpt_fund.clone();
 
-    if msg_sender.ne(&kpt_fund.clone()) && !is_minter(deps.storage, msg_sender.clone()).unwrap() {
+    if msg_sender.ne(&kpt_fund.clone()) && !is_minter(deps.storage, msg_sender.clone())? {
         return Err(ContractError::Unauthorized {});
     }
 
@@ -79,7 +79,7 @@ pub fn mint(deps: DepsMut, env: Env, info: MessageInfo, user: Addr, amount: u128
         store_vote_config(deps.storage, &vote_config)?;
     }
 
-    let ve_res = ve_mint(deps, env, user.clone(), reward)?;
+    let ve_res = ve_mint(deps, env, user, reward)?;
 
     Ok(Response::new().add_submessages(sub_msgs)
         .add_attributes(ve_res.attributes))
@@ -87,10 +87,10 @@ pub fn mint(deps: DepsMut, env: Env, info: MessageInfo, user: Addr, amount: u128
 
 pub fn burn(deps: DepsMut, env: Env, info: MessageInfo, user: Addr, amount: u128) -> Result<Response, ContractError> {
     let vote_config = read_vote_config(deps.storage)?;
-    let msg_sender = info.sender.clone();
+    let msg_sender = info.sender;
     let kpt_fund = vote_config.kpt_fund;
 
-    if info.sender != kpt_fund.clone() && !is_minter(deps.storage, msg_sender.clone()).unwrap() {
+    if msg_sender != kpt_fund.clone() && !is_minter(deps.storage, msg_sender.clone())? {
         return Err(ContractError::Unauthorized {});
     }
 
@@ -106,7 +106,7 @@ pub fn burn(deps: DepsMut, env: Env, info: MessageInfo, user: Addr, amount: u128
         }));
         sub_msgs.push(sub_msg);
     }
-    let ve_res = ve_burn(deps, env, user.clone(), amount)?;
+    let ve_res = ve_burn(deps, env, user, amount)?;
 
     Ok(Response::new().add_submessages(sub_msgs)
         .add_attributes(

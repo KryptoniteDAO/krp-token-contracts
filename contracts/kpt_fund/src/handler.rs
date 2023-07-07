@@ -1,4 +1,5 @@
 use cosmwasm_std::{Addr, attr, BankMsg, coin, CosmosMsg, DepsMut, Env, MessageInfo, Response, StdError, StdResult, SubMsg, to_binary, Uint128, Uint256, Uint64, WasmMsg};
+use crate::helper::{BASE_RATE_12, BASE_RATE_6};
 use crate::msg::UpdateConfigMsg;
 use crate::querier::{earned, get_claim_able_kpt, get_reserved_kpt_for_vesting, total_staked};
 use crate::state::{KptFundConfig, read_kpt_fund_config, read_rewards, read_time2full_redemption, read_unstake_rate, store_kpt_fund_config, store_last_withdraw_time, store_rewards, store_time2full_redemption, store_unstake_rate, store_user_reward_per_token_paid};
@@ -52,9 +53,9 @@ pub fn update_kpt_fund_config(
 
 
 fn _update_reward(deps: DepsMut, account: Addr) -> StdResult<()> {
-    let user_rewards = earned(deps.as_ref(), account.clone()).unwrap().amount;
+    let user_rewards = earned(deps.as_ref(), account.clone())?.amount;
     store_rewards(deps.storage, account.clone(), &user_rewards)?;
-    let config: KptFundConfig = read_kpt_fund_config(deps.storage).unwrap();
+    let config = read_kpt_fund_config(deps.storage)?;
     store_user_reward_per_token_paid(deps.storage, account.clone(), &config.reward_per_token_stored)?;
     Ok(())
 }
@@ -78,9 +79,10 @@ pub fn stake(
     info: MessageInfo,
     amount: Uint128,
 ) -> StdResult<Response> {
-    refresh_reward(deps.branch(), info.sender.clone())?;
     let sender = info.sender;
-    let config: KptFundConfig = read_kpt_fund_config(deps.storage).unwrap();
+
+    refresh_reward(deps.branch(), sender.clone())?;
+    let config = read_kpt_fund_config(deps.storage)?;
     let mut sub_msgs = vec![];
     let kpt_burn_msg = KptExecuteMsg::Burn {
         user: sender.clone().to_string(),
@@ -120,10 +122,10 @@ pub fn unstake(
     info: MessageInfo,
     amount: Uint128,
 ) -> StdResult<Response> {
-    refresh_reward(deps.branch(), info.sender.clone())?;
-
     let sender = info.sender;
-    let config: KptFundConfig = read_kpt_fund_config(deps.storage).unwrap();
+    refresh_reward(deps.branch(), sender.clone())?;
+
+    let config: KptFundConfig = read_kpt_fund_config(deps.storage)?;
     let current_time = Uint64::from(env.block.time.seconds());
     if current_time.le(&config.claim_able_time) {
         return Err(StdError::generic_err("It is not yet time to claim."));
@@ -147,13 +149,13 @@ pub fn unstake(
     let time2full_redemption_user = read_time2full_redemption(deps.storage, sender.clone());
     if time2full_redemption_user.gt(&current_time) {
         let unstake_rate_user = read_unstake_rate(deps.storage, sender.clone());
-        let diff_time = time2full_redemption_user.checked_sub(current_time).unwrap();
-        total = total.checked_add(unstake_rate_user.multiply_ratio(Uint256::from(diff_time),Uint256::from(1000000000000u128))).unwrap();
+        let diff_time = time2full_redemption_user.checked_sub(current_time)?;
+        total = total.checked_add(unstake_rate_user.multiply_ratio(Uint256::from(diff_time), Uint256::from(BASE_RATE_12)))?;
     }
 
     // let user_new_unstake_rate = total.checked_div(Uint128::from(config.exit_cycle)).unwrap();
-    let user_new_unstake_rate = total.multiply_ratio(Uint256::from(1000000000000u128), Uint256::from(config.exit_cycle));
-    let user_new_time2full_redemption = current_time.checked_add(config.exit_cycle).unwrap();
+    let user_new_unstake_rate = total.multiply_ratio(Uint256::from(BASE_RATE_12), Uint256::from(config.exit_cycle));
+    let user_new_time2full_redemption = current_time.checked_add(config.exit_cycle)?;
 
     store_unstake_rate(deps.storage, sender.clone(), &user_new_unstake_rate)?;
     store_time2full_redemption(deps.storage, sender.clone(), &user_new_time2full_redemption)?;
@@ -181,14 +183,12 @@ pub fn withdraw(
     user: Addr,
 ) -> StdResult<Response> {
     let current_time = Uint64::from(env.block.time.seconds());
-    let claim_able_res = get_claim_able_kpt(deps.as_ref(), env, user.clone());
-    if claim_able_res.is_err() {
-        return Err(StdError::generic_err("get claim able kpt error"));
-    }
-    let amount = claim_able_res.unwrap().amount;
+    let claim_able_res = get_claim_able_kpt(deps.as_ref(), env, user.clone())?;
+
+    let amount = claim_able_res.amount;
     let mut sub_msgs = vec![];
     if amount.gt(&Uint128::zero()) {
-        let config: KptFundConfig = read_kpt_fund_config(deps.storage).unwrap();
+        let config = read_kpt_fund_config(deps.storage)?;
         let kpt_mint_msg = KptExecuteMsg::Mint {
             recipient: user.clone().to_string(),
             amount: amount.clone(),
@@ -221,18 +221,12 @@ pub fn re_stake(
     _update_reward(deps.branch(), sender.clone())?;
 
     let mut sub_msgs = vec![];
-    let config: KptFundConfig = read_kpt_fund_config(deps.storage).unwrap();
-    let claim_able_res = get_claim_able_kpt(deps.as_ref(), env.clone(), sender.clone());
-    if claim_able_res.is_err() {
-        return Err(StdError::generic_err("get claim able kpt error"));
-    }
-    let reserve_kpt_res = get_reserved_kpt_for_vesting(deps.as_ref(), env.clone(), sender.clone());
-    if reserve_kpt_res.is_err() {
-        return Err(StdError::generic_err("get reserve kpt error"));
-    }
-    let claim_able = claim_able_res.unwrap().amount;
-    let reserve_kpt = reserve_kpt_res.unwrap().amount;
-    let total = claim_able.checked_add(reserve_kpt).unwrap();
+    let config = read_kpt_fund_config(deps.storage)?;
+    let claim_able_res = get_claim_able_kpt(deps.as_ref(), env.clone(), sender.clone())?;
+    let reserve_kpt_res = get_reserved_kpt_for_vesting(deps.as_ref(), env.clone(), sender.clone())?;
+    let claim_able = claim_able_res.amount;
+    let reserve_kpt = reserve_kpt_res.amount;
+    let total = claim_able.checked_add(reserve_kpt)?;
     if total.gt(&Uint128::zero()) {
         let ve_kpt_mint_msg = VeKptExecuteMsg::Mint {
             recipient: sender.clone().to_string(),
@@ -267,7 +261,7 @@ pub fn get_reward(mut deps: DepsMut, info: MessageInfo) -> StdResult<Response> {
     if reward.gt(&Uint128::zero()) {
         store_rewards(deps.storage, sender.clone(), &Uint128::zero())?;
 
-        let mut config: KptFundConfig = read_kpt_fund_config(deps.storage).unwrap();
+        let mut config = read_kpt_fund_config(deps.storage)?;
 
         let send_msg = CosmosMsg::Bank(BankMsg::Send {
             to_address: sender.to_string(),
@@ -276,7 +270,7 @@ pub fn get_reward(mut deps: DepsMut, info: MessageInfo) -> StdResult<Response> {
 
         messages.push(send_msg);
 
-        config.kusd_reward_total_paid_amount = config.kusd_reward_total_paid_amount.checked_add(reward.clone()).unwrap();
+        config.kusd_reward_total_paid_amount = config.kusd_reward_total_paid_amount.checked_add(reward.clone())?;
 
         store_kpt_fund_config(deps.storage, &config)?;
     }
@@ -302,7 +296,7 @@ pub fn notify_reward_amount(deps: DepsMut, info: MessageInfo) -> StdResult<Respo
         return Err(StdError::generic_err("only kusd reward addr can notify reward amount"));
     }
 
-    let total_staked = total_staked(deps.as_ref());
+    let total_staked = total_staked(deps.as_ref())?;
     if total_staked.eq(&Uint128::zero()) {
         return Ok(Response::new());
     }
@@ -316,7 +310,7 @@ pub fn notify_reward_amount(deps: DepsMut, info: MessageInfo) -> StdResult<Respo
         return Err(StdError::generic_err("kusd amount is zero"));
     }
 
-    let inc_reward_per_token = amount.multiply_ratio(Uint128::new(1000000u128), total_staked);
+    let inc_reward_per_token = amount.multiply_ratio(Uint128::new(BASE_RATE_6), total_staked);
     config.reward_per_token_stored = config.reward_per_token_stored.checked_add(inc_reward_per_token).unwrap();
     config.kusd_reward_total_amount = config.kusd_reward_total_amount.checked_add(amount).unwrap();
 
