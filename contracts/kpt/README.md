@@ -16,7 +16,6 @@ KPT tokens locked in the contract, the greater the voter’s decision-making pow
 | `max_supply` | `u128` | KPT max supply |
 | `kpt_fund` | `Addr` | KPT FUND module contract address (Possess mint permissions)    |
 | `gov` | `Addr` | Address of contract owner that can update config |
-| `kpt_distribute` | `Addr` | KPT token contract address (Possess mint permissions) |
 
 ## InstantiateMsg {.tabset}
 
@@ -29,7 +28,6 @@ pub struct InstantiateMsg {
     pub max_supply: u128,
     // default msg.sender
     pub gov: Option<Addr>,
-    pub kpt_distribute: Option<Addr>,
 }
 ```
 
@@ -46,8 +44,7 @@ pub struct InstantiateMsg {
     "marketing": null
   },
   "max_supply": "100000000000000000000000000",
-  "gov": null,
-  "kpt_distribute": null
+  "gov": null
 }
 ```
 
@@ -56,7 +53,6 @@ pub struct InstantiateMsg {
 | `cw20_init_msg` | `Cw20InstantiateMsg` | The cw20 initialization message structure based on the cw20_base library |
 | `max_supply` | `u128` | KPT max supply |
 | `gov` | `Addr`* | Address of contract owner that can update config. If not filled in, it is the initialization call address |
-| `kpt_distribute`* | `Addr` | KPT token contract address (Possess mint permissions). If not filled in, it is the initialization call address |
 
 * = optional
 
