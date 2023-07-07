@@ -15,6 +15,6 @@ pub fn query_vote_config(deps: Deps) -> StdResult<VoteConfigResponse> {
 
 pub fn query_is_minter(deps: Deps, minter: Addr) -> StdResult<IsMinterResponse> {
     Ok(IsMinterResponse {
-        is_minter: is_minter(deps.storage, minter).unwrap(),
+        is_minter: is_minter(deps.storage, minter)?,
     })
 }

@@ -1,8 +1,7 @@
-use cosmwasm_std::{entry_point, DepsMut, Env, MessageInfo, Response, StdResult, StdError, Deps, to_binary, Binary, Addr, Uint128, Uint256};
+use cosmwasm_std::{entry_point, DepsMut, Env, MessageInfo, Response, StdResult, Deps, to_binary, Binary, Uint128, Uint256};
 use cw2::set_contract_version;
-use cw_utils::nonpayable;
-use crate::handler::{get_reward, notify_reward_amount, refresh_reward, set_is_redemption_provider, update_miner_config, update_miner_state};
-use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg, UpdateMinerConfigStruct, UpdateMinerStateStruct};
+use crate::handler::{get_reward, notify_reward_amount, refresh_reward, set_is_redemption_provider, update_miner_config};
+use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg, UpdateMinerConfigStruct};
 use crate::querier::{earned, get_boost, get_miner_config, get_miner_state, last_time_reward_applicable, reward_per_token, staked_of};
 use crate::state::{MinerConfig, MinerState, store_miner_config, store_miner_state};
 
@@ -18,18 +17,10 @@ pub fn instantiate(
     info: MessageInfo,
     msg: InstantiateMsg,
 ) -> StdResult<Response> {
-    let r = nonpayable(&info);
-    if r.is_err() {
-        return Err(StdError::generic_err("NonPayable"));
-    }
 
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
 
-    let gov = if let Some(gov_addr) = msg.gov {
-        Addr::unchecked(gov_addr)
-    } else {
-        info.sender.clone()
-    };
+    let gov = msg.gov.unwrap_or_else(|| info.sender.clone());
 
     let miner_config = MinerConfig {
         gov,
@@ -90,13 +81,6 @@ pub fn execute(
         ExecuteMsg::SetIsRedemptionProvider { user, is_redemption_provider } => {
             set_is_redemption_provider(deps, info, user, is_redemption_provider)
         }
-        ExecuteMsg::UpdateMinerState { duration, extra_rate, lockdown_period } => {
-            update_miner_state(deps, env, info, UpdateMinerStateStruct {
-                duration,
-                extra_rate,
-                lockdown_period,
-            })
-        }
         ExecuteMsg::RefreshReward { account } => {
             refresh_reward(deps, env, account)
         }
@@ -133,7 +117,7 @@ pub fn migrate(_deps: DepsMut, _env: Env, _msg: MigrateMsg) -> StdResult<Respons
 mod tests {
     // Import necessary dependencies
     use cosmwasm_std::testing::{mock_dependencies, mock_env, mock_info};
-    use cosmwasm_std::{coins, Addr, Uint128, Uint256};
+    use cosmwasm_std::{Addr, Uint128, Uint256};
     // Import functions and structs from the contract
     use crate::msg::{InstantiateMsg};
     use crate::state::{MinerConfig, MinerState, read_miner_config, read_miner_state};
@@ -142,21 +126,7 @@ mod tests {
     #[test]
     fn test_instantiate() {
         let mut deps = mock_dependencies();
-        let msg = InstantiateMsg {
-            gov: Some(Addr::unchecked("gov")),
-            kusd_denom: "kusd".to_string(),
-            kusd_controller_addr: Addr::unchecked("kusd_controller_addr"),
-            ve_kpt_boost_addr: Addr::unchecked("ve_kpt_boost_addr"),
-            kpt_fund_addr: Addr::unchecked("kpt_fund_addr"),
-            ve_kpt_addr: Addr::unchecked("ve_kpt_addr"),
-            reward_controller_addr: Addr::unchecked("reward_controller_addr"),
-            duration: Uint128::new(1),
-            extra_rate: Some(Uint128::new(1)),
-            lockdown_period: Uint128::new(1),
-        };
-        let info = mock_info("creator", &coins(2, "token"));
-        let res = crate::contract::instantiate(deps.as_mut(), mock_env(), info, msg);
-        assert!(res.is_err());
+
 
         let msg = InstantiateMsg {
             gov: Some(Addr::unchecked("gov")),

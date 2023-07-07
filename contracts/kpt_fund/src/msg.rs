@@ -9,7 +9,6 @@ pub struct UpdateConfigMsg {
     pub kpt_addr: Option<Addr>,
     pub kusd_denom: Option<String>,
     pub kusd_reward_addr: Option<Addr>,
-    pub exit_cycle: Option<Uint64>,
     pub claim_able_time: Option<Uint64>,
 }
 
@@ -28,13 +27,7 @@ pub struct InstantiateMsg {
 #[cw_serde]
 pub enum ExecuteMsg {
     UpdateKptFundConfig {
-        gov: Option<Addr>,
-        ve_kpt_addr: Option<Addr>,
-        kpt_addr: Option<Addr>,
-        kusd_denom: Option<String>,
-        kusd_reward_addr: Option<Addr>,
-        exit_cycle: Option<Uint64>,
-        claim_able_time: Option<Uint64>,
+        update_config_msg: UpdateConfigMsg,
     },
     RefreshReward {
         account: Addr,

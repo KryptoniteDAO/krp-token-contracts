@@ -1,6 +1,7 @@
 use std::ops::Add;
 use cosmwasm_std::{Addr, attr, DepsMut, Env, MessageInfo, QueryRequest, Response, StdError, StdResult, SubMsg, to_binary, Uint128, Uint256, WasmMsg, WasmQuery};
-use crate::msg::{LastTimeRewardApplicableResponse, RewardPerTokenResponse, UpdateMinerConfigStruct, UpdateMinerStateStruct};
+use crate::helper::BASE_RATE_12;
+use crate::msg::{RewardPerTokenResponse, UpdateMinerConfigStruct};
 use crate::querier::{earned, is_empty_address, last_time_reward_applicable, reward_per_token};
 use crate::state::{read_miner_config, read_miner_state, read_rewards, store_is_redemption_provider, store_miner_config, store_miner_state, store_rewards, store_user_reward_per_token_paid, store_user_updated_at};
 use crate::third_msg::{GetUnlockTimeResponse, KptFundExecuteMsg, VeKptBoostQueryMsg, VeKptExecuteMsg};
@@ -48,40 +49,6 @@ pub fn update_miner_config(deps: DepsMut, info: MessageInfo,
     Ok(Response::new().add_attributes(attrs))
 }
 
-pub fn update_miner_state(deps: DepsMut, env: Env, info: MessageInfo, update_struct: UpdateMinerStateStruct) -> StdResult<Response> {
-    let miner_config = read_miner_config(deps.storage)?;
-    let mut miner_state = read_miner_state(deps.storage)?;
-    if info.sender.ne(&miner_config.gov) {
-        return Err(StdError::generic_err("unauthorized"));
-    }
-
-    let mut attrs = vec![];
-    attrs.push(attr("action", "update_miner_state"));
-    if let Some(duration) = update_struct.duration {
-        let current_time = Uint128::from(env.block.time.seconds());
-        if miner_state.finish_at > current_time {
-            return Err(StdError::generic_err("duration can only be updated after the end of the current period"));
-        }
-        miner_state.duration = duration.clone();
-        attrs.push(attr("duration", duration.to_string()));
-    }
-
-
-    if let Some(extra_rate) = update_struct.extra_rate {
-        miner_state.extra_rate = extra_rate.clone();
-        attrs.push(attr("extra_rate", extra_rate.to_string()));
-    }
-
-    if let Some(lockdown_period) = update_struct.lockdown_period {
-        miner_state.lockdown_period = lockdown_period.clone();
-        attrs.push(attr("lockdown_period", lockdown_period.to_string()));
-    }
-
-    store_miner_state(deps.storage, &miner_state)?; // update state
-
-    Ok(Response::new().add_attributes(attrs))
-}
-
 pub fn set_is_redemption_provider(deps: DepsMut, info: MessageInfo, user: Addr, is_redemption_provider: bool) -> StdResult<Response> {
     let miner_config = read_miner_config(deps.storage)?;
     if info.sender.ne(&miner_config.gov) {
@@ -97,21 +64,21 @@ pub fn set_is_redemption_provider(deps: DepsMut, info: MessageInfo, user: Addr, 
 }
 
 fn _update_reward(deps: DepsMut, env: Env, account: Addr) -> StdResult<()> {
-    let reward_per_token_response: RewardPerTokenResponse = reward_per_token(deps.as_ref(), env.clone()).unwrap();
+    let reward_per_token_response: RewardPerTokenResponse = reward_per_token(deps.as_ref(), env.clone())?;
     let reward_per_token_stored = reward_per_token_response.reward_per_token;
-    let last_time_reward_applicable_response: LastTimeRewardApplicableResponse = last_time_reward_applicable(deps.as_ref(), env.clone()).unwrap();
+    let last_time_reward_applicable_response = last_time_reward_applicable(deps.as_ref(), env.clone())?;
     let updated_at = last_time_reward_applicable_response.last_time_reward_applicable;
 
     let mut miner_state = read_miner_state(deps.storage)?;
     miner_state.reward_per_token_stored = reward_per_token_stored.clone();
-    miner_state.updated_at = updated_at.clone();
+    miner_state.updated_at = updated_at;
     store_miner_state(deps.storage, &miner_state)?; // update state
 
     if !is_empty_address(account.as_str()) {
         let earned = earned(deps.as_ref(), env.clone(), account.clone()).unwrap().earned;
         store_rewards(deps.storage, account.clone(), &earned)?;
         store_user_reward_per_token_paid(deps.storage, account.clone(), &reward_per_token_stored)?;
-        store_user_updated_at(deps.storage, account.clone(), &Uint128::from(env.block.time.seconds()))?;
+        store_user_updated_at(deps.storage, account, &Uint128::from(env.block.time.seconds()))?;
     }
     Ok(())
 }
@@ -190,14 +157,14 @@ pub fn notify_reward_amount(mut deps: DepsMut, env: Env, info: MessageInfo, amou
         let mut miner_state = read_miner_state(deps.storage)?;
         if current_time >= miner_state.finish_at {
             // miner_state.reward_rate = amount / miner_state.duration;
-            miner_state.reward_rate = Uint256::from(amount).multiply_ratio(Uint256::from(1000000000000u128), Uint256::from(miner_state.duration));
+            miner_state.reward_rate = Uint256::from(amount).multiply_ratio(Uint256::from(BASE_RATE_12), Uint256::from(miner_state.duration));
         } else {
             // let remaining_rewards = (miner_state.finish_at - current_time) * miner_state.reward_rate;
             let remaining_rewards = Uint256::from(miner_state.finish_at - current_time)
-                .multiply_ratio(Uint256::from(miner_state.reward_rate), Uint256::from(1000000000000u128));
+                .multiply_ratio(Uint256::from(miner_state.reward_rate), Uint256::from(BASE_RATE_12));
             // miner_state.reward_rate = (amount + remaining_rewards) / miner_state.duration;
             miner_state.reward_rate = (Uint256::from(amount).add(remaining_rewards))
-                .multiply_ratio(Uint256::from(1000000000000u128), Uint256::from(miner_state.duration));
+                .multiply_ratio(Uint256::from(BASE_RATE_12), Uint256::from(miner_state.duration));
         }
         if miner_state.reward_rate.is_zero() {
             return Err(StdError::generic_err("reward rate = 0"));

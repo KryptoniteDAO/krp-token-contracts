@@ -1,7 +1,6 @@
-use cosmwasm_std::{entry_point, DepsMut, Env, MessageInfo, Response, StdResult, StdError, Deps, to_binary, Binary, Addr};
+use cosmwasm_std::{entry_point, DepsMut, Env, MessageInfo, Response, StdResult, Deps, to_binary, Binary};
 use cw2::set_contract_version;
-use cw_utils::nonpayable;
-use crate::handler::{add_lock_setting, change_gov, modify_lock_setting, set_lock_status};
+use crate::handler::{add_lock_setting, change_gov, set_lock_status};
 use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 use crate::querier::{get_boost_config, get_unlock_time, get_user_boost, get_user_lock_status};
 use crate::state::{BoostConfig, store_boost_config};
@@ -18,18 +17,9 @@ pub fn instantiate(
     info: MessageInfo,
     msg: InstantiateMsg,
 ) -> StdResult<Response> {
-    let r = nonpayable(&info);
-    if r.is_err() {
-        return Err(StdError::generic_err("NonPayable"));
-    }
-
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
 
-    let gov = if let Some(gov_addr) = msg.gov {
-        Addr::unchecked(gov_addr)
-    } else {
-        info.sender.clone()
-    };
+    let gov = msg.gov.unwrap_or_else(|| info.sender.clone());
 
     let config = BoostConfig {
         gov: gov,
@@ -53,10 +43,6 @@ pub fn execute(
     match msg {
         ExecuteMsg::AddLockSetting { duration, mining_boost } => {
             add_lock_setting(deps, info, duration, mining_boost)
-        }
-        ExecuteMsg::ModifyLockSetting { index, duration, mining_boost } => {
-            let _index = index as usize;
-            modify_lock_setting(deps, info, _index, duration, mining_boost)
         }
         ExecuteMsg::ChangeGov { gov } => {
             change_gov(deps, info, gov)
@@ -87,7 +73,6 @@ pub fn migrate(_deps: DepsMut, _env: Env, _msg: MigrateMsg) -> StdResult<Respons
 
 #[cfg(test)]
 mod tests {
-    use cosmwasm_std::Coin;
     use super::*;
     use cosmwasm_std::testing::{mock_dependencies, mock_env, mock_info};
     #[test]
@@ -104,15 +89,6 @@ mod tests {
         assert_eq!(res.attributes.len(), 2);
         assert_eq!(res.attributes[0], ("action", "instantiate"));
         assert_eq!(res.attributes[1], ("owner", "creator"));
-        // Test with non-payable message
-        let mut deps = mock_dependencies();
-        let env = mock_env();
-        let info = mock_info("creator", &[Coin::new(1000, "KPT")]);
-        let msg = InstantiateMsg {
-            gov: None,
-            ve_kpt_lock_settings: vec![],
-        };
-        let res = instantiate(deps.as_mut(), env, info.clone(), msg);
-        assert!(res.is_err());
+
     }
 }

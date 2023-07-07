@@ -2,6 +2,7 @@ use std::ops::Add;
 use cosmwasm_std::{Addr, attr, CosmosMsg, DepsMut, Env, from_binary, MessageInfo, QueryRequest, Response, StdError, SubMsg, to_binary, Uint128, Uint256, WasmMsg, WasmQuery};
 use cw20::{Cw20ExecuteMsg, Cw20ReceiveMsg};
 use crate::error::ContractError;
+use crate::helper::BASE_RATE_12;
 use crate::msg::{Cw20HookMsg, UpdateStakingConfigStruct};
 use crate::querier::{earned, is_empty_address, last_time_reward_applicable, reward_per_token};
 use crate::state::{read_balance_of, read_rewards, read_staking_config, read_staking_state, store_balance_of, store_rewards, store_staking_config, store_staking_state, store_user_reward_per_token_paid, store_user_updated_at};
@@ -78,10 +79,10 @@ pub fn update_staking_duration(deps: DepsMut, env: Env, info: MessageInfo, durat
 
 // Update user's claimable reward data and record the timestamp.
 fn _update_reward(deps: DepsMut, env: Env, account: Addr) -> Result<Response, ContractError> {
-    let reward_per_token_response = reward_per_token(deps.as_ref(), env.clone()).unwrap();
+    let reward_per_token_response = reward_per_token(deps.as_ref(), env.clone())?;
     let reward_per_token_stored = reward_per_token_response.reward_per_token;
 
-    let last_time_reward_applicable_response = last_time_reward_applicable(deps.as_ref(), env.clone()).unwrap();
+    let last_time_reward_applicable_response = last_time_reward_applicable(deps.as_ref(), env.clone())?;
     let updated_at = last_time_reward_applicable_response.last_time_reward_applicable;
 
     let mut staking_state = read_staking_state(deps.storage)?;
@@ -90,7 +91,7 @@ fn _update_reward(deps: DepsMut, env: Env, account: Addr) -> Result<Response, Co
     store_staking_state(deps.storage, &staking_state)?;
 
     if !is_empty_address(account.as_str()) {
-        let earned = earned(deps.as_ref(), env.clone(), account.clone()).unwrap().earned;
+        let earned = earned(deps.as_ref(), env.clone(), account.clone())?.earned;
         store_rewards(deps.storage, account.clone(), &earned)?;
         store_user_reward_per_token_paid(deps.storage, account.clone(), &reward_per_token_stored)?;
         store_user_updated_at(deps.storage, account.clone(), &Uint128::from(env.block.time.seconds()))?;
@@ -181,7 +182,7 @@ pub fn receive_cw20(
     cw20_msg: Cw20ReceiveMsg,
 ) -> Result<Response, ContractError> {
     let contract_addr = info.sender.clone();
-    let msg_sender = deps.api.addr_validate(&cw20_msg.sender).unwrap();
+    let msg_sender = deps.api.addr_validate(&cw20_msg.sender)?;
     match from_binary(&cw20_msg.msg) {
         Ok(Cw20HookMsg::Stake {}) => {
             let staking_config = read_staking_config(deps.storage)?;
@@ -190,18 +191,6 @@ pub fn receive_cw20(
             }
             stake(deps, env, msg_sender, cw20_msg.amount)
         }
-        // Ok(Cw20HookMsg::Withdraw {}) => {
-        //     // let staking_config = read_staking_config(deps.storage)?;
-        //     // if contract_addr.ne(&staking_config.staking_token) {
-        //     //     return Err(StdError::generic_err("not staking token"));
-        //     // }
-        //     // withdraw(deps, info, contract_addr.clone(), msg_sender, cw20_msg.amount)
-        //     Ok(Response::new().add_attributes(vec![
-        //         attr("action", "withdraw"),
-        //         attr("user", msg_sender.to_string()),
-        //         attr("amount", cw20_msg.amount.to_string()),
-        //     ]))
-        // }
         Err(_) => Err(ContractError::Std(StdError::generic_err(
             "data should be given",
         ))),
@@ -212,7 +201,7 @@ pub fn receive_cw20(
 pub fn get_reward(mut deps: DepsMut, env: Env, info: MessageInfo) -> Result<Response, ContractError> {
     _update_reward(deps.branch(), env.clone(), info.sender.clone())?;
 
-    let sender = info.sender.clone();
+    let sender = info.sender;
     let staking_config = read_staking_config(deps.storage)?;
 
     let unlock_time_msg = VeKptBoostQueryMsg::GetUnlockTime {
@@ -227,7 +216,7 @@ pub fn get_reward(mut deps: DepsMut, env: Env, info: MessageInfo) -> Result<Resp
     if current_time < unlock_time {
         return Err(ContractError::Std(StdError::generic_err("not unlocked yet")));
     }
-    let reward = read_rewards(deps.storage, info.sender.clone());
+    let reward = read_rewards(deps.storage, sender.clone());
 
     let mut sub_msgs = vec![];
     if reward > Uint128::zero() {
@@ -277,14 +266,14 @@ pub fn notify_reward_amount(mut deps: DepsMut, env: Env, info: MessageInfo, amou
         if current_time >= staking_state.finish_at {
             // staking_state.reward_rate = amount / staking_state.duration;
             staking_state.reward_rate = Uint256::from(amount)
-                .multiply_ratio(Uint256::from(1000000000000u128), Uint256::from(staking_state.duration));
+                .multiply_ratio(Uint256::from(BASE_RATE_12), Uint256::from(staking_state.duration));
         } else {
             // let remaining_rewards = (staking_state.finish_at - current_time) * staking_state.reward_rate;
             let remaining_rewards = Uint256::from(staking_state.finish_at - current_time)
-                .multiply_ratio( staking_state.reward_rate,Uint256::from(1000000000000u128));
+                .multiply_ratio( staking_state.reward_rate,Uint256::from(BASE_RATE_12));
             // staking_state.reward_rate = (amount + remaining_rewards) / staking_state.duration;
             staking_state.reward_rate = (Uint256::from(amount).add(remaining_rewards))
-                .multiply_ratio(Uint256::from(1000000000000u128), Uint256::from(staking_state.duration));
+                .multiply_ratio(Uint256::from(BASE_RATE_12), Uint256::from(staking_state.duration));
         }
         if staking_state.reward_rate.is_zero() {
             return Err(ContractError::Std(StdError::generic_err(
@@ -300,5 +289,6 @@ pub fn notify_reward_amount(mut deps: DepsMut, env: Env, info: MessageInfo, amou
     Ok(Response::new().add_attributes(vec![
         attr("action", "notify_reward_amount"),
         attr("sender", info.sender),
+        attr("amount", amount.to_string()),
     ]))
 }

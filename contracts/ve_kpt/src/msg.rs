@@ -1,5 +1,4 @@
-use cosmwasm_std::{Addr, Binary, Uint128};
-use cw_utils::Expiration;
+use cosmwasm_std::{Addr, Uint128};
 use cosmwasm_schema::{cw_serde,QueryResponses};
 use cw20::Logo;
 
@@ -30,52 +29,6 @@ pub enum ExecuteMsg {
     /// Implements CW20. Burn is a base message to destroy tokens forever
     Burn { user: String, amount: Uint128 },
 
-    /// Implements CW20. Transfer is a base message to move tokens to another account without triggering actions
-    Transfer { recipient: String, amount: Uint128 },
-    /// Implements CW20.  Send is a base message to transfer tokens to a contract and trigger an action
-    /// on the receiving contract.
-    Send {
-        contract: String,
-        amount: Uint128,
-        msg: Binary,
-    },
-    /// Implements CW20 "approval" extension. Allows spender to access an additional amount tokens
-    /// from the owner's (env.sender) account. If expires is Some(), overwrites current allowance
-    /// expiration with this one.
-    IncreaseAllowance {
-        spender: String,
-        amount: Uint128,
-        expires: Option<Expiration>,
-    },
-    /// Implements CW20 "approval" extension. Lowers the spender's access of tokens
-    /// from the owner's (env.sender) account by amount. If expires is Some(), overwrites current
-    /// allowance expiration with this one.
-    DecreaseAllowance {
-        spender: String,
-        amount: Uint128,
-        expires: Option<Expiration>,
-    },
-    /// Implements CW20 "approval" extension. Transfers amount tokens from owner -> recipient
-    /// if `env.sender` has sufficient pre-approval.
-    TransferFrom {
-        owner: String,
-        recipient: String,
-        amount: Uint128,
-    },
-    /// Implements CW20 "approval" extension. Sends amount tokens from owner -> contract
-    /// if `env.sender` has sufficient pre-approval.
-    SendFrom {
-        owner: String,
-        contract: String,
-        amount: Uint128,
-        msg: Binary,
-    },
-    /// Implements CW20 "approval" extension. Destroys tokens forever
-    BurnFrom { owner: String, amount: Uint128 },
-    /// Only with the "mintable" extension. The current minter may set
-    /// a new minter. Setting the minter to None will remove the
-    /// token's minter forever.
-    UpdateMinter { new_minter: Option<String> },
     /// Only with the "marketing" extension. If authorized, updates marketing metadata.
     /// Setting None/null for any of these will leave it unchanged.
     /// Setting Some("") will clear this field on the contract storage
@@ -102,8 +55,8 @@ pub enum QueryMsg {
     Checkpoints {account: Addr, pos: u32},
     #[returns(NumCheckpointsResponse)]
     NumCheckpoints{account: Addr},
-    #[returns(DelegatesResponse)]
-    Delegates { account: Addr },
+    // #[returns(DelegatesResponse)]
+    // Delegates { account: Addr },
     #[returns(GetVotesResponse)]
     GetVotes{account:Addr},
     #[returns(GetPastVotesResponse)]
@@ -123,24 +76,24 @@ pub enum QueryMsg {
     Minter {},
     /// Implements CW20 "allowance" extension.
     /// Returns how much spender can use from owner account, 0 if unset.
-    #[returns(cw20::AllowanceResponse)]
-    Allowance { owner: String, spender: String },
-    /// Only with "enumerable" extension (and "allowances")
-    /// Returns all allowances this owner has approved. Supports pagination.
-    #[returns(cw20::AllAllowancesResponse)]
-    AllAllowances {
-        owner: String,
-        start_after: Option<String>,
-        limit: Option<u32>,
-    },
-    /// Only with "enumerable" extension (and "allowances")
-    /// Returns all allowances this spender has been granted. Supports pagination.
-    #[returns(cw20::AllSpenderAllowancesResponse)]
-    AllSpenderAllowances {
-        spender: String,
-        start_after: Option<String>,
-        limit: Option<u32>,
-    },
+    // #[returns(cw20::AllowanceResponse)]
+    // Allowance { owner: String, spender: String },
+    // /// Only with "enumerable" extension (and "allowances")
+    // /// Returns all allowances this owner has approved. Supports pagination.
+    // #[returns(cw20::AllAllowancesResponse)]
+    // AllAllowances {
+    //     owner: String,
+    //     start_after: Option<String>,
+    //     limit: Option<u32>,
+    // },
+    // /// Only with "enumerable" extension (and "allowances")
+    // /// Returns all allowances this spender has been granted. Supports pagination.
+    // #[returns(cw20::AllSpenderAllowancesResponse)]
+    // AllSpenderAllowances {
+    //     spender: String,
+    //     start_after: Option<String>,
+    //     limit: Option<u32>,
+    // },
     /// Only with "enumerable" extension
     /// Returns all accounts that have balances. Supports pagination.
     #[returns(cw20::AllAccountsResponse)]

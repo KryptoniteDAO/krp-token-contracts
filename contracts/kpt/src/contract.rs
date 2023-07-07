@@ -3,7 +3,6 @@ use cw20::{MinterResponse};
 use cw20_base::allowances::{execute_decrease_allowance, execute_increase_allowance, execute_send_from, execute_transfer_from, query_allowance};
 use cw20_base::contract::{execute_send, execute_transfer, execute_update_marketing, execute_update_minter, execute_upload_logo, query_balance, query_download_logo, query_marketing_info, query_minter, query_token_info};
 use cw2::set_contract_version;
-use cw_utils::nonpayable;
 use crate::error::ContractError;
 use crate::handler::{burn, mint, update_config};
 use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
@@ -24,19 +23,9 @@ pub fn instantiate(
     info: MessageInfo,
     msg: InstantiateMsg,
 ) -> Result<Response, ContractError> {
-    let r = nonpayable(&info.clone());
-    if r.is_err() {
-        return Err(ContractError::Std(StdError::generic_err(r.err().unwrap().to_string())));
-    }
-
-
     let mut cw20_instantiate_msg: Cw20InstantiateMsg = msg.cw20_init_msg;
 
-    let gov = if let Some(gov_addr) = msg.gov {
-        gov_addr
-    } else {
-        info.clone().sender
-    };
+    let gov = msg.gov.unwrap_or_else(|| info.sender.clone());
 
     cw20_instantiate_msg.mint = Some(MinterResponse {
         minter: env.contract.address.to_string(),
@@ -44,28 +33,26 @@ pub fn instantiate(
     });
 
 
-    cw20_instantiate_msg.marketing = if let Some(marketing) = cw20_instantiate_msg.marketing {
-        Some(InstantiateMarketingInfo {
+    if let Some(marketing) = cw20_instantiate_msg.marketing {
+        cw20_instantiate_msg.marketing = Some(InstantiateMarketingInfo {
             project: marketing.project,
             description: marketing.description,
             logo: marketing.logo,
-            marketing: Option::from(gov.clone().to_string()),
-        })
-    } else {
-        None
-    };
+            marketing: Some(gov.to_string()),
+        });
+    }
 
 
     let ins_res = cw20_instantiate(deps.branch(), env, info, cw20_instantiate_msg);
-    if ins_res.is_err() {
-        return Err(ContractError::Std(StdError::generic_err(ins_res.err().unwrap().to_string())));
+    if let Err(err) = ins_res {
+        return Err(ContractError::Std(StdError::generic_err(err.to_string())));
     }
 
     let kpt_config = KptConfig {
         max_supply: msg.max_supply,
         kpt_fund: Addr::unchecked(""),
         gov,
-        kpt_distribute: msg.kpt_distribute.unwrap_or(Addr::unchecked("")),
+        kpt_distribute: Addr::unchecked(""),
     };
 
     store_kpt_config(deps.storage, &kpt_config)?;
@@ -84,8 +71,8 @@ pub fn execute(
     msg: ExecuteMsg,
 ) -> Result<Response, ContractError> {
     match msg {
-        ExecuteMsg::UpdateConfig { max_supply, kpt_fund, gov, kpt_distribute } => {
-            update_config(deps, info, max_supply, kpt_fund, gov, kpt_distribute)
+        ExecuteMsg::UpdateConfig { kpt_fund, gov, kpt_distribute } => {
+            update_config(deps, info, kpt_fund, gov, kpt_distribute)
         }
         ExecuteMsg::Mint { recipient, amount } => {
             let recipient = deps.api.addr_validate(&recipient)?;
@@ -261,7 +248,6 @@ mod tests {
             cw20_init_msg,
             max_supply,
             gov: None,
-            kpt_distribute: None
         };
         // Positive test case
         let res = instantiate(deps.as_mut(), env.clone(), info.clone(), msg.clone()).unwrap();

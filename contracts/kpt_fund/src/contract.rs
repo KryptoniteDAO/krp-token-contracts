@@ -1,8 +1,7 @@
-use cosmwasm_std::{entry_point, DepsMut, Env, MessageInfo, Response, StdResult, StdError, Deps, to_binary, Uint128, Binary, Addr};
+use cosmwasm_std::{entry_point, DepsMut, Env, MessageInfo, Response, StdResult, Deps, to_binary, Uint128, Binary};
 use cw2::set_contract_version;
-use cw_utils::nonpayable;
 use crate::handler::{get_reward, notify_reward_amount, re_stake, refresh_reward, stake, unstake, update_kpt_fund_config, withdraw};
-use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg, UpdateConfigMsg};
+use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 use crate::querier::{earned, get_claim_able_kpt, get_claim_able_kusd, get_reserved_kpt_for_vesting, get_user_last_withdraw_time, get_user_reward_per_token_paid, get_user_rewards, get_user_time2full_redemption, get_user_unstake_rate, kpt_fund_config};
 use crate::state::{KptFundConfig, store_kpt_fund_config};
 
@@ -18,21 +17,13 @@ pub fn instantiate(
     info: MessageInfo,
     msg: InstantiateMsg,
 ) -> StdResult<Response> {
-    let r = nonpayable(&info);
-    if r.is_err() {
-        return Err(StdError::generic_err("NonPayable"));
-    }
-
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
 
-    let gov = if let Some(gov_addr) = msg.gov {
-        Addr::unchecked(gov_addr)
-    } else {
-        info.sender.clone()
-    };
+    let gov = msg.gov.unwrap_or_else(|| info.sender.clone());
+
 
     let config = KptFundConfig {
-        gov: gov,
+        gov,
         ve_kpt_addr: msg.ve_kpt_addr,
         kpt_addr: msg.kpt_addr,
         kusd_denom: msg.kusd_denom,
@@ -62,18 +53,9 @@ pub fn execute(
     match msg {
         ExecuteMsg::UpdateKptFundConfig
         {
-            gov, ve_kpt_addr, kpt_addr, kusd_denom, kusd_reward_addr, exit_cycle, claim_able_time
+            update_config_msg
         } => {
-            let date_msg = UpdateConfigMsg {
-                gov,
-                ve_kpt_addr,
-                kpt_addr,
-                kusd_denom,
-                kusd_reward_addr,
-                exit_cycle,
-                claim_able_time,
-            };
-            update_kpt_fund_config(deps, info, date_msg)
+            update_kpt_fund_config(deps, info, update_config_msg)
         }
         ExecuteMsg::RefreshReward { account } => {
             refresh_reward(deps, account)
@@ -133,10 +115,9 @@ pub fn migrate(_deps: DepsMut, _env: Env, _msg: MigrateMsg) -> StdResult<Respons
 
 #[cfg(test)]
 mod tests {
-    use std::str::FromStr;
     // Import necessary dependencies for testing
     use cosmwasm_std::testing::{mock_dependencies, mock_env, mock_info};
-    use cosmwasm_std::{Addr, from_binary, Uint128, Uint256, Uint64};
+    use cosmwasm_std::{Addr, from_binary, Uint128, Uint64};
     use crate::contract::query;
     use crate::msg::{InstantiateMsg, KptFundConfigResponse, QueryMsg, UpdateConfigMsg};
     use crate::state::{KptFundConfig, read_kpt_fund_config};
@@ -201,7 +182,6 @@ mod tests {
             kpt_addr: Option::from(Addr::unchecked("new_kpt")),
             kusd_denom: Option::from("new_kusd".to_string()),
             kusd_reward_addr: Option::from(Addr::unchecked("new_kusd_reward")),
-            exit_cycle: Option::from(Uint64::from(20u64)),
             claim_able_time: Option::from(Uint64::from(20u64)),
         };
         let info = mock_info("owner2", &[]);
@@ -221,7 +201,7 @@ mod tests {
             kusd_reward_total_amount: Uint128::zero(),
             kusd_reward_total_paid_amount: Uint128::zero(),
             reward_per_token_stored: Uint128::zero(),
-            exit_cycle: Option::from(update_msg.exit_cycle.unwrap()).unwrap(),
+            exit_cycle: Uint64::from(10u64),
             claim_able_time: Option::from(update_msg.claim_able_time.unwrap()).unwrap(),
         });
     }
@@ -261,5 +241,4 @@ mod tests {
             claim_able_time: Uint64::from(10u64),
         });
     }
-
 }

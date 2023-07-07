@@ -47,11 +47,6 @@ pub enum ExecuteMsg {
         ve_kpt_addr: Option<Addr>,
         reward_controller_addr: Option<Addr>,
     },
-    UpdateMinerState {
-        duration: Option<Uint128>,
-        extra_rate: Option<Uint128>,
-        lockdown_period: Option<Uint128>,
-    },
     SetIsRedemptionProvider {
         user: Addr,
         is_redemption_provider: bool,
