@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 use cosmwasm_schema::{cw_serde, QueryResponses};
-use cosmwasm_std::Addr;
+use cosmwasm_std::{Addr, Binary};
 use crate::state::{RuleConfig, RuleConfigState};
 
 
@@ -58,6 +58,7 @@ pub struct InstantiateMsg {
 pub enum ExecuteMsg {
     Claim {
         rule_type: String,
+        msg: Option<Binary>,
     },
     UpdateConfig {
         gov: Option<Addr>,

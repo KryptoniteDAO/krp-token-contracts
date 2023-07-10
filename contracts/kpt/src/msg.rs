@@ -19,7 +19,7 @@ pub enum ExecuteMsg {
         gov: Option<Addr>,
         kpt_distribute: Option<Addr>,
     },
-    Mint { recipient: String, amount: Uint128 },
+    Mint { recipient: String, amount: Uint128, contract: Option<String>, msg: Option<Binary> },
     /// Implements CW20. Burn is a base message to destroy tokens forever
     Burn { user: String, amount: Uint128 },
 

@@ -1,7 +1,8 @@
-use cosmwasm_std::{Addr, attr, DepsMut, Env, MessageInfo, Response, StdError, Uint128};
+use cosmwasm_std::{Addr, attr, Binary, DepsMut, Env, MessageInfo, Response, StdError, Uint128};
 use cw20_base::contract::{execute_burn, execute_mint};
 use crate::error::ContractError;
 use crate::helper::is_empty_str;
+use crate::mint_receiver::Cw20MintReceiveMsg;
 use crate::state::{read_kpt_config, store_kpt_config};
 
 pub fn update_config(deps: DepsMut, info: MessageInfo, kpt_fund: Option<Addr>, gov: Option<Addr>, kpt_distribute: Option<Addr>) -> Result<Response, ContractError> {
@@ -31,7 +32,10 @@ pub fn update_config(deps: DepsMut, info: MessageInfo, kpt_fund: Option<Addr>, g
     Ok(Response::new().add_attributes(attrs))
 }
 
-pub fn mint(deps: DepsMut, env: Env, info: MessageInfo, user: Addr, amount: u128) -> Result<Response, ContractError> {
+pub fn mint(mut deps: DepsMut, env: Env, info: MessageInfo,
+            user: Addr, amount: Uint128,
+            contract: Option<String>,
+            msg: Option<Binary>) -> Result<Response, ContractError> {
     let msg_sender = info.sender;
     let kpt_config = read_kpt_config(deps.storage)?;
     let kpt_fund = kpt_config.kpt_fund;
@@ -51,14 +55,28 @@ pub fn mint(deps: DepsMut, env: Env, info: MessageInfo, user: Addr, amount: u128
         funds: vec![],
     };
 
-    let cw20_res = execute_mint(deps, env, sub_info, user.clone().to_string(), Uint128::from(amount.clone()));
+    let cw20_res = execute_mint(deps.branch(), env, sub_info, user.clone().to_string(), amount.clone());
     if cw20_res.is_err() {
         return Err(ContractError::Std(StdError::generic_err(cw20_res.err().unwrap().to_string())));
     }
 
+    let mut res = Response::new()
+        .add_attributes(cw20_res.unwrap().attributes);
 
-    Ok(Response::new()
-        .add_attributes(cw20_res.unwrap().attributes))
+
+    if let Some(contract) = contract {
+        if let Some(msg) = msg {
+            res = res.add_message(
+                Cw20MintReceiveMsg {
+                    sender: msg_sender.into(),
+                    amount,
+                    msg,
+                }.into_cosmos_msg(contract)?,
+            );
+        }
+    }
+
+    Ok(res)
 }
 
 pub fn burn(deps: DepsMut, env: Env, info: MessageInfo, user: Addr, amount: u128) -> Result<Response, ContractError> {

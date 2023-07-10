@@ -77,8 +77,8 @@ pub fn execute(
     msg: ExecuteMsg,
 ) -> Result<Response, ContractError> {
     match msg {
-        ExecuteMsg::Claim { rule_type } => {
-            claim(deps, env, info, rule_type)
+        ExecuteMsg::Claim { rule_type, msg } => {
+            claim(deps, env, info, rule_type, msg)
         }
         ExecuteMsg::UpdateConfig { gov, distribute_token } => {
             update_config(deps, info, gov, distribute_token)

@@ -5,6 +5,7 @@ mod error;
 pub mod contract;
 mod querier;
 mod helper;
+mod mint_receiver;
 
 
 #[cfg(test)]

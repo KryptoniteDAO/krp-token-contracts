@@ -1,4 +1,4 @@
-use cosmwasm_std::{Addr, attr, CosmosMsg, DepsMut, Env, MessageInfo, Response, StdError, to_binary, Uint128, WasmMsg};
+use cosmwasm_std::{Addr, attr, Binary, CosmosMsg, DepsMut, Env, MessageInfo, Response, StdError, to_binary, Uint128, WasmMsg};
 use crate::error::ContractError;
 use crate::helper::BASE_RATE_12;
 use crate::msg::{RuleConfigMsg, UpdateRuleConfigMsg};
@@ -6,7 +6,8 @@ use crate::querier::query_claimable_info;
 use crate::state::{check_rule_config_exist, read_distribute_config, read_rule_config, read_rule_config_state, RuleConfig, RuleConfigState, store_distribute_config, store_rule_config, store_rule_config_state};
 use crate::third_msg::KptExecuteMsg;
 
-pub fn claim(deps: DepsMut, env: Env, info: MessageInfo, rule_type: String) -> Result<Response, ContractError> {
+pub fn claim(deps: DepsMut, env: Env, info: MessageInfo,
+             rule_type: String, msg: Option<Binary>) -> Result<Response, ContractError> {
     let claim_user = info.sender;
     // check rule type owner
     let rule_config = read_rule_config(deps.storage, &rule_type)?;
@@ -50,6 +51,8 @@ pub fn claim(deps: DepsMut, env: Env, info: MessageInfo, rule_type: String) -> R
         let kpt_mint_msg = KptExecuteMsg::Mint {
             recipient: claim_user.clone().to_string(),
             amount: Uint128::from(claim_amount.clone()),
+            contract: Option::from(claim_user.clone().to_string()),
+            msg,
         };
         let mint_msg = CosmosMsg::Wasm(WasmMsg::Execute {
             contract_addr: distribute_config.distribute_token.to_string(),
