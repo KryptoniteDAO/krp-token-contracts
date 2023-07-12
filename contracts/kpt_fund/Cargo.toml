@@ -35,6 +35,11 @@ cw20 = { version = "1.0.1" }
 cw20-base = { version = "1.0.1" ,features = ["library"] }
 cw-utils = "1.0.1"
 serde_json = "1.0.64"
+ve_kpt = {path = "../ve_kpt"}
+kpt = {path = "../kpt"}
 
 [dev-dependencies]
+cw-multi-test = "0.16.5"
+proptest = "1.2.0"
 cosmwasm-schema = "1.2.5"
+

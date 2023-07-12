@@ -3,7 +3,6 @@ use crate::helper::{BASE_RATE_12, BASE_RATE_6};
 use crate::msg::UpdateConfigMsg;
 use crate::querier::{earned, get_claim_able_kpt, get_reserved_kpt_for_vesting, total_staked};
 use crate::state::{KptFundConfig, read_kpt_fund_config, read_rewards, read_time2full_redemption, read_unstake_rate, store_kpt_fund_config, store_last_withdraw_time, store_rewards, store_time2full_redemption, store_unstake_rate, store_user_reward_per_token_paid};
-use crate::third_msg::{KptExecuteMsg, VeKptExecuteMsg};
 
 /**
  * This is a function that updates the configuration of a KPT Fund contract.
@@ -84,7 +83,7 @@ pub fn stake(
     refresh_reward(deps.branch(), sender.clone())?;
     let config = read_kpt_fund_config(deps.storage)?;
     let mut sub_msgs = vec![];
-    let kpt_burn_msg = KptExecuteMsg::Burn {
+    let kpt_burn_msg = kpt::msg::ExecuteMsg::Burn {
         user: sender.clone().to_string(),
         amount: amount.clone(),
     };
@@ -95,7 +94,7 @@ pub fn stake(
     }));
     sub_msgs.push(sub_burn_msg);
 
-    let kpt_mint_msg = VeKptExecuteMsg::Mint {
+    let kpt_mint_msg = ve_kpt::msg::ExecuteMsg::Mint {
         recipient: sender.clone().to_string(),
         amount: amount.clone(),
     };
@@ -132,7 +131,7 @@ pub fn unstake(
     }
 
     let mut sub_msgs = vec![];
-    let ve_kpt_burn_msg = VeKptExecuteMsg::Burn {
+    let ve_kpt_burn_msg = ve_kpt::msg::ExecuteMsg::Burn {
         user: sender.clone().to_string(),
         amount: amount.clone(),
     };
@@ -189,9 +188,11 @@ pub fn withdraw(
     let mut sub_msgs = vec![];
     if amount.gt(&Uint128::zero()) {
         let config = read_kpt_fund_config(deps.storage)?;
-        let kpt_mint_msg = KptExecuteMsg::Mint {
+        let kpt_mint_msg = kpt::msg::ExecuteMsg::Mint {
             recipient: user.clone().to_string(),
             amount: amount.clone(),
+            contract: None,
+            msg: None
         };
         let sub_mint_msg = SubMsg::new(CosmosMsg::Wasm(WasmMsg::Execute {
             contract_addr: config.kpt_addr.to_string(),
@@ -228,7 +229,7 @@ pub fn re_stake(
     let reserve_kpt = reserve_kpt_res.amount;
     let total = claim_able.checked_add(reserve_kpt)?;
     if total.gt(&Uint128::zero()) {
-        let ve_kpt_mint_msg = VeKptExecuteMsg::Mint {
+        let ve_kpt_mint_msg = ve_kpt::msg::ExecuteMsg::Mint {
             recipient: sender.clone().to_string(),
             amount: total.clone(),
         };
