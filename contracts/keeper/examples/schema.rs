@@ -1,6 +1,6 @@
 use cosmwasm_schema::write_api;
 
-use staking_rewards::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
+use keeper::msg::{ExecuteMsg, InstantiateMsg, QueryMsg};
 
 fn main() {
     write_api! {
