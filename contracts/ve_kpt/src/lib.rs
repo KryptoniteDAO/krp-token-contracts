@@ -7,4 +7,5 @@ pub mod msg;
 pub mod handler;
 pub mod querier;
 
-
+#[cfg(test)]
+mod testing;
