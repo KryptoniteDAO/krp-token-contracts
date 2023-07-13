@@ -36,13 +36,14 @@ pub struct RuleConfigState {
 
 const DISTRIBUTE_CONFIG: Item<DistributeConfig> = Item::new("distribute_config");
 
-
 const RULE_CONFIG: Map<&str, RuleConfig> = Map::new("rule_config");
 
 const RULE_CONFIG_STATE: Map<&str, RuleConfigState> = Map::new("rule_config_state");
 
-
-pub fn store_distribute_config(storage: &mut dyn Storage, config: &DistributeConfig) -> StdResult<()> {
+pub fn store_distribute_config(
+    storage: &mut dyn Storage,
+    config: &DistributeConfig,
+) -> StdResult<()> {
     DISTRIBUTE_CONFIG.save(storage, config)
 }
 
@@ -62,11 +63,14 @@ pub fn read_rule_config(storage: &dyn Storage, key: &str) -> StdResult<RuleConfi
     RULE_CONFIG.load(storage, key)
 }
 
-pub fn store_rule_config_state(storage: &mut dyn Storage, key: &str, data: &RuleConfigState) -> StdResult<()> {
+pub fn store_rule_config_state(
+    storage: &mut dyn Storage,
+    key: &str,
+    data: &RuleConfigState,
+) -> StdResult<()> {
     RULE_CONFIG_STATE.save(storage, key, data)
 }
 
 pub fn read_rule_config_state(storage: &dyn Storage, key: &str) -> StdResult<RuleConfigState> {
     RULE_CONFIG_STATE.load(storage, key)
 }
-

@@ -1,9 +1,13 @@
-use cosmwasm_std::{Deps, Env, StdResult};
 use crate::helper::BASE_RATE_12;
 use crate::msg::{QueryClaimableInfoResponse, QueryConfigResponse, QueryRuleInfoResponse};
 use crate::state::{read_distribute_config, read_rule_config, read_rule_config_state};
+use cosmwasm_std::{Deps, Env, StdResult};
 
-pub fn query_claimable_info(deps: Deps, env: Env, rule_type: String) -> StdResult<QueryClaimableInfoResponse> {
+pub fn query_claimable_info(
+    deps: Deps,
+    env: Env,
+    rule_type: String,
+) -> StdResult<QueryClaimableInfoResponse> {
     let block_time = env.block.time.seconds();
 
     let rule_config = read_rule_config(deps.storage, &rule_type)?;
@@ -27,27 +31,37 @@ pub fn query_claimable_info(deps: Deps, env: Env, rule_type: String) -> StdResul
         });
     }
 
-
     let mut release_amount = 0u128;
     let mut linear_release_amount = 0u128;
 
     //Calculate the start release amount
-    if rule_config.start_release_amount != 0 && !rule_config_state.is_start_release {
+    if rule_config.start_release_amount != 0 {
         release_amount = rule_config.start_release_amount;
         //update the start release state
     }
 
     //Calculate the linear release amount
     if block_time > rule_config.start_linear_release_time {
-        let start_calc_time = if rule_config_state.last_claim_linear_release_time > rule_config.start_linear_release_time {
+        let start_calc_time = if rule_config_state.last_claim_linear_release_time
+            > rule_config.start_linear_release_time
+        {
             rule_config_state.last_claim_linear_release_time
         } else {
             rule_config.start_linear_release_time
         };
-        let diff_time = block_time - start_calc_time;
-        linear_release_amount = u128::from(diff_time) * rule_config.linear_release_per_second / BASE_RATE_12;
+        let start_time = if block_time > rule_config.end_linear_release_time {
+            rule_config.end_linear_release_time
+        } else {
+            block_time
+        };
+
+        let diff_time = start_time - start_calc_time;
+        linear_release_amount =
+            u128::from(diff_time) * rule_config.linear_release_per_second / BASE_RATE_12;
     }
-    let can_claim_amount = release_amount + linear_release_amount;
+    let can_claim_amount =
+        release_amount + linear_release_amount - rule_config_state.claimed_amount;
+
     Ok(QueryClaimableInfoResponse {
         can_claim_amount,
         release_amount,

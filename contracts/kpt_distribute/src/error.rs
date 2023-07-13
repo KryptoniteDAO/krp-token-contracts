@@ -20,5 +20,4 @@ pub enum ContractError {
 
     #[error("AmountClaimOverTotal")]
     AmountClaimOverTotal {},
-
 }
