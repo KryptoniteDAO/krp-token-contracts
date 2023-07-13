@@ -83,9 +83,14 @@ pub fn execute(
             gov,
             kpt_distribute,
         } => update_config(deps, info, kpt_fund, gov, kpt_distribute),
-        ExecuteMsg::Mint { recipient, amount } => {
+        ExecuteMsg::Mint {
+            recipient,
+            amount,
+            contract,
+            msg,
+        } => {
             let recipient = deps.api.addr_validate(&recipient)?;
-            mint(deps, env, info, recipient, amount.u128())
+            mint(deps, env, info, recipient, amount, contract, msg)
         }
 
         // we override these from cw20
