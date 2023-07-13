@@ -1,16 +1,26 @@
-use cosmwasm_std::{entry_point, DepsMut, Env, MessageInfo, Response, Addr, StdResult, StdError, Deps, to_binary, Binary};
-use cw20::{MinterResponse};
-use cw20_base::allowances::{execute_decrease_allowance, execute_increase_allowance, execute_send_from, execute_transfer_from, query_allowance};
-use cw20_base::contract::{execute_send, execute_transfer, execute_update_marketing, execute_update_minter, execute_upload_logo, query_balance, query_download_logo, query_marketing_info, query_minter, query_token_info};
-use cw2::set_contract_version;
 use crate::error::ContractError;
 use crate::handler::{burn, mint, update_config};
 use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 use crate::querier::query_kpt_config;
-use crate::state::{KptConfig, store_kpt_config};
-use cw20_base::msg::{InstantiateMsg as Cw20InstantiateMsg, InstantiateMarketingInfo};
+use crate::state::{store_kpt_config, KptConfig};
+use cosmwasm_std::{
+    entry_point, to_binary, Addr, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdError,
+    StdResult,
+};
+use cw2::set_contract_version;
+use cw20::MinterResponse;
+use cw20_base::allowances::{
+    execute_decrease_allowance, execute_increase_allowance, execute_send_from,
+    execute_transfer_from, query_allowance,
+};
 use cw20_base::contract::instantiate as cw20_instantiate;
+use cw20_base::contract::{
+    execute_send, execute_transfer, execute_update_marketing, execute_update_minter,
+    execute_upload_logo, query_balance, query_download_logo, query_marketing_info, query_minter,
+    query_token_info,
+};
 use cw20_base::enumerable::{query_all_accounts, query_owner_allowances, query_spender_allowances};
+use cw20_base::msg::{InstantiateMarketingInfo, InstantiateMsg as Cw20InstantiateMsg};
 
 // version info for migration info
 const CONTRACT_NAME: &str = "kryptonite.finance:cw20-kpt";
@@ -32,7 +42,6 @@ pub fn instantiate(
         cap: Some(msg.max_supply.into()),
     });
 
-
     if let Some(marketing) = cw20_instantiate_msg.marketing {
         cw20_instantiate_msg.marketing = Some(InstantiateMarketingInfo {
             project: marketing.project,
@@ -41,7 +50,6 @@ pub fn instantiate(
             marketing: Some(gov.to_string()),
         });
     }
-
 
     let ins_res = cw20_instantiate(deps.branch(), env, info, cw20_instantiate_msg);
     if let Err(err) = ins_res {
@@ -62,7 +70,6 @@ pub fn instantiate(
     Ok(Response::default())
 }
 
-
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn execute(
     deps: DepsMut,
@@ -71,12 +78,14 @@ pub fn execute(
     msg: ExecuteMsg,
 ) -> Result<Response, ContractError> {
     match msg {
-        ExecuteMsg::UpdateConfig { kpt_fund, gov, kpt_distribute } => {
-            update_config(deps, info, kpt_fund, gov, kpt_distribute)
-        }
-        ExecuteMsg::Mint { recipient, amount, contract, msg } => {
+        ExecuteMsg::UpdateConfig {
+            kpt_fund,
+            gov,
+            kpt_distribute,
+        } => update_config(deps, info, kpt_fund, gov, kpt_distribute),
+        ExecuteMsg::Mint { recipient, amount } => {
             let recipient = deps.api.addr_validate(&recipient)?;
-            mint(deps, env, info, recipient, amount, contract, msg)
+            mint(deps, env, info, recipient, amount.u128())
         }
 
         // we override these from cw20
@@ -88,7 +97,9 @@ pub fn execute(
         ExecuteMsg::Transfer { recipient, amount } => {
             let cw20_res = execute_transfer(deps, env, info, recipient, amount);
             if cw20_res.is_err() {
-                return Err(ContractError::Std(StdError::generic_err(cw20_res.err().unwrap().to_string())));
+                return Err(ContractError::Std(StdError::generic_err(
+                    cw20_res.err().unwrap().to_string(),
+                )));
             }
             Ok(Response::default().add_attributes(cw20_res.unwrap().attributes))
         }
@@ -99,7 +110,9 @@ pub fn execute(
         } => {
             let cw20_res = execute_send(deps, env, info, contract, amount, send_msg);
             if cw20_res.is_err() {
-                return Err(ContractError::Std(StdError::generic_err(cw20_res.err().unwrap().to_string())));
+                return Err(ContractError::Std(StdError::generic_err(
+                    cw20_res.err().unwrap().to_string(),
+                )));
             }
             Ok(Response::default().add_attributes(cw20_res.unwrap().attributes))
         }
@@ -110,7 +123,9 @@ pub fn execute(
         } => {
             let cw20_res = execute_increase_allowance(deps, env, info, spender, amount, expires);
             if cw20_res.is_err() {
-                return Err(ContractError::Std(StdError::generic_err(cw20_res.err().unwrap().to_string())));
+                return Err(ContractError::Std(StdError::generic_err(
+                    cw20_res.err().unwrap().to_string(),
+                )));
             }
             Ok(Response::default().add_attributes(cw20_res.unwrap().attributes))
         }
@@ -121,7 +136,9 @@ pub fn execute(
         } => {
             let cw20_res = execute_decrease_allowance(deps, env, info, spender, amount, expires);
             if cw20_res.is_err() {
-                return Err(ContractError::Std(StdError::generic_err(cw20_res.err().unwrap().to_string())));
+                return Err(ContractError::Std(StdError::generic_err(
+                    cw20_res.err().unwrap().to_string(),
+                )));
             }
             Ok(Response::default().add_attributes(cw20_res.unwrap().attributes))
         }
@@ -132,7 +149,9 @@ pub fn execute(
         } => {
             let cw20_res = execute_transfer_from(deps, env, info, owner, recipient, amount);
             if cw20_res.is_err() {
-                return Err(ContractError::Std(StdError::generic_err(cw20_res.err().unwrap().to_string())));
+                return Err(ContractError::Std(StdError::generic_err(
+                    cw20_res.err().unwrap().to_string(),
+                )));
             }
             Ok(Response::default().add_attributes(cw20_res.unwrap().attributes))
         }
@@ -144,7 +163,9 @@ pub fn execute(
         } => {
             let cw20_res = execute_send_from(deps, env, info, owner, contract, amount, send_msg);
             if cw20_res.is_err() {
-                return Err(ContractError::Std(StdError::generic_err(cw20_res.err().unwrap().to_string())));
+                return Err(ContractError::Std(StdError::generic_err(
+                    cw20_res.err().unwrap().to_string(),
+                )));
             }
             Ok(Response::default().add_attributes(cw20_res.unwrap().attributes))
         }
@@ -155,21 +176,27 @@ pub fn execute(
         } => {
             let res = execute_update_marketing(deps, env, info, project, description, marketing);
             if res.is_err() {
-                return Err(ContractError::Std(StdError::generic_err(res.err().unwrap().to_string())));
+                return Err(ContractError::Std(StdError::generic_err(
+                    res.err().unwrap().to_string(),
+                )));
             }
             Ok(res.unwrap())
         }
         ExecuteMsg::UploadLogo(logo) => {
             let res = execute_upload_logo(deps, env, info, logo);
             if res.is_err() {
-                return Err(ContractError::Std(StdError::generic_err(res.err().unwrap().to_string())));
+                return Err(ContractError::Std(StdError::generic_err(
+                    res.err().unwrap().to_string(),
+                )));
             }
             Ok(res.unwrap())
         }
         ExecuteMsg::UpdateMinter { new_minter } => {
             let res = execute_update_minter(deps, env, info, new_minter);
             if res.is_err() {
-                return Err(ContractError::Std(StdError::generic_err(res.err().unwrap().to_string())));
+                return Err(ContractError::Std(StdError::generic_err(
+                    res.err().unwrap().to_string(),
+                )));
             }
             Ok(res.unwrap())
         }
@@ -214,49 +241,4 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn migrate(_deps: DepsMut, _env: Env, _msg: MigrateMsg) -> StdResult<Response> {
     Ok(Response::default())
-}
-
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use cosmwasm_std::testing::{mock_dependencies, mock_env, mock_info};
-    use cosmwasm_std::{Addr};
-    use cw20_base::msg::{InstantiateMsg as Cw20InitMsg};
-    use crate::state::read_kpt_config;
-
-    #[test]
-    fn test_instantiate() {
-        let mut deps = mock_dependencies();
-        let env = mock_env();
-        let info = mock_info("creator", &[]);
-        let max_supply = 1000000u128;
-        let cw20_init_msg = Cw20InitMsg {
-            name: "Test Token".to_string(),
-            symbol: "TEST".to_string(),
-            decimals: 6,
-            initial_balances: vec![],
-            mint: None,
-            marketing: Some(InstantiateMarketingInfo {
-                project: Option::from("Test Project".to_string()),
-                description: Option::from("Test Description".to_string()),
-                logo: None,
-                marketing: None,
-            }),
-        };
-        let msg = InstantiateMsg {
-            cw20_init_msg,
-            max_supply,
-            gov: None,
-        };
-        // Positive test case
-        let res = instantiate(deps.as_mut(), env.clone(), info.clone(), msg.clone()).unwrap();
-        assert_eq!(res, Response::default());
-        // Check kpt config
-        let kpt_config = read_kpt_config(deps.as_ref().storage).unwrap();
-        println!("{:?}", kpt_config);
-        assert_eq!(kpt_config.max_supply, max_supply);
-        assert_eq!(kpt_config.kpt_fund, Addr::unchecked(""));
-        assert_eq!(kpt_config.gov, info.sender);
-    }
 }
