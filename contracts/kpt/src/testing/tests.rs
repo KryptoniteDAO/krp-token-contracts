@@ -152,6 +152,8 @@ mod tests {
         let _msg = ExecuteMsg::Mint {
             recipient: "lucky".to_string(),
             amount,
+            contract: None,
+            msg: None,
         };
         let _info = mock_info("creator", &[]);
         let _res = execute(deps.as_mut(), mock_env(), _info, _msg);
@@ -163,6 +165,8 @@ mod tests {
         let _msg = ExecuteMsg::Mint {
             recipient: "lucky".to_string(),
             amount,
+            contract: None,
+            msg: None,
         };
         let _info = mock_info("random_user", &[]);
         let _res = execute(deps.as_mut(), mock_env(), _info, _msg);
@@ -185,6 +189,8 @@ mod tests {
         let _msg = ExecuteMsg::Mint {
             recipient: "lucky".to_string(),
             amount,
+            contract: None,
+            msg: None,
         };
         let _info = mock_info("random_user", &[]);
         let _res = execute(deps.as_mut(), mock_env(), _info, _msg);
@@ -196,6 +202,8 @@ mod tests {
         let _msg = ExecuteMsg::Mint {
             recipient: "lucky".to_string(),
             amount,
+            contract: None,
+            msg: None,
         };
         let _info = mock_info("new_gov", &[]);
         let _res = execute(deps.as_mut(), mock_env(), _info, _msg);
@@ -208,6 +216,8 @@ mod tests {
         let _msg = ExecuteMsg::Mint {
             recipient: "lucky".to_string(),
             amount,
+            contract: None,
+            msg: None,
         };
         let _info = mock_info("new_kpt_fund", &[]);
         let _res = execute(deps.as_mut(), mock_env(), _info, _msg).unwrap();
@@ -218,6 +228,8 @@ mod tests {
         let _msg = ExecuteMsg::Mint {
             recipient: "lucky".to_string(),
             amount,
+            contract: None,
+            msg: None,
         };
         let _info = mock_info("new_kpt_distribute", &[]);
         let _res = execute(deps.as_mut(), mock_env(), _info, _msg).unwrap();
@@ -252,6 +264,8 @@ mod tests {
         let _msg = ExecuteMsg::Mint {
             recipient: "lucky".to_string(),
             amount,
+            contract: None,
+            msg: None,
         };
         let _info = mock_info("new_kpt_fund", &[]);
         let _res = execute(deps.as_mut(), mock_env(), _info, _msg).unwrap();
