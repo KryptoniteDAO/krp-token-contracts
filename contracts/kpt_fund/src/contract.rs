@@ -1,10 +1,20 @@
-use cosmwasm_std::{entry_point, DepsMut, Env, MessageInfo, Response, StdResult, Deps, to_binary, Uint128, Binary};
-use cw2::set_contract_version;
-use crate::handler::{get_reward, notify_reward_amount, re_stake, refresh_reward, stake, unstake, update_kpt_fund_config, withdraw};
+use crate::handler::{
+    get_reward, notify_reward_amount, re_stake, refresh_reward, stake, unstake,
+    update_kpt_fund_config, withdraw,
+};
 use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
-use crate::querier::{earned, get_claim_able_kpt, get_claim_able_kusd, get_reserved_kpt_for_vesting, get_user_last_withdraw_time, get_user_reward_per_token_paid, get_user_rewards, get_user_time2full_redemption, get_user_unstake_rate, kpt_fund_config};
-use crate::state::{KptFundConfig, store_kpt_fund_config};
-
+use crate::querier::{
+    earned, get_claim_able_kpt, get_claim_able_kusd, get_reserved_kpt_for_vesting,
+    get_user_last_withdraw_time, get_user_reward_per_token_paid, get_user_rewards,
+    get_user_time2full_redemption, get_user_unstake_rate, kpt_fund_config,
+};
+use crate::state::{store_kpt_fund_config, KptFundConfig};
+#[cfg(not(feature = "library"))]
+use cosmwasm_std::entry_point;
+use cosmwasm_std::{
+    to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult, Uint128,
+};
+use cw2::set_contract_version;
 
 // version info for migration info
 const CONTRACT_NAME: &str = "kryptonite.finance:cw20-kpt-fund";
@@ -20,7 +30,6 @@ pub fn instantiate(
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
 
     let gov = msg.gov.unwrap_or_else(|| info.sender.clone());
-
 
     let config = KptFundConfig {
         gov,
@@ -44,40 +53,18 @@ pub fn instantiate(
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
-pub fn execute(
-    deps: DepsMut,
-    env: Env,
-    info: MessageInfo,
-    msg: ExecuteMsg,
-) -> StdResult<Response> {
+pub fn execute(deps: DepsMut, env: Env, info: MessageInfo, msg: ExecuteMsg) -> StdResult<Response> {
     match msg {
-        ExecuteMsg::UpdateKptFundConfig
-        {
-            update_config_msg
-        } => {
+        ExecuteMsg::UpdateKptFundConfig { update_config_msg } => {
             update_kpt_fund_config(deps, info, update_config_msg)
         }
-        ExecuteMsg::RefreshReward { account } => {
-            refresh_reward(deps, account)
-        }
-        ExecuteMsg::Stake { amount } => {
-            stake(deps, info, amount)
-        }
-        ExecuteMsg::Unstake { amount } => {
-            unstake(deps, env, info, amount)
-        }
-        ExecuteMsg::Withdraw { user } => {
-            withdraw(deps, env, user)
-        }
-        ExecuteMsg::ReStake { .. } => {
-            re_stake(deps, env, info)
-        }
-        ExecuteMsg::GetReward { .. } => {
-            get_reward(deps, info)
-        }
-        ExecuteMsg::NotifyRewardAmount { .. } => {
-            notify_reward_amount(deps, info)
-        }
+        ExecuteMsg::RefreshReward { account } => refresh_reward(deps, account),
+        ExecuteMsg::Stake { amount } => stake(deps, info, amount),
+        ExecuteMsg::Unstake { amount } => unstake(deps, env, info, amount),
+        ExecuteMsg::Withdraw { user } => withdraw(deps, env, user),
+        ExecuteMsg::ReStake { .. } => re_stake(deps, env, info),
+        ExecuteMsg::GetReward { .. } => get_reward(deps, info),
+        ExecuteMsg::NotifyRewardAmount { .. } => notify_reward_amount(deps, info),
     }
 }
 
@@ -86,15 +73,15 @@ pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
         QueryMsg::KptFundConfig {} => to_binary(&kpt_fund_config(deps)?),
         QueryMsg::GetClaimAbleKpt { user } => to_binary(&get_claim_able_kpt(deps, env, user)?),
-        QueryMsg::GetReservedKptForVesting { user } => to_binary(&get_reserved_kpt_for_vesting(deps, env, user)?),
+        QueryMsg::GetReservedKptForVesting { user } => {
+            to_binary(&get_reserved_kpt_for_vesting(deps, env, user)?)
+        }
         QueryMsg::Earned { account } => to_binary(&earned(deps, account)?),
         QueryMsg::GetClaimAbleKusd { account } => to_binary(&get_claim_able_kusd(deps, account)?),
         QueryMsg::GetUserRewardPerTokenPaid { account } => {
             to_binary(&get_user_reward_per_token_paid(deps, account)?)
         }
-        QueryMsg::GetUserRewards { account } => {
-            to_binary(&get_user_rewards(deps, account)?)
-        }
+        QueryMsg::GetUserRewards { account } => to_binary(&get_user_rewards(deps, account)?),
         QueryMsg::GetUserTime2fullRedemption { account } => {
             to_binary(&get_user_time2full_redemption(deps, account)?)
         }

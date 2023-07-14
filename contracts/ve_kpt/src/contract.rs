@@ -1,17 +1,26 @@
-use cosmwasm_std::{entry_point, DepsMut, Env, MessageInfo, Response, Addr, StdResult, StdError, Deps, Binary, to_binary};
-use cosmwasm_std::Uint128;
-use cw20::MinterResponse;
-use cw20_base::contract::{execute_update_marketing, execute_upload_logo, query_balance, query_download_logo, query_marketing_info, query_minter, query_token_info};
-use cw2::set_contract_version;
 use crate::error::ContractError;
 use crate::handler::{burn, mint, set_minters, update_config};
 use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 use crate::querier::{query_is_minter, query_vote_config};
 use crate::state::{store_vote_config, VoteConfig};
-use crate::ve_querier::{checkpoints, get_past_total_supply, get_past_votes, get_votes, num_checkpoints};
-use cw20_base::msg::{InstantiateMsg as Cw20InstantiateMsg, InstantiateMarketingInfo};
+use crate::ve_querier::{
+    checkpoints, get_past_total_supply, get_past_votes, get_votes, num_checkpoints,
+};
+#[cfg(not(feature = "library"))]
+use cosmwasm_std::entry_point;
+use cosmwasm_std::Uint128;
+use cosmwasm_std::{
+    to_binary, Addr, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdError, StdResult,
+};
+use cw2::set_contract_version;
+use cw20::MinterResponse;
 use cw20_base::contract::instantiate as cw20_instantiate;
-use cw20_base::enumerable::{query_all_accounts};
+use cw20_base::contract::{
+    execute_update_marketing, execute_upload_logo, query_balance, query_download_logo,
+    query_marketing_info, query_minter, query_token_info,
+};
+use cw20_base::enumerable::query_all_accounts;
+use cw20_base::msg::{InstantiateMarketingInfo, InstantiateMsg as Cw20InstantiateMsg};
 
 // version info for migration info
 const CONTRACT_NAME: &str = "kryptonite.finance:cw20-ve-kpt";
@@ -37,7 +46,6 @@ pub fn instantiate(
         cap: Some(msg.max_supply.into()),
     });
 
-
     cw20_instantiate_msg.marketing = if let Some(marketing) = cw20_instantiate_msg.marketing {
         Some(InstantiateMarketingInfo {
             project: marketing.project,
@@ -51,7 +59,9 @@ pub fn instantiate(
 
     let ins_res = cw20_instantiate(deps.branch(), env, info, cw20_instantiate_msg);
     if ins_res.is_err() {
-        return Err(ContractError::Std(StdError::generic_err(ins_res.err().unwrap().to_string())));
+        return Err(ContractError::Std(StdError::generic_err(
+            ins_res.err().unwrap().to_string(),
+        )));
     }
 
     let vote_config = VoteConfig {
@@ -67,7 +77,6 @@ pub fn instantiate(
     Ok(Response::default())
 }
 
-
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn execute(
     deps: DepsMut,
@@ -76,12 +85,15 @@ pub fn execute(
     msg: ExecuteMsg,
 ) -> Result<Response, ContractError> {
     match msg {
-        ExecuteMsg::UpdateConfig { max_minted, kpt_fund, gov } => {
-            update_config(deps, info, max_minted, kpt_fund, gov)
-        }
-        ExecuteMsg::SetMinters { contracts, is_minter } => {
-            set_minters(deps, info, contracts, is_minter)
-        }
+        ExecuteMsg::UpdateConfig {
+            max_minted,
+            kpt_fund,
+            gov,
+        } => update_config(deps, info, max_minted, kpt_fund, gov),
+        ExecuteMsg::SetMinters {
+            contracts,
+            is_minter,
+        } => set_minters(deps, info, contracts, is_minter),
         ExecuteMsg::Mint { recipient, amount } => {
             let recipient = deps.api.addr_validate(&recipient)?;
             mint(deps, env, info, recipient, amount.u128())
@@ -99,14 +111,18 @@ pub fn execute(
         } => {
             let res = execute_update_marketing(deps, env, info, project, description, marketing);
             if res.is_err() {
-                return Err(ContractError::Std(StdError::generic_err(res.err().unwrap().to_string())));
+                return Err(ContractError::Std(StdError::generic_err(
+                    res.err().unwrap().to_string(),
+                )));
             }
             Ok(res.unwrap())
         }
         ExecuteMsg::UploadLogo(logo) => {
             let res = execute_upload_logo(deps, env, info, logo);
             if res.is_err() {
-                return Err(ContractError::Std(StdError::generic_err(res.err().unwrap().to_string())));
+                return Err(ContractError::Std(StdError::generic_err(
+                    res.err().unwrap().to_string(),
+                )));
             }
             Ok(res.unwrap())
         }
@@ -118,13 +134,20 @@ pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
         // custom queries
         QueryMsg::VoteConfig {} => to_binary(&query_vote_config(deps)?),
-        QueryMsg::IsMinter { address } => to_binary(&query_is_minter(deps, deps.api.addr_validate(&address)?)?),
+        QueryMsg::IsMinter { address } => {
+            to_binary(&query_is_minter(deps, deps.api.addr_validate(&address)?)?)
+        }
         QueryMsg::Checkpoints { account, pos } => to_binary(&checkpoints(deps, account, pos)?),
         QueryMsg::NumCheckpoints { account } => to_binary(&num_checkpoints(deps, account)?),
         // QueryMsg::Delegates { account } => to_binary(&delegates(deps, account)?),
         QueryMsg::GetVotes { account } => to_binary(&get_votes(deps, account)?),
-        QueryMsg::GetPastVotes { account, block_number } => to_binary(&get_past_votes(deps, env, account, block_number)?),
-        QueryMsg::GetPastTotalSupply { block_number } => to_binary(&get_past_total_supply(deps, env, block_number)?),
+        QueryMsg::GetPastVotes {
+            account,
+            block_number,
+        } => to_binary(&get_past_votes(deps, env, account, block_number)?),
+        QueryMsg::GetPastTotalSupply { block_number } => {
+            to_binary(&get_past_total_supply(deps, env, block_number)?)
+        }
 
         // inherited from cw20-base
         QueryMsg::Balance { address } => to_binary(&query_balance(deps, address)?),
