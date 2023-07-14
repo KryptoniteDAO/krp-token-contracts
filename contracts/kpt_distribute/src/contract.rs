@@ -7,8 +7,10 @@ use crate::state::{
     store_distribute_config, store_rule_config, store_rule_config_state, DistributeConfig,
     RuleConfig, RuleConfigState,
 };
+#[cfg(not(feature = "library"))]
+use cosmwasm_std::entry_point;
 use cosmwasm_std::{
-    entry_point, to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdError, StdResult,
+    to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdError, StdResult,
 };
 use cw2::set_contract_version;
 

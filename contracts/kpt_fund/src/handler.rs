@@ -1,8 +1,15 @@
-use cosmwasm_std::{Addr, attr, BankMsg, coin, CosmosMsg, DepsMut, Env, MessageInfo, Response, StdError, StdResult, SubMsg, to_binary, Uint128, Uint256, Uint64, WasmMsg};
 use crate::helper::{BASE_RATE_12, BASE_RATE_6};
 use crate::msg::UpdateConfigMsg;
 use crate::querier::{earned, get_claim_able_kpt, get_reserved_kpt_for_vesting, total_staked};
-use crate::state::{KptFundConfig, read_kpt_fund_config, read_rewards, read_time2full_redemption, read_unstake_rate, store_kpt_fund_config, store_last_withdraw_time, store_rewards, store_time2full_redemption, store_unstake_rate, store_user_reward_per_token_paid};
+use crate::state::{
+    read_kpt_fund_config, read_rewards, read_time2full_redemption, read_unstake_rate,
+    store_kpt_fund_config, store_last_withdraw_time, store_rewards, store_time2full_redemption,
+    store_unstake_rate, store_user_reward_per_token_paid, KptFundConfig,
+};
+use cosmwasm_std::{
+    attr, coin, to_binary, Addr, BankMsg, CosmosMsg, DepsMut, Env, MessageInfo, Response, StdError,
+    StdResult, SubMsg, Uint128, Uint256, Uint64, WasmMsg,
+};
 
 /**
  * This is a function that updates the configuration of a KPT Fund contract.
@@ -21,7 +28,10 @@ pub fn update_kpt_fund_config(
     if info.sender != config.gov {
         return Err(StdError::generic_err("unauthorized"));
     }
-    let mut attrs = vec![attr("action", "update_kpt_fund_config"), attr("sender", info.sender.to_string())];
+    let mut attrs = vec![
+        attr("action", "update_kpt_fund_config"),
+        attr("sender", info.sender.to_string()),
+    ];
     if let Some(gov) = msg.gov {
         config.gov = gov.clone();
         attrs.push(attr("gov", gov.to_string()));
@@ -50,12 +60,15 @@ pub fn update_kpt_fund_config(
     Ok(Response::new().add_attributes(attrs))
 }
 
-
 fn _update_reward(deps: DepsMut, account: Addr) -> StdResult<()> {
     let user_rewards = earned(deps.as_ref(), account.clone())?.amount;
     store_rewards(deps.storage, account.clone(), &user_rewards)?;
     let config = read_kpt_fund_config(deps.storage)?;
-    store_user_reward_per_token_paid(deps.storage, account.clone(), &config.reward_per_token_stored)?;
+    store_user_reward_per_token_paid(
+        deps.storage,
+        account.clone(),
+        &config.reward_per_token_stored,
+    )?;
     Ok(())
 }
 
@@ -65,19 +78,15 @@ fn _update_reward(deps: DepsMut, account: Addr) -> StdResult<()> {
  * The function then updates the reward of the user and stores it in the contract's storage.
  * Finally, it returns a response with attributes indicating the action taken and the user's address.
  */
-pub fn refresh_reward(
-    deps: DepsMut,
-    account: Addr,
-) -> StdResult<Response> {
+pub fn refresh_reward(deps: DepsMut, account: Addr) -> StdResult<Response> {
     _update_reward(deps, account.clone())?;
-    Ok(Response::new().add_attributes(vec![attr("action", "refresh_reward"), attr("account", account.to_string())]))
+    Ok(Response::new().add_attributes(vec![
+        attr("action", "refresh_reward"),
+        attr("account", account.to_string()),
+    ]))
 }
 
-pub fn stake(
-    mut deps: DepsMut,
-    info: MessageInfo,
-    amount: Uint128,
-) -> StdResult<Response> {
+pub fn stake(mut deps: DepsMut, info: MessageInfo, amount: Uint128) -> StdResult<Response> {
     let sender = info.sender;
 
     refresh_reward(deps.branch(), sender.clone())?;
@@ -149,11 +158,16 @@ pub fn unstake(
     if time2full_redemption_user.gt(&current_time) {
         let unstake_rate_user = read_unstake_rate(deps.storage, sender.clone());
         let diff_time = time2full_redemption_user.checked_sub(current_time)?;
-        total = total.checked_add(unstake_rate_user.multiply_ratio(Uint256::from(diff_time), Uint256::from(BASE_RATE_12)))?;
+        total = total.checked_add(
+            unstake_rate_user.multiply_ratio(Uint256::from(diff_time), Uint256::from(BASE_RATE_12)),
+        )?;
     }
 
     // let user_new_unstake_rate = total.checked_div(Uint128::from(config.exit_cycle)).unwrap();
-    let user_new_unstake_rate = total.multiply_ratio(Uint256::from(BASE_RATE_12), Uint256::from(config.exit_cycle));
+    let user_new_unstake_rate = total.multiply_ratio(
+        Uint256::from(BASE_RATE_12),
+        Uint256::from(config.exit_cycle),
+    );
     let user_new_time2full_redemption = current_time.checked_add(config.exit_cycle)?;
 
     store_unstake_rate(deps.storage, sender.clone(), &user_new_unstake_rate)?;
@@ -176,11 +190,7 @@ pub fn unstake(
  * This message is added as a sub-message to the response.
  * Finally, the function stores the current block time as the user's last withdrawal time and returns a response with attributes indicating the action, user, and amount withdrawn.
  */
-pub fn withdraw(
-    deps: DepsMut,
-    env: Env,
-    user: Addr,
-) -> StdResult<Response> {
+pub fn withdraw(deps: DepsMut, env: Env, user: Addr) -> StdResult<Response> {
     let current_time = Uint64::from(env.block.time.seconds());
     let claim_able_res = get_claim_able_kpt(deps.as_ref(), env, user.clone())?;
 
@@ -192,7 +202,7 @@ pub fn withdraw(
             recipient: user.clone().to_string(),
             amount: amount.clone(),
             contract: None,
-            msg: None
+            msg: None,
         };
         let sub_mint_msg = SubMsg::new(CosmosMsg::Wasm(WasmMsg::Execute {
             contract_addr: config.kpt_addr.to_string(),
@@ -213,11 +223,7 @@ pub fn withdraw(
         ]))
 }
 
-pub fn re_stake(
-    mut deps: DepsMut,
-    env: Env,
-    info: MessageInfo,
-) -> StdResult<Response> {
+pub fn re_stake(mut deps: DepsMut, env: Env, info: MessageInfo) -> StdResult<Response> {
     let sender = info.sender;
     _update_reward(deps.branch(), sender.clone())?;
 
@@ -271,19 +277,18 @@ pub fn get_reward(mut deps: DepsMut, info: MessageInfo) -> StdResult<Response> {
 
         messages.push(send_msg);
 
-        config.kusd_reward_total_paid_amount = config.kusd_reward_total_paid_amount.checked_add(reward.clone())?;
+        config.kusd_reward_total_paid_amount = config
+            .kusd_reward_total_paid_amount
+            .checked_add(reward.clone())?;
 
         store_kpt_fund_config(deps.storage, &config)?;
     }
-    return Ok(Response::new()
-        .add_messages(messages)
-        .add_attributes(vec![
-            attr("action", "get_reward"),
-            attr("sender", sender.to_string()),
-            attr("reward", reward.to_string()),
-        ]));
+    return Ok(Response::new().add_messages(messages).add_attributes(vec![
+        attr("action", "get_reward"),
+        attr("sender", sender.to_string()),
+        attr("reward", reward.to_string()),
+    ]));
 }
-
 
 /**
  * @dev The amount of KUSD acquiered from the sender is euitably distributed to KPT stakers.
@@ -294,14 +299,18 @@ pub fn notify_reward_amount(deps: DepsMut, info: MessageInfo) -> StdResult<Respo
     let sender = info.sender;
     let mut config = read_kpt_fund_config(deps.storage)?;
     if sender.clone().ne(&config.kusd_reward_addr) {
-        return Err(StdError::generic_err("only kusd reward addr can notify reward amount"));
+        return Err(StdError::generic_err(
+            "only kusd reward addr can notify reward amount",
+        ));
     }
 
     let total_staked = total_staked(deps.as_ref())?;
     if total_staked.eq(&Uint128::zero()) {
         return Ok(Response::new());
     }
-    let payment = info.funds.iter()
+    let payment = info
+        .funds
+        .iter()
         .find(|x| x.denom.eq(&config.kusd_denom))
         .ok_or_else(|| StdError::generic_err("kusd denom not found"))?;
 
@@ -312,15 +321,17 @@ pub fn notify_reward_amount(deps: DepsMut, info: MessageInfo) -> StdResult<Respo
     }
 
     let inc_reward_per_token = amount.multiply_ratio(Uint128::new(BASE_RATE_6), total_staked);
-    config.reward_per_token_stored = config.reward_per_token_stored.checked_add(inc_reward_per_token).unwrap();
+    config.reward_per_token_stored = config
+        .reward_per_token_stored
+        .checked_add(inc_reward_per_token)
+        .unwrap();
     config.kusd_reward_total_amount = config.kusd_reward_total_amount.checked_add(amount).unwrap();
 
     store_kpt_fund_config(deps.storage, &config)?;
 
-    Ok(Response::new()
-        .add_attributes(vec![
-            attr("action", "notify_reward_amount"),
-            attr("amount", amount.to_string()),
-            attr("sender", sender.to_string()),
-        ]))
+    Ok(Response::new().add_attributes(vec![
+        attr("action", "notify_reward_amount"),
+        attr("amount", amount.to_string()),
+        attr("sender", sender.to_string()),
+    ]))
 }

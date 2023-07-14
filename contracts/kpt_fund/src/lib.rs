@@ -1,11 +1,9 @@
-mod state;
+pub mod contract;
 mod handler;
+mod helper;
 pub mod msg;
 mod querier;
-pub mod contract;
-mod helper;
-
-
+mod state;
 
 #[cfg(test)]
 mod testing;

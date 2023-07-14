@@ -215,7 +215,6 @@ fn test_integration() {
 
     let rule_config_data = query_rule_info(&mut app, &kpt_distribute, &rule_type);
     let rule_config = rule_config_data.rule_config;
-    let rule_config_state = rule_config_data.rule_config_state;
 
     // update block time
     app.update_block(|block| {

@@ -1,5 +1,4 @@
-
-use cosmwasm_schema::{cw_serde,QueryResponses};
+use cosmwasm_schema::{cw_serde, QueryResponses};
 use cosmwasm_std::{Addr, Uint128, Uint256, Uint64};
 
 #[cw_serde]
@@ -11,7 +10,6 @@ pub struct UpdateConfigMsg {
     pub kusd_reward_addr: Option<Addr>,
     pub claim_able_time: Option<Uint64>,
 }
-
 
 #[cw_serde]
 pub struct InstantiateMsg {
@@ -26,21 +24,11 @@ pub struct InstantiateMsg {
 
 #[cw_serde]
 pub enum ExecuteMsg {
-    UpdateKptFundConfig {
-        update_config_msg: UpdateConfigMsg,
-    },
-    RefreshReward {
-        account: Addr,
-    },
-    Stake {
-        amount: Uint128,
-    },
-    Unstake {
-        amount: Uint128,
-    },
-    Withdraw {
-        user: Addr,
-    },
+    UpdateKptFundConfig { update_config_msg: UpdateConfigMsg },
+    RefreshReward { account: Addr },
+    Stake { amount: Uint128 },
+    Unstake { amount: Uint128 },
+    Withdraw { user: Addr },
     ReStake {},
     GetReward {},
     NotifyRewardAmount {},
@@ -53,43 +41,24 @@ pub enum QueryMsg {
     KptFundConfig {},
 
     #[returns(GetClaimAbleKptResponse)]
-    GetClaimAbleKpt {
-        user: Addr,
-    },
+    GetClaimAbleKpt { user: Addr },
     #[returns(GetReservedKptForVestingResponse)]
-    GetReservedKptForVesting {
-        user: Addr,
-    },
+    GetReservedKptForVesting { user: Addr },
     #[returns(EarnedResponse)]
-    Earned {
-        account: Addr,
-    },
+    Earned { account: Addr },
     #[returns(GetClaimAbleKusdResponse)]
-    GetClaimAbleKusd {
-        account: Addr,
-    },
+    GetClaimAbleKusd { account: Addr },
     #[returns(UserRewardPerTokenPaidResponse)]
-    GetUserRewardPerTokenPaid {
-        account: Addr,
-    },
+    GetUserRewardPerTokenPaid { account: Addr },
     #[returns(UserRewardPerTokenPaidResponse)]
-    GetUserRewards {
-        account: Addr,
-    },
+    GetUserRewards { account: Addr },
     #[returns(UserTime2fullRedemptionResponse)]
-    GetUserTime2fullRedemption {
-        account: Addr,
-    },
+    GetUserTime2fullRedemption { account: Addr },
     #[returns(UserUnstakeRateResponse)]
-    GetUserUnstakeRate {
-        account: Addr,
-    },
+    GetUserUnstakeRate { account: Addr },
     #[returns(UserLastWithdrawTimeResponse)]
-    GetUserLastWithdrawTime {
-        account: Addr,
-    }
+    GetUserLastWithdrawTime { account: Addr },
 }
-
 
 #[cw_serde]
 pub struct UserRewardPerTokenPaidResponse {
@@ -151,7 +120,6 @@ pub struct KptFundConfigResponse {
     // uint256 public claimAbleTime;
     pub claim_able_time: Uint64,
 }
-
 
 #[cw_serde]
 pub struct MigrateMsg {}
