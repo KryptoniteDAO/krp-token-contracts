@@ -49,15 +49,32 @@ pub fn query_claimable_info(
         } else {
             rule_config.start_linear_release_time
         };
-        let start_time = if block_time > rule_config.end_linear_release_time {
-            rule_config.end_linear_release_time
-        } else {
-            block_time
-        };
 
-        let diff_time = start_time - start_calc_time;
-        linear_release_amount =
-            u128::from(diff_time) * rule_config.linear_release_per_second / BASE_RATE_12;
+        if block_time > rule_config.end_linear_release_time {
+            if rule_config_state.is_start_release {
+                linear_release_amount = rule_config.unlock_linear_release_amount
+                    + rule_config.start_release_amount
+                    - rule_config_state.released_amount;
+            } else {
+                linear_release_amount =
+                    rule_config.unlock_linear_release_amount - rule_config_state.released_amount;
+            }
+        } else {
+            let diff_time = block_time - start_calc_time;
+            linear_release_amount =
+                u128::from(diff_time) * rule_config.linear_release_per_second / BASE_RATE_12;
+        }
+
+        // let start_time = if block_time > rule_config.end_linear_release_time {
+        //     rule_config.end_linear_release_time
+        // } else {
+        //     block_time
+        // };
+        //
+        // let diff_time = start_time - start_calc_time;
+        //
+        // linear_release_amount =
+        //     u128::from(diff_time) * rule_config.linear_release_per_second / BASE_RATE_12;
     }
     let can_claim_amount =
         release_amount + linear_release_amount - rule_config_state.claimed_amount;

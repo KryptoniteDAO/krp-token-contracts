@@ -51,7 +51,10 @@ pub fn claim(
 
     rule_config_state.claimed_amount += claim_amount;
     if rule_config_state.claimed_amount > rule_config.rule_total_amount {
-        return Err(ContractError::AmountClaimOverTotal {});
+        return Err(ContractError::AmountClaimOverTotal(
+            rule_config_state.claimed_amount.clone(),
+            rule_config.rule_total_amount.clone(),
+        ));
     }
 
     store_rule_config_state(deps.storage, &rule_type, &rule_config_state)?;

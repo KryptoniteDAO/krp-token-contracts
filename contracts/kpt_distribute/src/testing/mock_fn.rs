@@ -99,7 +99,7 @@ pub fn mock_instantiate_msg(distribute_token: Addr) -> InstantiateMsg {
             lock_start_time: 1688366468u64,
             lock_end_time: 1688366468u64,
             start_linear_release_time: 1688366468u64,
-            unlock_linear_release_amount: 500000000000000u128,
+            unlock_linear_release_amount: 50000000000000u128,
             unlock_linear_release_time: 55296000u64,
         },
     );
