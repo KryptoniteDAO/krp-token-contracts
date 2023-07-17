@@ -4,8 +4,8 @@ use crate::msg::{
     ExecuteMsg, InstantiateMsg, QueryClaimableInfoResponse, QueryMsg, QueryRuleInfoResponse,
 };
 use crate::testing::mock_fn::{
-    mock_instantiate_msg, AIRDROP_OWNER, CREATOR, DAO_OWNER, LOOT_BOX_OWNER, MINING_OWNER,
-    MM_OWNER, RESERVE_OWNER, SHO_OWNER, TEAM_OWNER,
+    mock_instantiate_msg, AIRDROP_OWNER, CREATOR, DAO_OWNER, LOOT_BOX_OWNER, MM_OWNER,
+    RESERVE_OWNER, TEAM_OWNER,
 };
 use crate::testing::mock_third_fn::mock_kpt_instantiate_msg;
 use cosmwasm_std::testing::mock_env;
@@ -66,8 +66,8 @@ fn test_integration_claim_all() {
         &kpt_distribute,
         &rule_type,
         &loot_box_owner,
-        20000000000000u128,
-        80000000000000u128,
+        12000000000000u128,
+        48000000000000u128,
     );
 
     // team
@@ -80,21 +80,21 @@ fn test_integration_claim_all() {
         &rule_type,
         &team_owner,
         0u128,
-        120000000000000u128,
+        150000000000000u128,
     );
 
     // sho
-    let rule_type = "sho".to_string();
-    let sho_owner = Addr::unchecked(SHO_OWNER.clone().to_string());
-    check_rule_type(
-        &mut app,
-        &kpt_token,
-        &kpt_distribute,
-        &rule_type,
-        &sho_owner,
-        5000000000000u128,
-        5000000000000u128,
-    );
+    // let rule_type = "sho".to_string();
+    // let sho_owner = Addr::unchecked(SHO_OWNER.clone().to_string());
+    // check_rule_type(
+    //     &mut app,
+    //     &kpt_token,
+    //     &kpt_distribute,
+    //     &rule_type,
+    //     &sho_owner,
+    //     5000000000000u128,
+    //     5000000000000u128,
+    // );
 
     // dao
     let rule_type = "dao".to_string();
@@ -110,17 +110,17 @@ fn test_integration_claim_all() {
     );
 
     // mining
-    let rule_type = "mining".to_string();
-    let mining_owner = Addr::unchecked(MINING_OWNER.clone().to_string());
-    check_rule_type(
-        &mut app,
-        &kpt_token,
-        &kpt_distribute,
-        &rule_type,
-        &mining_owner,
-        0u128,
-        500000000000000u128,
-    );
+    // let rule_type = "mining".to_string();
+    // let mining_owner = Addr::unchecked(MINING_OWNER.clone().to_string());
+    // check_rule_type(
+    //     &mut app,
+    //     &kpt_token,
+    //     &kpt_distribute,
+    //     &rule_type,
+    //     &mining_owner,
+    //     0u128,
+    //     500000000000000u128,
+    // );
 
     // mm
     let rule_type = "mm".to_string();
@@ -131,8 +131,8 @@ fn test_integration_claim_all() {
         &kpt_distribute,
         &rule_type,
         &mm_owner,
-        0u128,
-        50000000000000u128,
+        8000000000000u128,
+        42000000000000u128,
     );
 
     //reserve
@@ -145,7 +145,7 @@ fn test_integration_claim_all() {
         &rule_type,
         &reserve_owner,
         0u128,
-        110000000000000u128,
+        130000000000000u128,
     );
     //airdrop
     let rule_type = "airdrop".to_string();
@@ -161,7 +161,7 @@ fn test_integration_claim_all() {
     );
 
     let res = get_kpt_token_info(&mut app, &kpt_token);
-    assert_eq!(res.total_supply, Uint128::from(1000000000000000u128));
+    assert_eq!(res.total_supply, Uint128::from(500000000000000u128));
 }
 
 fn check_rule_type(

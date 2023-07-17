@@ -3,7 +3,7 @@ use crate::handler::{
     get_reward, notify_reward_amount, receive_cw20, update_staking_config, update_staking_duration,
     withdraw,
 };
-use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg, UpdateStakingConfigStruct};
+use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 use crate::querier::{
     balance_of, earned, get_boost, get_user_reward_per_token_paid, get_user_updated_at,
     last_time_reward_applicable, query_staking_config, query_staking_state, reward_per_token,
@@ -68,25 +68,9 @@ pub fn execute(
 ) -> Result<Response, ContractError> {
     match msg {
         ExecuteMsg::Receive(msg) => receive_cw20(deps, env, info, msg),
-        ExecuteMsg::UpdateStakingConfig {
-            gov,
-            staking_token,
-            rewards_token,
-            ve_kpt_boost,
-            kpt_fund,
-            reward_controller_addr,
-        } => update_staking_config(
-            deps,
-            info,
-            UpdateStakingConfigStruct {
-                gov,
-                staking_token,
-                rewards_token,
-                ve_kpt_boost,
-                kpt_fund,
-                reward_controller_addr,
-            },
-        ),
+        ExecuteMsg::UpdateStakingConfig { config_msg } => {
+            update_staking_config(deps, info, config_msg)
+        }
         ExecuteMsg::UpdateStakingState { duration } => {
             update_staking_duration(deps, env, info, duration)
         }

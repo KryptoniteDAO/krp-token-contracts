@@ -1,8 +1,10 @@
-mod state;
-mod handler;
-mod querier;
-pub mod msg;
 pub mod constract;
-mod third_msg;
 pub mod error;
+mod handler;
 mod helper;
+pub mod msg;
+mod querier;
+mod state;
+
+#[cfg(test)]
+mod testing;

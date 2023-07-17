@@ -1,13 +1,23 @@
-use std::str::FromStr;
-use cosmwasm_std::{Addr, Deps, Env, QueryRequest, StdResult, to_binary, Uint128, Uint256, WasmQuery};
 use crate::helper::{BASE_RATE_14, BASE_RATE_6};
-use crate::msg::{BalanceOfResponse, EarnedResponse, GetBoostResponse, GetUserRewardPerTokenPaidResponse, GetUserUpdatedAtResponse, LastTimeRewardApplicableResponse, RewardPerTokenResponse, StakingConfigResponse, StakingStateResponse};
-use crate::state::{read_balance_of, read_rewards, read_staking_config, read_staking_state, read_user_reward_per_token_paid, read_user_updated_at};
-use crate::third_msg::{GetUserBoostResponse, VeKptBoostQueryMsg};
-
+use crate::msg::{
+    BalanceOfResponse, EarnedResponse, GetBoostResponse, GetUserRewardPerTokenPaidResponse,
+    GetUserUpdatedAtResponse, LastTimeRewardApplicableResponse, RewardPerTokenResponse,
+    StakingConfigResponse, StakingStateResponse,
+};
+use crate::state::{
+    read_balance_of, read_rewards, read_staking_config, read_staking_state,
+    read_user_reward_per_token_paid, read_user_updated_at,
+};
+use cosmwasm_std::{
+    to_binary, Addr, Deps, Env, QueryRequest, StdResult, Uint128, Uint256, WasmQuery,
+};
+use std::str::FromStr;
 
 // Returns the last time the reward was applicable
-pub fn last_time_reward_applicable(deps: Deps, env: Env) -> StdResult<LastTimeRewardApplicableResponse> {
+pub fn last_time_reward_applicable(
+    deps: Deps,
+    env: Env,
+) -> StdResult<LastTimeRewardApplicableResponse> {
     let block_time = Uint128::from(env.block.time.seconds());
     let finish_at = read_staking_state(deps.storage)?.finish_at;
     Ok(LastTimeRewardApplicableResponse {
@@ -21,22 +31,24 @@ pub fn reward_per_token(deps: Deps, env: Env) -> StdResult<RewardPerTokenRespons
 
     if staking_state.total_supply.is_zero() {
         return Ok(RewardPerTokenResponse {
-            reward_per_token: staking_state.reward_per_token_stored
+            reward_per_token: staking_state.reward_per_token_stored,
         });
     }
 
     let last_time_reward_applicable_response = last_time_reward_applicable(deps, env)?;
-    let last_time_reward_applicable = last_time_reward_applicable_response.last_time_reward_applicable;
+    let last_time_reward_applicable =
+        last_time_reward_applicable_response.last_time_reward_applicable;
     let reward_rate = staking_state.reward_rate;
     let updated_at = staking_state.updated_at;
     let reward_per_token_stored = staking_state.reward_per_token_stored;
 
-    let rewards_256 = reward_rate.multiply_ratio(Uint256::from(last_time_reward_applicable - updated_at), Uint256::from(BASE_RATE_6));
+    let rewards_256 = reward_rate.multiply_ratio(
+        Uint256::from(last_time_reward_applicable - updated_at),
+        Uint256::from(BASE_RATE_6),
+    );
     let rewards_128 = Uint128::from_str(&rewards_256.to_string())?;
     let reward_per_token = reward_per_token_stored + rewards_128 / staking_state.total_supply;
-    Ok(RewardPerTokenResponse {
-        reward_per_token,
-    })
+    Ok(RewardPerTokenResponse { reward_per_token })
 }
 
 pub fn get_boost(deps: Deps, account: Addr) -> StdResult<GetBoostResponse> {
@@ -46,22 +58,21 @@ pub fn get_boost(deps: Deps, account: Addr) -> StdResult<GetBoostResponse> {
     let user_updated_at = read_user_updated_at(deps.storage, account.clone());
     let finish_at = staking_state.finish_at;
 
-    let msg = VeKptBoostQueryMsg::GetUserBoost {
+    let msg = ve_kpt_boost::msg::QueryMsg::GetUserBoost {
         user: account.clone(),
         user_updated_at,
         finish_at,
     };
 
-    let get_user_boost_res: GetUserBoostResponse = deps.querier.query(&QueryRequest::Wasm(WasmQuery::Smart {
-        contract_addr: staking_config.ve_kpt_boost.to_string(),
-        msg: to_binary(&msg)?,
-    }))?;
+    let get_user_boost_res: ve_kpt_boost::msg::GetUserBoostResponse =
+        deps.querier.query(&QueryRequest::Wasm(WasmQuery::Smart {
+            contract_addr: staking_config.ve_kpt_boost.to_string(),
+            msg: to_binary(&msg)?,
+        }))?;
 
     let user_boost = get_user_boost_res.user_boost;
     let boost = Uint128::new(100u128) * Uint128::new(BASE_RATE_6) + user_boost;
-    Ok(GetBoostResponse {
-        boost,
-    })
+    Ok(GetBoostResponse { boost })
 }
 
 pub fn earned(deps: Deps, env: Env, account: Addr) -> StdResult<EarnedResponse> {
@@ -73,12 +84,10 @@ pub fn earned(deps: Deps, env: Env, account: Addr) -> StdResult<EarnedResponse> 
 
     let boost = get_boost(deps, account.clone())?.boost;
     let earned = ((balance_of * boost * (reward_per_token - user_reward_per_token_paid))
-        / Uint128::new(BASE_RATE_14)) + rewards;
-    Ok(EarnedResponse {
-        earned,
-    })
+        / Uint128::new(BASE_RATE_14))
+        + rewards;
+    Ok(EarnedResponse { earned })
 }
-
 
 pub fn is_empty_address(address: &str) -> bool {
     address.trim().is_empty()
@@ -116,7 +125,6 @@ pub fn query_staking_state(deps: Deps) -> StdResult<StakingStateResponse> {
     })
 }
 
-
 pub fn get_user_updated_at(deps: Deps, account: Addr) -> StdResult<GetUserUpdatedAtResponse> {
     let user_updated_at = read_user_updated_at(deps.storage, account.clone());
     Ok(GetUserUpdatedAtResponse {
@@ -124,7 +132,10 @@ pub fn get_user_updated_at(deps: Deps, account: Addr) -> StdResult<GetUserUpdate
     })
 }
 
-pub fn get_user_reward_per_token_paid(deps: Deps, account: Addr) -> StdResult<GetUserRewardPerTokenPaidResponse> {
+pub fn get_user_reward_per_token_paid(
+    deps: Deps,
+    account: Addr,
+) -> StdResult<GetUserRewardPerTokenPaidResponse> {
     let user_reward_per_token_paid = read_user_reward_per_token_paid(deps.storage, account.clone());
     Ok(GetUserRewardPerTokenPaidResponse {
         reward_per_token_paid: user_reward_per_token_paid,
@@ -133,7 +144,5 @@ pub fn get_user_reward_per_token_paid(deps: Deps, account: Addr) -> StdResult<Ge
 
 pub fn balance_of(deps: Deps, account: Addr) -> StdResult<BalanceOfResponse> {
     let balance_of = read_balance_of(deps.storage, account.clone());
-    Ok(BalanceOfResponse {
-        balance_of,
-    })
+    Ok(BalanceOfResponse { balance_of })
 }

@@ -12,7 +12,6 @@ pub struct UpdateStakingConfigStruct {
     pub reward_controller_addr: Option<Addr>,
 }
 
-
 #[cw_serde]
 pub struct LastTimeRewardApplicableResponse {
     pub last_time_reward_applicable: Uint128,
@@ -72,18 +71,15 @@ pub enum ExecuteMsg {
     /// Receives a message of type [`Cw20ReceiveMsg`]
     Receive(Cw20ReceiveMsg),
     UpdateStakingConfig {
-        gov: Option<Addr>,
-        staking_token: Option<Addr>,
-        rewards_token: Option<Addr>,
-        ve_kpt_boost: Option<Addr>,
-        kpt_fund: Option<Addr>,
-        reward_controller_addr: Option<Addr>,
+        config_msg: UpdateStakingConfigStruct,
     },
     UpdateStakingState {
         duration: Uint128,
     },
     GetReward {},
-    Withdraw { amount: Uint128 },
+    Withdraw {
+        amount: Uint128,
+    },
     NotifyRewardAmount {
         amount: Uint128,
     },
@@ -111,7 +107,6 @@ pub enum QueryMsg {
     #[returns(BalanceOfResponse)]
     BalanceOf { account: Addr },
 }
-
 
 #[cw_serde]
 pub struct StakingConfigResponse {

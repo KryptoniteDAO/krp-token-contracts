@@ -1,8 +1,8 @@
-use cosmwasm_std::{Addr, Binary, Uint128};
-use cw_utils::Expiration;
 use cosmwasm_schema::{cw_serde, QueryResponses};
-use cw20::{Logo};
-use cw20_base::msg::{InstantiateMsg as Cw20InstantiateMsg};
+use cosmwasm_std::{Addr, Binary, Uint128};
+use cw20::Logo;
+use cw20_base::msg::InstantiateMsg as Cw20InstantiateMsg;
+use cw_utils::Expiration;
 
 #[cw_serde]
 pub struct InstantiateMsg {
@@ -19,7 +19,12 @@ pub enum ExecuteMsg {
         gov: Option<Addr>,
         kpt_distribute: Option<Addr>,
     },
-    Mint { recipient: String, amount: Uint128, contract: Option<String>, msg: Option<Binary> },
+    Mint {
+        recipient: String,
+        amount: Uint128,
+        contract: Option<String>,
+        msg: Option<Binary>,
+    },
     /// Implements CW20. Burn is a base message to destroy tokens forever
     Burn { user: String, amount: Uint128 },
 
@@ -30,7 +35,7 @@ pub enum ExecuteMsg {
     Send {
         contract: String,
         amount: Uint128,
-        send_msg: Binary,
+        msg: Binary,
     },
     /// Implements CW20 "approval" extension. Allows spender to access an additional amount tokens
     /// from the owner's (env.sender) account. If expires is Some(), overwrites current allowance
@@ -61,7 +66,7 @@ pub enum ExecuteMsg {
         owner: String,
         contract: String,
         amount: Uint128,
-        send_msg: Binary,
+        msg: Binary,
     },
 
     /// Only with the "mintable" extension. The current minter may set
@@ -136,14 +141,11 @@ pub enum QueryMsg {
     /// contract.
     #[returns(cw20::DownloadLogoResponse)]
     DownloadLogo {},
-
 }
 
 #[cw_serde]
 pub enum KptFundMsg {
-    RefreshReward {
-        user: Addr,
-    },
+    RefreshReward { user: Addr },
 }
 
 #[cw_serde]
@@ -156,5 +158,3 @@ pub struct KptConfigResponse {
 
 #[cw_serde]
 pub struct MigrateMsg {}
-
-

@@ -112,9 +112,9 @@ pub fn execute(
         ExecuteMsg::Send {
             contract,
             amount,
-            send_msg,
+            msg,
         } => {
-            let cw20_res = execute_send(deps, env, info, contract, amount, send_msg);
+            let cw20_res = execute_send(deps, env, info, contract, amount, msg);
             if cw20_res.is_err() {
                 return Err(ContractError::Std(StdError::generic_err(
                     cw20_res.err().unwrap().to_string(),
@@ -165,9 +165,9 @@ pub fn execute(
             owner,
             contract,
             amount,
-            send_msg,
+            msg,
         } => {
-            let cw20_res = execute_send_from(deps, env, info, owner, contract, amount, send_msg);
+            let cw20_res = execute_send_from(deps, env, info, owner, contract, amount, msg);
             if cw20_res.is_err() {
                 return Err(ContractError::Std(StdError::generic_err(
                     cw20_res.err().unwrap().to_string(),
