@@ -506,9 +506,9 @@ pub enum ExecuteMsg {
 | :--- | :--- | :--- |
 | `logo` | `String` | Logo URL |
 
-## QueryMsg {.tabset}
+## QueryMsg 
 
-KptConfig
+### KptConfig {.tabset}
 
 Gets the KPT contract configuration.
 
