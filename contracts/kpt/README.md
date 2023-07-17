@@ -11,11 +11,12 @@ KPT tokens locked in the contract, the greater the voter’s decision-making pow
 
 ## Config
 
-| Key| Type| Description|
-| :--- | :--- | :--- |
-| `max_supply` | `u128` | KPT max supply |
-| `kpt_fund` | `Addr` | KPT FUND module contract address (Possess mint permissions)    |
-| `gov` | `Addr` | Address of contract owner that can update config |
+| Key| Type| Description                                                       |
+| :--- | :--- |:------------------------------------------------------------------|
+| `max_supply` | `u128` | KPT max supply                                                    |
+| `kpt_fund` | `Addr` | KPT FUND module contract address (Possess mint permissions)       |
+| `gov` | `Addr` | Address of contract owner that can update config                  |
+| `kpt_distribute` | `Addr` | KPT DISTRIBUTE module contract address (Possess mint permissions) |
 
 ## InstantiateMsg {.tabset}
 
