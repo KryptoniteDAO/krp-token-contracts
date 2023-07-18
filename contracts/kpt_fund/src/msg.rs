@@ -50,7 +50,7 @@ pub enum QueryMsg {
     GetClaimAbleKusd { account: Addr },
     #[returns(UserRewardPerTokenPaidResponse)]
     GetUserRewardPerTokenPaid { account: Addr },
-    #[returns(UserRewardPerTokenPaidResponse)]
+    #[returns(UserRewardsResponse)]
     GetUserRewards { account: Addr },
     #[returns(UserTime2fullRedemptionResponse)]
     GetUserTime2fullRedemption { account: Addr },

@@ -30,9 +30,9 @@ pub struct InstantiateMsg {
 
 ```json
 {
-  "gov": "Addr",
-  "total_amount": "u128",
-  "distribute_token": "Addr",
+  "gov": "sei1...",
+  "total_amount": "1000000000000",
+  "distribute_token": "sei1...",
   "rule_configs_map": {
     "key": {}
   }
@@ -72,15 +72,15 @@ pub struct RuleConfigMsg {
 
 ```json
 {
-  "rule_name": "String",
-  "rule_owner": "Addr",
-  "rule_total_amount": "u128",
-  "start_release_amount": "u128",
-  "lock_start_time": "u64",
-  "lock_end_time": "u64",
-  "start_linear_release_time": "u64",
-  "unlock_linear_release_amount": "u128",
-  "unlock_linear_release_time": "u64"
+  "rule_name": "Test",
+  "rule_owner": "sei1...",
+  "rule_total_amount": "1000000000000",
+  "start_release_amount": "0",
+  "lock_start_time": "175052201",
+  "lock_end_time": "185052201",
+  "start_linear_release_time": "175052201",
+  "unlock_linear_release_amount": "185052201",
+  "unlock_linear_release_time": "185052201"
 }
 ```
 
