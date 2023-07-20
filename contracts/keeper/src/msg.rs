@@ -7,6 +7,7 @@ use cosmwasm_std::{Uint128, };
 pub struct InstantiateMsg {
     pub owner: String,
     pub threshold: Uint128,
+    /// contract address of kpt fund 
     pub rewards_contract: String,
     pub rewards_denom: String,
 }
