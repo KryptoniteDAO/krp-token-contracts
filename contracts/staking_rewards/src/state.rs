@@ -3,9 +3,8 @@ use cw_storage_plus::{Item, Map};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-pub struct StakingConfig{
+pub struct StakingConfig {
     pub gov: Addr,
     // Immutable variables for staking and rewards tokens
     pub staking_token: Addr,
@@ -16,7 +15,7 @@ pub struct StakingConfig{
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-pub struct StakingState{
+pub struct StakingState {
     // Duration of rewards to be paid out (in seconds) 2_592_000 = 30 days
     pub duration: Uint128,
     // Timestamp of when the rewards finish
@@ -40,12 +39,18 @@ const USER_UPDATED_AT: Map<Addr, Uint128> = Map::new("user_updated_at");
 // User address => staked amount
 const STAKING_USER_BALANCE_OF: Map<&Addr, Uint128> = Map::new("staking_user_balance_of");
 
-pub fn store_user_reward_per_token_paid(storage: &mut dyn Storage, user: Addr, reward_per_token_paid: &Uint128) ->StdResult<()> {
+pub fn store_user_reward_per_token_paid(
+    storage: &mut dyn Storage,
+    user: Addr,
+    reward_per_token_paid: &Uint128,
+) -> StdResult<()> {
     USER_REWARD_PER_TOKEN_PAID.save(storage, user, reward_per_token_paid)
 }
 
 pub fn read_user_reward_per_token_paid(storage: &dyn Storage, user: Addr) -> Uint128 {
-    USER_REWARD_PER_TOKEN_PAID.load(storage, user).unwrap_or(Uint128::zero())
+    USER_REWARD_PER_TOKEN_PAID
+        .load(storage, user)
+        .unwrap_or(Uint128::zero())
 }
 
 pub fn store_rewards(storage: &mut dyn Storage, user: Addr, rewards: &Uint128) -> StdResult<()> {
@@ -56,12 +61,18 @@ pub fn read_rewards(storage: &dyn Storage, user: Addr) -> Uint128 {
     REWARDS.load(storage, user).unwrap_or(Uint128::zero())
 }
 
-pub fn store_user_updated_at(storage: &mut dyn Storage, user: Addr, updated_at: &Uint128) -> StdResult<()> {
+pub fn store_user_updated_at(
+    storage: &mut dyn Storage,
+    user: Addr,
+    updated_at: &Uint128,
+) -> StdResult<()> {
     USER_UPDATED_AT.save(storage, user, updated_at)
 }
 
 pub fn read_user_updated_at(storage: &dyn Storage, user: Addr) -> Uint128 {
-    USER_UPDATED_AT.load(storage, user).unwrap_or(Uint128::zero())
+    USER_UPDATED_AT
+        .load(storage, user)
+        .unwrap_or(Uint128::zero())
 }
 
 pub fn store_balance_of(storage: &mut dyn Storage, user: Addr, balance: &Uint128) -> StdResult<()> {
@@ -69,7 +80,9 @@ pub fn store_balance_of(storage: &mut dyn Storage, user: Addr, balance: &Uint128
 }
 
 pub fn read_balance_of(storage: &dyn Storage, user: Addr) -> Uint128 {
-    STAKING_USER_BALANCE_OF.load(storage, &user).unwrap_or(Uint128::zero())
+    STAKING_USER_BALANCE_OF
+        .load(storage, &user)
+        .unwrap_or(Uint128::zero())
 }
 
 pub fn store_staking_config(storage: &mut dyn Storage, config: &StakingConfig) -> StdResult<()> {

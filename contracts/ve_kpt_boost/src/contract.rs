@@ -1,10 +1,11 @@
-use cosmwasm_std::{entry_point, DepsMut, Env, MessageInfo, Response, StdResult, Deps, to_binary, Binary};
-use cw2::set_contract_version;
 use crate::handler::{add_lock_setting, change_gov, set_lock_status};
 use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 use crate::querier::{get_boost_config, get_unlock_time, get_user_boost, get_user_lock_status};
-use crate::state::{BoostConfig, store_boost_config};
-
+use crate::state::{store_boost_config, BoostConfig};
+#[cfg(not(feature = "library"))]
+use cosmwasm_std::entry_point;
+use cosmwasm_std::{to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult};
+use cw2::set_contract_version;
 
 // version info for migration info
 const CONTRACT_NAME: &str = "kryptonite.finance:cw20-ve-kpt-boost";
@@ -34,34 +35,36 @@ pub fn instantiate(
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
-pub fn execute(
-    deps: DepsMut,
-    env: Env,
-    info: MessageInfo,
-    msg: ExecuteMsg,
-) -> StdResult<Response> {
+pub fn execute(deps: DepsMut, env: Env, info: MessageInfo, msg: ExecuteMsg) -> StdResult<Response> {
     match msg {
-        ExecuteMsg::AddLockSetting { duration, mining_boost } => {
-            add_lock_setting(deps, info, duration, mining_boost)
-        }
-        ExecuteMsg::ChangeGov { gov } => {
-            change_gov(deps, info, gov)
-        }
+        ExecuteMsg::AddLockSetting {
+            duration,
+            mining_boost,
+        } => add_lock_setting(deps, info, duration, mining_boost),
+        ExecuteMsg::ChangeGov { gov } => change_gov(deps, info, gov),
         ExecuteMsg::SetLockStatus { index } => {
             let _index = index as usize;
             set_lock_status(deps, env, info, _index)
         }
     }
-
 }
-
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
         QueryMsg::GetUnlockTime { user } => to_binary(&get_unlock_time(deps, user)?),
-        QueryMsg::GetUserLockStatus { user } => to_binary(&get_user_lock_status(deps,  user)?),
-        QueryMsg::GetUserBoost { user, user_updated_at, finish_at } => to_binary(&get_user_boost(deps, env, user, user_updated_at, finish_at)?),
+        QueryMsg::GetUserLockStatus { user } => to_binary(&get_user_lock_status(deps, user)?),
+        QueryMsg::GetUserBoost {
+            user,
+            user_updated_at,
+            finish_at,
+        } => to_binary(&get_user_boost(
+            deps,
+            env,
+            user,
+            user_updated_at,
+            finish_at,
+        )?),
         QueryMsg::GetBoostConfig {} => to_binary(&get_boost_config(deps)?),
     }
 }
@@ -89,6 +92,5 @@ mod tests {
         assert_eq!(res.attributes.len(), 2);
         assert_eq!(res.attributes[0], ("action", "instantiate"));
         assert_eq!(res.attributes[1], ("owner", "creator"));
-
     }
 }

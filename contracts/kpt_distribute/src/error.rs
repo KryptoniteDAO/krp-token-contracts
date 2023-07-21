@@ -18,7 +18,6 @@ pub enum ContractError {
     #[error("NoMoreAmountClaim")]
     NoMoreAmountClaim {},
 
-    #[error("AmountClaimOverTotal")]
-    AmountClaimOverTotal {},
-
+    #[error("AmountClaimOverTotal,claimed_amount:{0},rule_total_amount:{1}")]
+    AmountClaimOverTotal(u128, u128),
 }

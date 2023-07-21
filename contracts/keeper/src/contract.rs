@@ -5,7 +5,8 @@ use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 use crate::querier::{query_config, query_state};
 use crate::state::{store_config, store_state, Config, State};
 use cosmwasm_std::{
-    entry_point, to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult, Uint128, StdError,
+    entry_point, to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdError, StdResult,
+    Uint128,
 };
 
 use cw2::set_contract_version;
@@ -22,7 +23,6 @@ pub fn instantiate(
     info: MessageInfo,
     msg: InstantiateMsg,
 ) -> Result<Response, ContractError> {
-
     let r = nonpayable(&info);
     if r.is_err() {
         return Err(ContractError::Std(StdError::generic_err("nonpayable")));
@@ -44,9 +44,6 @@ pub fn instantiate(
         distributed_total: Uint128::zero(),
     };
     store_state(deps.storage, &state)?;
-
-
-
 
     Ok(Response::new().add_attributes(vec![
         ("action", "instantiate"),
@@ -94,8 +91,3 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
 pub fn migrate(_deps: DepsMut, _env: Env, _msg: MigrateMsg) -> StdResult<Response> {
     Ok(Response::default())
 }
-
-
-#[cfg(test)]
-mod tests {}
-

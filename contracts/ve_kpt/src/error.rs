@@ -15,4 +15,6 @@ pub enum ContractError {
     #[error("Invalid input")]
     InvalidInput {},
 
+    #[error("Unable initial balances")]
+    UnableInitialBalances {},
 }

@@ -63,6 +63,22 @@
             "amount": {
               "$ref": "#/definitions/Uint128"
             },
+            "contract": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "msg": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Binary"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
             "recipient": {
               "type": "string"
             }
@@ -136,7 +152,7 @@
           "required": [
             "amount",
             "contract",
-            "send_msg"
+            "msg"
           ],
           "properties": {
             "amount": {
@@ -145,7 +161,7 @@
             "contract": {
               "type": "string"
             },
-            "send_msg": {
+            "msg": {
               "$ref": "#/definitions/Binary"
             }
           },
@@ -268,8 +284,8 @@
           "required": [
             "amount",
             "contract",
-            "owner",
-            "send_msg"
+            "msg",
+            "owner"
           ],
           "properties": {
             "amount": {
@@ -278,11 +294,11 @@
             "contract": {
               "type": "string"
             },
+            "msg": {
+              "$ref": "#/definitions/Binary"
+            },
             "owner": {
               "type": "string"
-            },
-            "send_msg": {
-              "$ref": "#/definitions/Binary"
             }
           },
           "additionalProperties": false

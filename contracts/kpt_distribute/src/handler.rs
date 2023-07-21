@@ -1,12 +1,24 @@
-use cosmwasm_std::{Addr, attr, CosmosMsg, DepsMut, Env, MessageInfo, Response, StdError, to_binary, Uint128, WasmMsg};
 use crate::error::ContractError;
 use crate::helper::BASE_RATE_12;
 use crate::msg::{RuleConfigMsg, UpdateRuleConfigMsg};
 use crate::querier::query_claimable_info;
-use crate::state::{check_rule_config_exist, read_distribute_config, read_rule_config, read_rule_config_state, RuleConfig, RuleConfigState, store_distribute_config, store_rule_config, store_rule_config_state};
-use crate::third_msg::KptExecuteMsg;
+use crate::state::{
+    check_rule_config_exist, read_distribute_config, read_rule_config, read_rule_config_state,
+    store_distribute_config, store_rule_config, store_rule_config_state, RuleConfig,
+    RuleConfigState,
+};
+use cosmwasm_std::{
+    attr, to_binary, Addr, Binary, CosmosMsg, DepsMut, Env, MessageInfo, Response, StdError,
+    Uint128, WasmMsg,
+};
 
-pub fn claim(deps: DepsMut, env: Env, info: MessageInfo, rule_type: String) -> Result<Response, ContractError> {
+pub fn claim(
+    deps: DepsMut,
+    env: Env,
+    info: MessageInfo,
+    rule_type: String,
+    msg: Option<Binary>,
+) -> Result<Response, ContractError> {
     let claim_user = info.sender;
     // check rule type owner
     let rule_config = read_rule_config(deps.storage, &rule_type)?;
@@ -31,7 +43,7 @@ pub fn claim(deps: DepsMut, env: Env, info: MessageInfo, rule_type: String) -> R
 
     let claim_amount = claimable_info.can_claim_amount;
 
-    if claimable_info.release_amount > 0 {
+    if claimable_info.release_amount > 0 && !rule_config_state.is_start_release {
         //update the start release state
         rule_config_state.is_start_release = true;
         rule_config_state.released_amount += claimable_info.release_amount;
@@ -39,7 +51,10 @@ pub fn claim(deps: DepsMut, env: Env, info: MessageInfo, rule_type: String) -> R
 
     rule_config_state.claimed_amount += claim_amount;
     if rule_config_state.claimed_amount > rule_config.rule_total_amount {
-        return Err(ContractError::AmountClaimOverTotal {});
+        return Err(ContractError::AmountClaimOverTotal(
+            rule_config_state.claimed_amount.clone(),
+            rule_config.rule_total_amount.clone(),
+        ));
     }
 
     store_rule_config_state(deps.storage, &rule_type, &rule_config_state)?;
@@ -47,9 +62,11 @@ pub fn claim(deps: DepsMut, env: Env, info: MessageInfo, rule_type: String) -> R
     let mut cosmos_msgs = vec![];
     if claim_amount > 0u128 {
         // send the claim amount to user
-        let kpt_mint_msg = KptExecuteMsg::Mint {
+        let kpt_mint_msg = kpt::msg::ExecuteMsg::Mint {
             recipient: claim_user.clone().to_string(),
             amount: Uint128::from(claim_amount.clone()),
+            contract: Option::from(claim_user.clone().to_string()),
+            msg,
         };
         let mint_msg = CosmosMsg::Wasm(WasmMsg::Execute {
             contract_addr: distribute_config.distribute_token.to_string(),
@@ -65,16 +82,23 @@ pub fn claim(deps: DepsMut, env: Env, info: MessageInfo, rule_type: String) -> R
             ("claim_user", claim_user.as_str()),
             ("claim_amount", claim_amount.to_string().as_str()),
         ])
-        .add_messages(cosmos_msgs)
-    )
+        .add_messages(cosmos_msgs))
 }
 
-pub fn update_config(deps: DepsMut, info: MessageInfo, gov: Option<Addr>, distribute_token: Option<Addr>) -> Result<Response, ContractError> {
+pub fn update_config(
+    deps: DepsMut,
+    info: MessageInfo,
+    gov: Option<Addr>,
+    distribute_token: Option<Addr>,
+) -> Result<Response, ContractError> {
     let mut distribute_config = read_distribute_config(deps.storage)?;
     if info.sender != distribute_config.gov {
         return Err(ContractError::Unauthorized {});
     }
-    let mut attrs = vec![attr("action", "update_config"), attr("sender", info.sender.to_string())];
+    let mut attrs = vec![
+        attr("action", "update_config"),
+        attr("sender", info.sender.to_string()),
+    ];
     if let Some(gov) = gov {
         distribute_config.gov = gov.clone();
         attrs.push(attr("gov", gov.to_string()));
@@ -87,13 +111,20 @@ pub fn update_config(deps: DepsMut, info: MessageInfo, gov: Option<Addr>, distri
     Ok(Response::new().add_attributes(attrs))
 }
 
-pub fn update_rule_config(deps: DepsMut, info: MessageInfo, update_rule_msg: UpdateRuleConfigMsg) -> Result<Response, ContractError> {
+pub fn update_rule_config(
+    deps: DepsMut,
+    info: MessageInfo,
+    update_rule_msg: UpdateRuleConfigMsg,
+) -> Result<Response, ContractError> {
     let distribute_config = read_distribute_config(deps.storage)?;
     if info.sender != distribute_config.gov {
         return Err(ContractError::Unauthorized {});
     }
     let mut rule_config = read_rule_config(deps.storage, &update_rule_msg.rule_type)?;
-    let mut attrs = vec![attr("action", "update_rule_config"), attr("sender", info.sender.to_string())];
+    let mut attrs = vec![
+        attr("action", "update_rule_config"),
+        attr("sender", info.sender.to_string()),
+    ];
 
     let rule_name = update_rule_msg.rule_name;
     if let Some(rule_name) = rule_name {
@@ -112,23 +143,42 @@ pub fn update_rule_config(deps: DepsMut, info: MessageInfo, update_rule_msg: Upd
     Ok(Response::new().add_attributes(attrs))
 }
 
-pub fn add_rule_config(deps: DepsMut, info: MessageInfo, rule_type: String, rule_msg: RuleConfigMsg) -> Result<Response, ContractError> {
+pub fn add_rule_config(
+    deps: DepsMut,
+    info: MessageInfo,
+    rule_type: String,
+    rule_msg: RuleConfigMsg,
+) -> Result<Response, ContractError> {
     let mut distribute_config = read_distribute_config(deps.storage)?;
     if distribute_config.gov != info.sender {
         return Err(ContractError::Unauthorized {});
     }
-    let exist_rule_config = check_rule_config_exist(deps.storage, &rule_type);
-    if exist_rule_config.is_ok() {
-        return Err(ContractError::Std(StdError::generic_err("rule config already exist")));
+    let exist_rule_config = check_rule_config_exist(deps.storage, &rule_type)?;
+
+    if exist_rule_config {
+        return Err(ContractError::Std(StdError::generic_err(
+            "rule config already exist",
+        )));
     }
+
+    if rule_msg.rule_total_amount <= 0 {
+        return Err(ContractError::Std(StdError::generic_err(
+            "rule total amount must be greater than zero",
+        )));
+    }
+
     let rule_total_amount = rule_msg.rule_total_amount + distribute_config.rules_total_amount;
 
     if rule_total_amount > distribute_config.total_amount {
-        return Err(ContractError::Std(StdError::generic_err("rule total amount over distribute token amount")));
+        return Err(ContractError::Std(StdError::generic_err(
+            "rule total amount over distribute token amount",
+        )));
     }
 
-    let end_linear_release_time = rule_msg.start_linear_release_time + rule_msg.unlock_linear_release_time;
-    let linear_release_per_second = rule_msg.unlock_linear_release_amount * BASE_RATE_12 / u128::from(rule_msg.unlock_linear_release_time);
+    let end_linear_release_time =
+        rule_msg.start_linear_release_time + rule_msg.unlock_linear_release_time;
+    let linear_release_per_second = rule_msg.unlock_linear_release_amount * BASE_RATE_12
+        / u128::from(rule_msg.unlock_linear_release_time);
 
     distribute_config.rules_total_amount = rule_total_amount;
 
@@ -157,10 +207,8 @@ pub fn add_rule_config(deps: DepsMut, info: MessageInfo, rule_type: String, rule
     };
     store_rule_config_state(deps.storage, &rule_type, &rule_config_state)?;
 
-    Ok(Response::new()
-        .add_attributes(vec![
-            ("action", "add_rule_config"),
-            ("rule_type", rule_type.as_str()),
-        ])
-    )
+    Ok(Response::new().add_attributes(vec![
+        ("action", "add_rule_config"),
+        ("rule_type", rule_type.as_str()),
+    ]))
 }

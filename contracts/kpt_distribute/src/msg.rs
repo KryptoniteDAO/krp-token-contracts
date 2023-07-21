@@ -1,8 +1,7 @@
-use std::collections::HashMap;
-use cosmwasm_schema::{cw_serde, QueryResponses};
-use cosmwasm_std::Addr;
 use crate::state::{RuleConfig, RuleConfigState};
-
+use cosmwasm_schema::{cw_serde, QueryResponses};
+use cosmwasm_std::{Addr, Binary};
+use std::collections::HashMap;
 
 #[cw_serde]
 pub struct QueryClaimableInfoResponse {
@@ -45,7 +44,6 @@ pub struct RuleConfigMsg {
     pub unlock_linear_release_time: u64,
 }
 
-
 #[cw_serde]
 pub struct InstantiateMsg {
     pub gov: Option<Addr>,
@@ -58,13 +56,14 @@ pub struct InstantiateMsg {
 pub enum ExecuteMsg {
     Claim {
         rule_type: String,
+        msg: Option<Binary>,
     },
     UpdateConfig {
         gov: Option<Addr>,
         distribute_token: Option<Addr>,
     },
     UpdateRuleConfig {
-        update_rule_msg: UpdateRuleConfigMsg
+        update_rule_msg: UpdateRuleConfigMsg,
     },
     AddRuleConfig {
         rule_type: String,
@@ -76,17 +75,12 @@ pub enum ExecuteMsg {
 #[derive(QueryResponses)]
 pub enum QueryMsg {
     #[returns(QueryClaimableInfoResponse)]
-    QueryClaimableInfo {
-        rule_type: String,
-    },
+    QueryClaimableInfo { rule_type: String },
     #[returns(QueryRuleInfoResponse)]
-    QueryRuleInfo {
-        rule_type: String,
-    },
+    QueryRuleInfo { rule_type: String },
     #[returns(QueryConfigResponse)]
     QueryConfig {},
 }
-
 
 #[cw_serde]
 pub struct MigrateMsg {}
