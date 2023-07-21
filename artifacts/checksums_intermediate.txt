@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 fd9b0b93dd5132b140591cd1d7dee5a803bf22e76e09776648fe479af97b11f9  target/wasm32-unknown-unknown/release/blind_box.wasm
 d0f24d64118678b6261b5725a46e3029dccdc02e4a16f8c875429f373f38a2d1  target/wasm32-unknown-unknown/release/blind_box_inviter_reward.wasm
 9e302db6b10c99636db8a42af69a75996e971ff76d7e80e1bf904d751d1e9259  target/wasm32-unknown-unknown/release/blind_box_reward.wasm
@@ -10,3 +11,13 @@ f561b56c066d4cde3686ec37147e0836cbec76e9b1abbf038b278977194aa555  target/wasm32-
 744e24f245360f1248a2a0efe5bbda92c0bc6239d6bdbb71f761ec29b8f4fc88  target/wasm32-unknown-unknown/release/ve_kpt.wasm
 5803a16af12d185e8f97b90602db658c1db11b61b62262cec5a240125ca84d52  target/wasm32-unknown-unknown/release/ve_kpt_boost.wasm
 957f4ab5a6b43d862a0667a0e740e751e243e2df87cf10e20eaaa789cc982570  target/wasm32-unknown-unknown/release/ve_kpt_miner.wasm
+=======
+76a53620741d0745bea7ce036405b3242eee55453bdb49da5e666712b66819a8  target/wasm32-unknown-unknown/release/keeper.wasm
+dc40c78907e537878e40dcdfa41863a07ed74a1efe57ea55ada3b77350cd9f84  target/wasm32-unknown-unknown/release/staking_rewards.wasm
+de6ec73eb639e53db67bf1e508db1b8ed485f1f765fd660d513eb5ee3420568c  target/wasm32-unknown-unknown/release/kpt.wasm
+2d6d2b83f037c5f246bb9419618b78dc335678a30f13b8605d50dc06f58a3bff  target/wasm32-unknown-unknown/release/kpt_distribute.wasm
+93eb23c57d2a2165c8c3c3f29eb3d93cc7ced7cf12608abed10436b95d9d8ab2  target/wasm32-unknown-unknown/release/kpt_fund.wasm
+4e78e7c7bfcaefda174c0b116b0ca10be2f425ebe4c38d0f57c20f728157f565  target/wasm32-unknown-unknown/release/ve_kpt.wasm
+43465fb933e7fbde9e9adc8f9b6308f7ff210bf02752544e6e4f8648e95e83ff  target/wasm32-unknown-unknown/release/ve_kpt_boost.wasm
+a2dbcbc944b8f3558bae20c6798b7a18475a4e2dba13e3787b75746ccdc774b7  target/wasm32-unknown-unknown/release/ve_kpt_miner.wasm
+>>>>>>> 0612c96e9825d20cc86df1fded79ca8e65bcda98
