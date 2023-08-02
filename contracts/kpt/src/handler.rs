@@ -1,4 +1,4 @@
-use crate::error::ContractError;
+use cw20_base::ContractError;
 use crate::helper::is_empty_str;
 use crate::mint_receiver::Cw20MintReceiveMsg;
 use crate::state::{read_kpt_config, store_kpt_config};
@@ -56,7 +56,7 @@ pub fn mint(
     let kpt_distribute = kpt_config.kpt_distribute;
 
     if is_empty_str(kpt_fund.as_str()) && is_empty_str(kpt_distribute.as_str()) {
-        return Err(ContractError::MintContractNotConfig {});
+        return Err(ContractError::Std(StdError::generic_err("mint contract not configured")));
     }
 
     if msg_sender.ne(&kpt_fund.clone()) && msg_sender.ne(&kpt_distribute) {
@@ -81,7 +81,7 @@ pub fn mint(
         )));
     }
 
-    let mut res = Response::new().add_attributes(cw20_res.unwrap().attributes);
+    let mut res = cw20_res.unwrap();
 
     if let Some(contract) = contract {
         if let Some(msg) = msg {
@@ -118,12 +118,5 @@ pub fn burn(
         sender: user,
         funds: vec![],
     };
-    let cw20_res = execute_burn(deps, env.clone(), sub_info, Uint128::from(amount));
-    if cw20_res.is_err() {
-        return Err(ContractError::Std(StdError::generic_err(
-            cw20_res.err().unwrap().to_string(),
-        )));
-    }
-
-    Ok(Response::new().add_attributes(cw20_res.unwrap().attributes))
+    execute_burn(deps, env.clone(), sub_info, Uint128::from(amount))
 }

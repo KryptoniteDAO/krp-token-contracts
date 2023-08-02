@@ -1,13 +1,14 @@
 #[cfg(test)]
 mod tests {
+
     use crate::contract::{execute, instantiate};
-    use crate::error::ContractError;
+    use cw20_base::ContractError;
     use crate::msg::{ExecuteMsg, InstantiateMsg, KptConfigResponse};
     use crate::querier::query_kpt_config;
     use cosmwasm_std::testing::{
         mock_dependencies, mock_dependencies_with_balance, mock_env, mock_info,
     };
-    use cosmwasm_std::{coins, Addr, Deps, Response, Uint128};
+    use cosmwasm_std::{coins, Addr, Deps, Response, Uint128, StdError};
     use cw20_base::contract::query_balance;
     use cw20_base::msg::InstantiateMarketingInfo;
     use cw20_base::msg::InstantiateMsg as Cw20InstantiateMsg;
@@ -158,8 +159,8 @@ mod tests {
         let _info = mock_info("creator", &[]);
         let _res = execute(deps.as_mut(), mock_env(), _info, _msg);
         match _res {
-            Err(ContractError::MintContractNotConfig {}) => {}
-            _ => panic!("Mint Contract Not Config"),
+            Err(ContractError::Unauthorized {}) => {}
+            _ => panic!("Do not enter in"),
         }
 
         let _msg = ExecuteMsg::Mint {
@@ -171,7 +172,7 @@ mod tests {
         let _info = mock_info("random_user", &[]);
         let _res = execute(deps.as_mut(), mock_env(), _info, _msg);
         match _res {
-            Err(ContractError::MintContractNotConfig {}) => {}
+            Err(ContractError::Unauthorized {}) => {}
             _ => panic!("Mint Contract Not Config"),
         }
 

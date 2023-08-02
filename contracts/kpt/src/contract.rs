@@ -1,4 +1,4 @@
-use crate::error::ContractError;
+use cw20_base::ContractError;
 use crate::handler::{burn, mint, update_config};
 use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 use crate::querier::query_kpt_config;
@@ -101,65 +101,35 @@ pub fn execute(
         }
         // these all come from cw20-base to implement the cw20 standard
         ExecuteMsg::Transfer { recipient, amount } => {
-            let cw20_res = execute_transfer(deps, env, info, recipient, amount);
-            if cw20_res.is_err() {
-                return Err(ContractError::Std(StdError::generic_err(
-                    cw20_res.err().unwrap().to_string(),
-                )));
-            }
-            Ok(Response::default().add_attributes(cw20_res.unwrap().attributes))
+            execute_transfer(deps, env, info, recipient, amount)
         }
         ExecuteMsg::Send {
             contract,
             amount,
             msg,
         } => {
-            let cw20_res = execute_send(deps, env, info, contract, amount, msg);
-            if cw20_res.is_err() {
-                return Err(ContractError::Std(StdError::generic_err(
-                    cw20_res.err().unwrap().to_string(),
-                )));
-            }
-            Ok(Response::default().add_attributes(cw20_res.unwrap().attributes))
+             execute_send(deps, env, info, contract, amount, msg)
         }
         ExecuteMsg::IncreaseAllowance {
             spender,
             amount,
             expires,
         } => {
-            let cw20_res = execute_increase_allowance(deps, env, info, spender, amount, expires);
-            if cw20_res.is_err() {
-                return Err(ContractError::Std(StdError::generic_err(
-                    cw20_res.err().unwrap().to_string(),
-                )));
-            }
-            Ok(Response::default().add_attributes(cw20_res.unwrap().attributes))
+           execute_increase_allowance(deps, env, info, spender, amount, expires)
         }
         ExecuteMsg::DecreaseAllowance {
             spender,
             amount,
             expires,
         } => {
-            let cw20_res = execute_decrease_allowance(deps, env, info, spender, amount, expires);
-            if cw20_res.is_err() {
-                return Err(ContractError::Std(StdError::generic_err(
-                    cw20_res.err().unwrap().to_string(),
-                )));
-            }
-            Ok(Response::default().add_attributes(cw20_res.unwrap().attributes))
+           execute_decrease_allowance(deps, env, info, spender, amount, expires)
         }
         ExecuteMsg::TransferFrom {
             owner,
             recipient,
             amount,
         } => {
-            let cw20_res = execute_transfer_from(deps, env, info, owner, recipient, amount);
-            if cw20_res.is_err() {
-                return Err(ContractError::Std(StdError::generic_err(
-                    cw20_res.err().unwrap().to_string(),
-                )));
-            }
-            Ok(Response::default().add_attributes(cw20_res.unwrap().attributes))
+           execute_transfer_from(deps, env, info, owner, recipient, amount)
         }
         ExecuteMsg::SendFrom {
             owner,
@@ -167,44 +137,20 @@ pub fn execute(
             amount,
             msg,
         } => {
-            let cw20_res = execute_send_from(deps, env, info, owner, contract, amount, msg);
-            if cw20_res.is_err() {
-                return Err(ContractError::Std(StdError::generic_err(
-                    cw20_res.err().unwrap().to_string(),
-                )));
-            }
-            Ok(Response::default().add_attributes(cw20_res.unwrap().attributes))
+           execute_send_from(deps, env, info, owner, contract, amount, msg)
         }
         ExecuteMsg::UpdateMarketing {
             project,
             description,
             marketing,
         } => {
-            let res = execute_update_marketing(deps, env, info, project, description, marketing);
-            if res.is_err() {
-                return Err(ContractError::Std(StdError::generic_err(
-                    res.err().unwrap().to_string(),
-                )));
-            }
-            Ok(res.unwrap())
+           execute_update_marketing(deps, env, info, project, description, marketing)
         }
         ExecuteMsg::UploadLogo(logo) => {
-            let res = execute_upload_logo(deps, env, info, logo);
-            if res.is_err() {
-                return Err(ContractError::Std(StdError::generic_err(
-                    res.err().unwrap().to_string(),
-                )));
-            }
-            Ok(res.unwrap())
+           execute_upload_logo(deps, env, info, logo)
         }
         ExecuteMsg::UpdateMinter { new_minter } => {
-            let res = execute_update_minter(deps, env, info, new_minter);
-            if res.is_err() {
-                return Err(ContractError::Std(StdError::generic_err(
-                    res.err().unwrap().to_string(),
-                )));
-            }
-            Ok(res.unwrap())
+          execute_update_minter(deps, env, info, new_minter)
         }
     }
 }
