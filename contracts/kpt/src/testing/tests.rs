@@ -2,16 +2,16 @@
 mod tests {
 
     use crate::contract::{execute, instantiate};
-    use cw20_base::ContractError;
     use crate::msg::{ExecuteMsg, InstantiateMsg, KptConfigResponse};
     use crate::querier::query_kpt_config;
     use cosmwasm_std::testing::{
         mock_dependencies, mock_dependencies_with_balance, mock_env, mock_info,
     };
-    use cosmwasm_std::{coins, Addr, Deps, Response, Uint128, StdError};
+    use cosmwasm_std::{coins, Addr, Deps, Response, Uint128};
     use cw20_base::contract::query_balance;
     use cw20_base::msg::InstantiateMarketingInfo;
     use cw20_base::msg::InstantiateMsg as Cw20InstantiateMsg;
+    use cw20_base::ContractError;
 
     fn get_balance<T: Into<String>>(deps: Deps, address: T) -> Uint128 {
         query_balance(deps, address.into()).unwrap().balance

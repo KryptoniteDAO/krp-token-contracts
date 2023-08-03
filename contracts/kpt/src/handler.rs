@@ -1,9 +1,9 @@
-use cw20_base::ContractError;
 use crate::helper::is_empty_str;
 use crate::mint_receiver::Cw20MintReceiveMsg;
 use crate::state::{read_kpt_config, store_kpt_config};
-use cosmwasm_std::{attr, Addr, Binary, DepsMut, Env, MessageInfo, Response, StdError, Uint128};
+use cosmwasm_std::{attr, Addr, Binary, DepsMut, Env, MessageInfo, Response, Uint128};
 use cw20_base::contract::{execute_burn, execute_mint};
+use cw20_base::ContractError;
 
 pub fn update_config(
     deps: DepsMut,
@@ -56,7 +56,7 @@ pub fn mint(
     let kpt_distribute = kpt_config.kpt_distribute;
 
     if is_empty_str(kpt_fund.as_str()) && is_empty_str(kpt_distribute.as_str()) {
-        return Err(ContractError::Std(StdError::generic_err("mint contract not configured")));
+        return Err(ContractError::Unauthorized {});
     }
 
     if msg_sender.ne(&kpt_fund.clone()) && msg_sender.ne(&kpt_distribute) {
@@ -68,24 +68,24 @@ pub fn mint(
         funds: vec![],
     };
 
-    let cw20_res = execute_mint(
+    let mut cw20_res = execute_mint(
         deps.branch(),
         env,
         sub_info,
         user.clone().to_string(),
         amount.clone(),
-    );
-    if cw20_res.is_err() {
-        return Err(ContractError::Std(StdError::generic_err(
-            cw20_res.err().unwrap().to_string(),
-        )));
-    }
+    )?;
+    // if cw20_res.is_err() {
+    //     return Err(ContractError::Std(StdError::generic_err(
+    //         cw20_res.err().unwrap().to_string(),
+    //     )));
+    // }
 
-    let mut res = cw20_res.unwrap();
+    // let mut res = cw20_res.unwrap();
 
     if let Some(contract) = contract {
         if let Some(msg) = msg {
-            res = res.add_message(
+            cw20_res = cw20_res.add_message(
                 Cw20MintReceiveMsg {
                     sender: msg_sender.into(),
                     amount,
@@ -96,7 +96,7 @@ pub fn mint(
         }
     }
 
-    Ok(res)
+    Ok(cw20_res)
 }
 
 pub fn burn(
