@@ -1,7 +1,7 @@
 # KPT Distribute
 
-kpt token allocation contract, which contains linear release of locks and warehouses. Including: loot box, team, sho,
-dao, mm, reserve, airdrop, excluding ming, details to be determined.
+kpt token allocation contract, which contains linear release of locks and warehouses. Including: Community Offering, Liquidity, MM, Incentives, Community Rewards,
+Team , Partners & Advisors, details to be determined.
 
 ## DistributeConfig
 
