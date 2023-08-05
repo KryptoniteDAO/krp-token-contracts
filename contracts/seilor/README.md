@@ -508,7 +508,7 @@ pub enum ExecuteMsg {
 
 ## QueryMsg 
 
-### KptConfig {.tabset}
+### SeilorConfig {.tabset}
 
 Gets the SEILOR contract configuration.
 
@@ -517,7 +517,7 @@ Gets the SEILOR contract configuration.
 ```rust
 #[cw_serde]
 pub enum QueryMsg {
-    KptConfig {}
+    SeilorConfig {}
 }
 ```
 
@@ -525,23 +525,23 @@ pub enum QueryMsg {
 
 ```json
 {
-  "kpt_config": {}
+  "seilor_config": {}
 }
 ```
 
 | Key| Type| Description|
 | :--- | :--- | :--- |
 
-### KptConfigResponse {.tabset}
+### SeilorConfigResponse {.tabset}
 
 #### Rust
 
 ```rust
 #[cw_serde]
-pub struct KptConfigResponse {
+pub struct SeilorConfigResponse {
     pub max_supply: u128,
-    pub seilor_fund: Addr,
-    pub seilor_distribute: Addr,
+    pub fund: Addr,
+    pub distribute: Addr,
     pub gov: Addr,
 }
 ```

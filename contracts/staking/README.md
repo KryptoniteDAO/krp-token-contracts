@@ -1,6 +1,6 @@
 # Staking Rewards
 
-veKPT holders receive a varied percentage of yield boost depending on the lock-up length. Details TBD.
+veSEILOR holders receive a varied percentage of yield boost depending on the lock-up length. Details TBD.
 
 ## StakingConfig
 
@@ -9,8 +9,8 @@ veKPT holders receive a varied percentage of yield boost depending on the lock-u
 | `gov`                    | Addr | The governance contract       |
 | `staking_token`          | Addr | The token to be staked        |
 | `rewards_token`          | Addr | The token to be reward        |
-| `ve_kpt_boost`           | Addr | The veKPT boost  contract     |
-| `kpt_fund`               | Addr | The KPT fund contract         |
+| `boost`           | Addr | The veSEILOR boost  contract     |
+| `fund`               | Addr | The SEILOR fund contract         |
 | `reward_controller_addr` | Addr | The reward controller address |
 
 ## InstantiateMsg .{tabset}
@@ -23,8 +23,8 @@ pub struct InstantiateMsg {
     pub gov: Option<Addr>,
     pub staking_token: Addr,
     pub rewards_token: Addr,
-    pub ve_kpt_boost: Addr,
-    pub kpt_fund: Addr,
+    pub boost: Addr,
+    pub fund: Addr,
     pub reward_controller_addr: Addr,
     pub duration: Uint128,
 }
@@ -37,8 +37,8 @@ pub struct InstantiateMsg {
   "gov": "sei1...",
   "staking_token": "sei1...",
   "rewards_token": "sei1...",
-  "ve_kpt_boost": "sei1...",
-  "kpt_fund": "sei1...",
+  "boost": "sei1...",
+  "fund": "sei1...",
   "reward_controller_addr": "sei1...",
   "duration": "2592000"
 }
@@ -49,8 +49,8 @@ pub struct InstantiateMsg {
 | `gov`                    | `Addr`    | The governance contract       |
 | `staking_token`          | `Addr`    | The token to be staked        |
 | `rewards_token`          | `Addr`    | The token to be reward        |
-| `ve_kpt_boost`           | `Addr`    | The veKPT boost  contract     |
-| `kpt_fund`               | `Addr`    | The KPT fund contract         |
+| `boost`           | `Addr`    | The veSEILOR boost  contract     |
+| `fund`               | `Addr`    | The SEILOR fund contract         |
 | `reward_controller_addr` | `Addr`    | The reward controller address |
 | `duration`               | `Uint128` | The duration of the lock-up   |
 
@@ -135,8 +135,8 @@ pub struct UpdateStakingConfigStruct {
     pub gov: Option<Addr>,
     pub staking_token: Option<Addr>,
     pub rewards_token: Option<Addr>,
-    pub ve_kpt_boost: Option<Addr>,
-    pub kpt_fund: Option<Addr>,
+    pub boost: Option<Addr>,
+    pub fund: Option<Addr>,
     pub reward_controller_addr: Option<Addr>,
 }
 ```
@@ -148,8 +148,8 @@ pub struct UpdateStakingConfigStruct {
   "gov": "sei1...",
   "staking_token": "sei1...",
   "rewards_token": "sei1...",
-  "ve_kpt_boost": "sei1...",
-  "kpt_fund": "sei1...",
+  "boost": "sei1...",
+  "fund": "sei1...",
   "reward_controller_addr": "sei1..."
 }
 ```
@@ -159,8 +159,8 @@ pub struct UpdateStakingConfigStruct {
 | `gov`                    | `Addr` | The governance contract       |
 | `staking_token`          | `Addr` | The token to be staked        |
 | `rewards_token`          | `Addr` | The token to be reward        |
-| `ve_kpt_boost`           | `Addr` | The veKPT boost  contract     |
-| `kpt_fund`               | `Addr` | The KPT fund contract         |
+| `boost`           | `Addr` | The veSEILOR boost  contract     |
+| `fund`               | `Addr` | The SEILOR fund contract         |
 | `reward_controller_addr` | `Addr` | The reward controller address |
 
 ### UpdateStakingState .{tabset}
@@ -479,8 +479,8 @@ pub struct StakingConfigResponse {
     pub gov: Addr,
     pub staking_token: Addr,
     pub rewards_token: Addr,
-    pub ve_kpt_boost: Addr,
-    pub kpt_fund: Addr,
+    pub boost: Addr,
+    pub fund: Addr,
     pub reward_controller_addr: Addr,
 }
 ```
@@ -492,8 +492,8 @@ pub struct StakingConfigResponse {
   "gov": "sei1...",
   "staking_token": "sei1...",
   "rewards_token": "sei1...",
-  "ve_kpt_boost": "sei1...",
-  "kpt_fund": "sei1...",
+  "boost": "sei1...",
+  "fund": "sei1...",
   "reward_controller_addr": "sei1..."
 }
 ```
@@ -503,8 +503,8 @@ pub struct StakingConfigResponse {
 | `gov`                    | `Addr` | Gov address              |
 | `staking_token`          | `Addr` | Staking token address    |
 | `rewards_token`          | `Addr` | Rewards token address    |
-| `ve_kpt_boost`           | `Addr` | VeKptBoost address       |
-| `kpt_fund`               | `Addr` | KptFund address          |
+| `boost`                  | `Addr` | Boost address            |
+| `fund`                   | `Addr` | Fund address             |
 | `reward_controller_addr` | `Addr` | RewardController address |
 
 ### QueryStakingState .{tabset}

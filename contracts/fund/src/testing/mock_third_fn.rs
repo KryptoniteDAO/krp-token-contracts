@@ -2,7 +2,7 @@ use cosmwasm_std::Uint128;
 use cw20::Cw20Coin;
 use crate::testing::mock_fn::CREATOR;
 
-pub fn mock_kpt_instantiate_msg() -> seilor::msg::InstantiateMsg {
+pub fn mock_seilor_instantiate_msg() -> seilor::msg::InstantiateMsg {
     let max_supply = 1000000000000000u128;
     let cw20_init_msg = cw20_base::msg::InstantiateMsg {
         name: "seilor dev".to_string(),
@@ -25,7 +25,7 @@ pub fn mock_kpt_instantiate_msg() -> seilor::msg::InstantiateMsg {
     msg
 }
 
-pub fn mock_ve_kpt_instantiate_msg() -> ve_seilor::msg::InstantiateMsg {
+pub fn mock_ve_seilor_instantiate_msg() -> ve_seilor::msg::InstantiateMsg {
     let cw20_instantiate_msg = cw20_base::msg::InstantiateMsg {
         name: String::from("ve seilor dev"),
         symbol: String::from("veseilor"),

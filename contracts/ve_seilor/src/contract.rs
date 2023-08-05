@@ -23,7 +23,7 @@ use cw20_base::enumerable::query_all_accounts;
 use cw20_base::msg::{InstantiateMarketingInfo, InstantiateMsg as Cw20InstantiateMsg};
 
 // version info for migration info
-const CONTRACT_NAME: &str = "kryptonite.finance:cw20-ve-kpt";
+const CONTRACT_NAME: &str = "kryptonite.finance:cw20-ve-seilor";
 const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 #[cfg_attr(not(feature = "library"), entry_point)]

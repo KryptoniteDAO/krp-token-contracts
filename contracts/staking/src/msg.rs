@@ -113,8 +113,8 @@ pub struct StakingConfigResponse {
     pub gov: Addr,
     pub staking_token: Addr,
     pub rewards_token: Addr,
-    pub ve_kpt_boost: Addr,
-    pub kpt_fund: Addr,
+    pub boost: Addr,
+    pub fund: Addr,
     pub reward_controller_addr: Addr,
 }
 

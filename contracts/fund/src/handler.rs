@@ -1,6 +1,6 @@
 use crate::helper::{BASE_RATE_12, BASE_RATE_6};
 use crate::msg::UpdateConfigMsg;
-use crate::querier::{earned, get_claim_able_kpt, get_reserved_kpt_for_vesting, total_staked};
+use crate::querier::{earned, get_claim_able_seilor, get_reserved_seilor_for_vesting, total_staked};
 use crate::state::{
     read_fund_config, read_rewards, read_time2full_redemption, read_unstake_rate,
     store_fund_config, store_last_withdraw_time, store_rewards, store_time2full_redemption,
@@ -12,9 +12,9 @@ use cosmwasm_std::{
 };
 
 /**
- * This is a function that updates the configuration of a KPT Fund contract.
- * The function takes in several optional parameters, including the address of the VE-KPT contract,
- * the address of the KPT contract, the denomination of the KUSD token, the reward per token stored,
+ * This is a function that updates the configuration of a SEILOR Fund contract.
+ * The function takes in several optional parameters, including the address of the VE-SEILOR contract,
+ * the address of the SEILOR contract, the denomination of the KUSD token, the reward per token stored,
  * the exit cycle, and the claimable time. If the sender is not authorized to update the configuration,
  * an error will be returned. The function then updates the configuration with the new values and stores it in the contract's storage.
  * Finally, it returns a response with attributes indicating the action taken and the parameters updated.
@@ -92,25 +92,25 @@ pub fn stake(mut deps: DepsMut, info: MessageInfo, amount: Uint128) -> StdResult
     refresh_reward(deps.branch(), sender.clone())?;
     let config = read_fund_config(deps.storage)?;
     let mut sub_msgs = vec![];
-    let kpt_burn_msg = seilor::msg::ExecuteMsg::Burn {
+    let seilor_burn_msg = seilor::msg::ExecuteMsg::Burn {
         user: sender.clone().to_string(),
         amount: amount.clone(),
     };
     let sub_burn_msg = SubMsg::new(CosmosMsg::Wasm(WasmMsg::Execute {
         contract_addr: config.seilor_addr.to_string(),
-        msg: to_binary(&kpt_burn_msg)?,
+        msg: to_binary(&seilor_burn_msg)?,
         funds: vec![],
     }));
     sub_msgs.push(sub_burn_msg);
 
-    let kpt_mint_msg = ve_seilor::msg::ExecuteMsg::Mint {
+    let seilor_mint_msg = ve_seilor::msg::ExecuteMsg::Mint {
         recipient: sender.clone().to_string(),
         amount: amount.clone(),
     };
 
     let sub_mint_msg = SubMsg::new(CosmosMsg::Wasm(WasmMsg::Execute {
         contract_addr: config.ve_seilor_addr.to_string(),
-        msg: to_binary(&kpt_mint_msg)?,
+        msg: to_binary(&seilor_mint_msg)?,
         funds: vec![],
     }));
     sub_msgs.push(sub_mint_msg);
@@ -183,22 +183,22 @@ pub fn unstake(
 }
 
 /**
- * This is a function that allows a user to withdraw their claimable KPT tokens.
- * First, it retrieves the amount of claimable tokens using the get_claim_able_kpt function.
+ * This is a function that allows a user to withdraw their claimable SEILOR tokens.
+ * First, it retrieves the amount of claimable tokens using the get_claim_able_seilor function.
  * If there is an error, it returns a generic error message.
- * If there are tokens to withdraw, it reads the KPT fund configuration and creates a KptExecuteMsg to mint the tokens to the user's address.
+ * If there are tokens to withdraw, it reads the SEILOR fund configuration and creates a SeilorExecuteMsg to mint the tokens to the user's address.
  * This message is added as a sub-message to the response.
  * Finally, the function stores the current block time as the user's last withdrawal time and returns a response with attributes indicating the action, user, and amount withdrawn.
  */
 pub fn withdraw(deps: DepsMut, env: Env, user: Addr) -> StdResult<Response> {
     let current_time = Uint64::from(env.block.time.seconds());
-    let claim_able_res = get_claim_able_kpt(deps.as_ref(), env, user.clone())?;
+    let claim_able_res = get_claim_able_seilor(deps.as_ref(), env, user.clone())?;
 
     let amount = claim_able_res.amount;
     let mut sub_msgs = vec![];
     if amount.gt(&Uint128::zero()) {
         let config = read_fund_config(deps.storage)?;
-        let kpt_mint_msg = seilor::msg::ExecuteMsg::Mint {
+        let seilor_mint_msg = seilor::msg::ExecuteMsg::Mint {
             recipient: user.clone().to_string(),
             amount: amount.clone(),
             contract: None,
@@ -206,7 +206,7 @@ pub fn withdraw(deps: DepsMut, env: Env, user: Addr) -> StdResult<Response> {
         };
         let sub_mint_msg = SubMsg::new(CosmosMsg::Wasm(WasmMsg::Execute {
             contract_addr: config.seilor_addr.to_string(),
-            msg: to_binary(&kpt_mint_msg)?,
+            msg: to_binary(&seilor_mint_msg)?,
             funds: vec![],
         }));
         sub_msgs.push(sub_mint_msg);
@@ -229,8 +229,8 @@ pub fn re_stake(mut deps: DepsMut, env: Env, info: MessageInfo) -> StdResult<Res
 
     let mut sub_msgs = vec![];
     let config = read_fund_config(deps.storage)?;
-    let claim_able_res = get_claim_able_kpt(deps.as_ref(), env.clone(), sender.clone())?;
-    let reserve_seilor_res = get_reserved_kpt_for_vesting(deps.as_ref(), env.clone(), sender.clone())?;
+    let claim_able_res = get_claim_able_seilor(deps.as_ref(), env.clone(), sender.clone())?;
+    let reserve_seilor_res = get_reserved_seilor_for_vesting(deps.as_ref(), env.clone(), sender.clone())?;
     let claim_able = claim_able_res.amount;
     let reserve_seilor = reserve_seilor_res.amount;
     let total = claim_able.checked_add(reserve_seilor)?;
@@ -291,7 +291,7 @@ pub fn get_reward(mut deps: DepsMut, info: MessageInfo) -> StdResult<Response> {
 }
 
 /**
- * @dev The amount of KUSD acquiered from the sender is euitably distributed to KPT stakers.
+ * @dev The amount of KUSD acquiered from the sender is euitably distributed to SEILOR stakers.
  * Calculate share by amount, and calculate the shares could claim by per unit of staked Sei.
  * Add into rewardPerTokenStored.
  */

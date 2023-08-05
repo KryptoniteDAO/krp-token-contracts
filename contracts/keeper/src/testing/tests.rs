@@ -17,7 +17,7 @@ mod tests {
         let _msg = InstantiateMsg {
             owner: "creator".to_string(),
             threshold: Uint128::from(threshold),
-            rewards_contract: "kpt_fund".to_string(),
+            rewards_contract: "seilor_fund".to_string(),
             rewards_denom: "kUSD".to_string(),
         };
         let _info = mock_info("creator", &[]);
@@ -30,7 +30,7 @@ mod tests {
             ConfigResponse {
                 owner: "creator".to_string(),
                 threshold: Uint128::from(threshold),
-                rewards_contract: "kpt_fund".to_string(),
+                rewards_contract: "seilor_fund".to_string(),
                 rewards_denom: "kUSD".to_string(),
             }
         );
@@ -45,7 +45,7 @@ mod tests {
         let _msg = InstantiateMsg {
             owner: "creator".to_string(),
             threshold: Uint128::from(threshold),
-            rewards_contract: "kpt_fund".to_string(),
+            rewards_contract: "seilor_fund".to_string(),
             rewards_denom: "kUSD".to_string(),
         };
         let _info = mock_info("creator", &[]);
@@ -99,7 +99,7 @@ mod tests {
         let _msg = InstantiateMsg {
             owner: "creator".to_string(),
             threshold: Uint128::from(threshold),
-            rewards_contract: "kpt_fund".to_string(),
+            rewards_contract: "seilor_fund".to_string(),
             rewards_denom: "kUSD".to_string(),
         };
         let _info = mock_info("creator", &[]);
