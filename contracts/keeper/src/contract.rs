@@ -13,7 +13,7 @@ use cw2::set_contract_version;
 use cw_utils::nonpayable;
 
 // version info for migration info
-const CONTRACT_NAME: &str = "kryptonite.finance:dispatcher";
+const CONTRACT_NAME: &str = "kryptonite.finance:keeper";
 const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
 
 #[cfg_attr(not(feature = "library"), entry_point)]

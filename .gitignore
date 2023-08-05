@@ -9,4 +9,4 @@ node_modules
 */.env*
 pnpm-lock.yaml
 */pnpm-lock.yaml
-**/*/deployed_kpt_*.json
+**/*/deployed_seilor_*.json

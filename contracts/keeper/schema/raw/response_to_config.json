@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "InstantiateMsg",
+  "title": "ConfigResponse",
   "type": "object",
   "required": [
     "owner",
@@ -13,7 +13,6 @@
       "type": "string"
     },
     "rewards_contract": {
-      "description": "contract address of kpt fund",
       "type": "string"
     },
     "rewards_denom": {

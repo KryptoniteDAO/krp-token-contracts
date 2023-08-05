@@ -1,25 +1,12 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "InstantiateMsg",
+  "title": "GetClaimAbleKptResponse",
   "type": "object",
   "required": [
-    "owner",
-    "rewards_contract",
-    "rewards_denom",
-    "threshold"
+    "amount"
   ],
   "properties": {
-    "owner": {
-      "type": "string"
-    },
-    "rewards_contract": {
-      "description": "contract address of kpt fund",
-      "type": "string"
-    },
-    "rewards_denom": {
-      "type": "string"
-    },
-    "threshold": {
+    "amount": {
       "$ref": "#/definitions/Uint128"
     }
   },

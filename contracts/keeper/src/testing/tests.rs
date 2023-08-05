@@ -56,7 +56,7 @@ mod tests {
         let _msg = ExecuteMsg::UpdateConfig {
             owner: Some("new_creator".to_string()),
             threshold: Some(Uint128::from(threshold2)),
-            rewards_contract: Some("new_kpt_fund".to_string()),
+            rewards_contract: Some("new_fund".to_string()),
             rewards_denom: Some("new_kUSD".to_string()),
         };
         let _info = mock_info("random_user", &[]);
@@ -77,7 +77,7 @@ mod tests {
             ConfigResponse {
                 owner: "new_creator".to_string(),
                 threshold: Uint128::from(threshold2),
-                rewards_contract: "new_kpt_fund".to_string(),
+                rewards_contract: "new_fund".to_string(),
                 rewards_denom: "new_kUSD".to_string(),
             }
         );
