@@ -1,0 +1,1 @@
+pub const BASE_RATE_6: u128 = 1000000u128;
