@@ -13,7 +13,7 @@
       "type": "string"
     },
     "rewards_contract": {
-      "description": "contract address of kpt fund",
+      "description": "contract address of seilor fund",
       "type": "string"
     },
     "rewards_denom": {
