@@ -56,7 +56,7 @@ mod tests {
         let _res = instantiate(deps.as_mut(), mock_env(), _info, _msg).unwrap();
         assert_eq!(_res, Response::default());
 
-        // Verify the KptConfig is stored correctly
+        // Verify the SeilorConfig is stored correctly
         assert_eq!(
             query_seilor_config(deps.as_ref()).unwrap(),
             SeilorConfigResponse {

@@ -1,21 +1,21 @@
-# veKPT
+# veSEILOR
 
-veKPT is escrowed KPT. It has the same value as KPT and is subject to the total supply of KPT. veKPT cannot be traded or
-transferred but has voting rights and can share in protocol earnings. Mining rewards are the primary source of veKPT.
-veKPT holders can convert their veKPT to KPT through a vesting process. Once the process is started, veKPT will be
-linearly converted to KPT over a period of 30 days.
+veSEILOR is escrowed SEILOR. It has the same value as SEILOR and is subject to the total supply of SEILOR. veSEILOR cannot be traded or
+transferred but has voting rights and can share in protocol earnings. Mining rewards are the primary source of veSEILOR.
+veSEILOR holders can convert their veSEILOR to SEILOR through a vesting process. Once the process is started, veSEILOR will be
+linearly converted to SEILOR over a period of 30 days.
 
 ## VoteConfig
 
-The VoteConfig contract is used to manage the voting parameters of the KPT protocol.
+The VoteConfig contract is used to manage the voting parameters of the SEILOR protocol.
 
 | Key            | Type      | Description                                                 |
 |----------------|-----------|-------------------------------------------------------------|
-| `max_supply`   | `u128`    | veKPT max supply                                            |
-| `kpt_fund`     | `Addr`    | KPT FUND module contract address (Possess mint permissions) |
+| `max_supply`   | `u128`    | veSEILOR max supply                                            |
+| `fund`         | `Addr`    | SEILOR FUND module contract address (Possess mint permissions) |
 | `gov`          | `Addr`    | Address of contract owner that can update config            |
-| `max_minted`   | `Uint128` | Maximum amount of veKPT that can be minted                  |
-| `total_minted` | `Uint128` | Total amount of veKPT that has been minted                  |
+| `max_minted`   | `Uint128` | Maximum amount of veSEILOR that can be minted                  |
+| `total_minted` | `Uint128` | Total amount of veSEILOR that has been minted                  |
 
 ## InstantiateMsg {.tabset}
 
@@ -38,8 +38,8 @@ pub struct InstantiateMsg {
 ```json
 {
   "cw20_init_msg": {
-    "name": "kpt dev",
-    "symbol": "kpt",
+    "name": "seilor dev",
+    "symbol": "seilor",
     "decimals": 6,
     "initial_balances": []
   },
@@ -50,9 +50,9 @@ pub struct InstantiateMsg {
 | Key             | Type                 | Description                                                                                               |
 |:----------------|:---------------------|:----------------------------------------------------------------------------------------------------------|
 | `cw20_init_msg` | `Cw20InstantiateMsg` | The cw20 initialization message structure based on the cw20_base library                                  |
-| `max_supply`    | `u128`               | KPT max supply                                                                                            |
+| `max_supply`    | `u128`               | SEILOR max supply                                                                                            |
 | `gov`           | `Addr`*              | Address of contract owner that can update config. If not filled in, it is the initialization call address |
-| `max_minted`    | `Uint128`            | Maximum amount of veKPT that can be minted                                                                |
+| `max_minted`    | `Uint128`            | Maximum amount of veSEILOR that can be minted                                                                |
 
 * = optional
 
@@ -69,7 +69,7 @@ Updates the configuration of the contract. Can only be issued by the owner.
 pub enum ExecuteMsg {
     UpdateConfig {
         max_minted: Option<Uint128>,
-        kpt_fund: Option<Addr>,
+        fund: Option<Addr>,
         gov: Option<Addr>,
     }
 }
@@ -81,7 +81,7 @@ pub enum ExecuteMsg {
 {
   "update_config": {
     "max_minted": "650000000000000",
-    "kpt_fund": "sei1...",
+    "fund": "sei1...",
     "gov": "sei1..."
   }
 }
@@ -89,8 +89,8 @@ pub enum ExecuteMsg {
 
 | Key          | Type       | Description                                                                                               |
 |:-------------|:-----------|:----------------------------------------------------------------------------------------------------------|
-| `max_minted` | `Uint128`* | Maximum amount of veKPT that can be minted                                                                |
-| `kpt_fund`   | `Addr`*    | KPT FUND module contract address (Possess mint permissions)                                               |
+| `max_minted` | `Uint128`* | Maximum amount of veSEILOR that can be minted                                                                |
+| `fund`   | `Addr`*        | SEILOR FUND module contract address (Possess mint permissions)                                               |
 | `gov`        | `Addr`*    | Address of contract owner that can update config. If not filled in, it is the initialization call address |
 
 * = optional
@@ -133,7 +133,7 @@ pub enum ExecuteMsg {
 
 ### Mint {.tabset}
 
-Mints veKPT. Can only be issued by the mint permissions.
+Mints veSEILOR. Can only be issued by the mint permissions.
 
 ### Rust
 
@@ -161,11 +161,11 @@ pub enum ExecuteMsg {
 | Key         | Type      | Description             |
 |:------------|:----------|:------------------------|
 | `recipient` | `String`  | Recipient address       |
-| `amount`    | `Uint128` | Amount of veKPT to mint |
+| `amount`    | `Uint128` | Amount of veSEILOR to mint |
 
 ### Burn {.tabset}
 
-Burns veKPT. Can only be issued by the mint permissions.
+Burns veSEILOR. Can only be issued by the mint permissions.
 
 ### Rust
 
@@ -295,7 +295,7 @@ pub enum QueryMsg {
 #[cw_serde]
 pub struct VoteConfigResponse {
     pub max_supply: u128,
-    pub kpt_fund: Addr,
+    pub fund: Addr,
     pub gov: Addr,
     pub max_minted: Uint128,
     pub total_minted: Uint128,
@@ -307,7 +307,7 @@ pub struct VoteConfigResponse {
 ```json
 {
   "max_supply": "650000000000000",
-  "kpt_fund": "sei1...",
+  "fund": "sei1...",
   "gov": "sei1...",
   "max_minted": "650000000000000",
   "total_minted": "650000000000000"
@@ -316,11 +316,11 @@ pub struct VoteConfigResponse {
 
 | Key            | Type      | Description                                                                                               |
 |:---------------|:----------|:----------------------------------------------------------------------------------------------------------|
-| `max_supply`   | `u128`    | KPT max supply                                                                                            |
-| `kpt_fund`     | `Addr`    | KPT FUND module contract address (Possess mint permissions)                                               |
+| `max_supply`   | `u128`    | SEILOR max supply                                                                                            |
+| `fund`         | `Addr`    | SEILOR FUND module contract address (Possess mint permissions)                                               |
 | `gov`          | `Addr`    | Address of contract owner that can update config. If not filled in, it is the initialization call address |
-| `max_minted`   | `Uint128` | Maximum amount of veKPT that can be minted                                                                |
-| `total_minted` | `Uint128` | Total amount of veKPT minted                                                                              |
+| `max_minted`   | `Uint128` | Maximum amount of veSEILOR that can be minted                                                                |
+| `total_minted` | `Uint128` | Total amount of veSEILOR minted                                                                              |
 
 ### IsMinter {.tabset}
 
@@ -731,8 +731,8 @@ pub struct TokenInfoResponse {
 
 ```json
 {
-  "name": "KPT",
-  "symbol": "KPT",
+  "name": "SEILOR",
+  "symbol": "SEILOR",
   "decimals": 18,
   "total_supply": "100000000000000000000000000"
 }

@@ -3,18 +3,21 @@
   "title": "StakingConfigResponse",
   "type": "object",
   "required": [
+    "boost",
+    "fund",
     "gov",
-    "kpt_fund",
     "reward_controller_addr",
     "rewards_token",
-    "staking_token",
-    "ve_kpt_boost"
+    "staking_token"
   ],
   "properties": {
-    "gov": {
+    "boost": {
       "$ref": "#/definitions/Addr"
     },
-    "kpt_fund": {
+    "fund": {
+      "$ref": "#/definitions/Addr"
+    },
+    "gov": {
       "$ref": "#/definitions/Addr"
     },
     "reward_controller_addr": {
@@ -24,9 +27,6 @@
       "$ref": "#/definitions/Addr"
     },
     "staking_token": {
-      "$ref": "#/definitions/Addr"
-    },
-    "ve_kpt_boost": {
       "$ref": "#/definitions/Addr"
     }
   },

@@ -271,7 +271,7 @@ mod tests {
             _ => panic!("Must return unauthorized error"),
         }
 
-        // Positive test case, with kpt_fund
+        // Positive test case, with fund
         let _msg = ExecuteMsg::Mint {
             recipient: "lucky".to_string(),
             amount,
@@ -327,7 +327,7 @@ mod tests {
         let _res = execute(deps.as_mut(), mock_env(), _info, _msg).unwrap();
         assert_eq!(0, _res.messages.len());
 
-        // Positive test case, with kpt_fund
+        // Positive test case, with fund
         let _msg = ExecuteMsg::Mint {
             recipient: "lucky".to_string(),
             amount,
@@ -430,7 +430,7 @@ mod tests {
             _ => panic!("Must return unauthorized error"),
         }
 
-        // Positive test case by kpt_fund
+        // Positive test case by fund
         let _msg = ExecuteMsg::Burn {
             user: "lucky".to_string(),
             amount: Uint128::from(1u128),

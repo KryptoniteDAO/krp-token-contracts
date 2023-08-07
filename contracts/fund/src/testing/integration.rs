@@ -4,9 +4,9 @@ use cw20::BalanceResponse;
 use cw_multi_test::{App, AppBuilder, ContractWrapper, Executor};
 use crate::contract::{execute, instantiate, query};
 use crate::msg::ExecuteMsg::Stake;
-use crate::msg::{ExecuteMsg, GetClaimAbleKptResponse, GetClaimAbleKusdResponse, QueryMsg};
+use crate::msg::{ExecuteMsg, GetClaimAbleSeilorResponse, GetClaimAbleKusdResponse, QueryMsg};
 use crate::testing::mock_fn::{CREATOR, KUSD_DENOM, KUSD_REWARD_ADDR, mock_instantiate_msg};
-use crate::testing::mock_third_fn::{mock_kpt_instantiate_msg, mock_ve_kpt_instantiate_msg};
+use crate::testing::mock_third_fn::{mock_seilor_instantiate_msg, mock_ve_seilor_instantiate_msg};
 
 fn mock_app(owner: Addr, coins: Vec<Coin>, block_time: Option<u64>) -> App {
     let mut block = mock_env().block;
@@ -23,31 +23,31 @@ fn mock_app(owner: Addr, coins: Vec<Coin>, block_time: Option<u64>) -> App {
         })
 }
 
-fn store_kpt_contract(app: &mut App) -> u64 {
-    let kpt_contract = Box::new(ContractWrapper::new_with_empty(
+fn store_seilor_contract(app: &mut App) -> u64 {
+    let seilor_contract = Box::new(ContractWrapper::new_with_empty(
         seilor::contract::execute,
         seilor::contract::instantiate,
         seilor::contract::query,
     ));
-    app.store_code(kpt_contract)
+    app.store_code(seilor_contract)
 }
 
-fn store_ve_kpt_contract(app: &mut App) -> u64 {
-    let ve_kpt_contract = Box::new(ContractWrapper::new_with_empty(
+fn store_ve_seilor_contract(app: &mut App) -> u64 {
+    let ve_seilor_contract = Box::new(ContractWrapper::new_with_empty(
         ve_seilor::contract::execute,
         ve_seilor::contract::instantiate,
         ve_seilor::contract::query,
     ));
-    app.store_code(ve_kpt_contract)
+    app.store_code(ve_seilor_contract)
 }
 
-fn store_kpt_fun_contract(app: &mut App) -> u64 {
-    let kpt_fun_contract = Box::new(ContractWrapper::new_with_empty(
+fn store_seilor_fun_contract(app: &mut App) -> u64 {
+    let seilor_fun_contract = Box::new(ContractWrapper::new_with_empty(
         execute,
         instantiate,
         query,
     ));
-    app.store_code(kpt_fun_contract)
+    app.store_code(seilor_fun_contract)
 }
 
 #[test]
@@ -65,16 +65,16 @@ fn test_integration() {
                         coin(20000000u128, KUSD_DENOM.clone().to_string()),
                     ]).unwrap();
 
-    //deploy kpt && ve kpt
-    let seilor_token = kpt_contract_instance(&creator, &mut app);
+    //deploy seilor && ve seilor
+    let seilor_token = seilor_contract_instance(&creator, &mut app);
 
-    let ve_seilor_token = ve_kpt_contract_instance(&creator, &mut app);
+    let ve_seilor_token = ve_seilor_contract_instance(&creator, &mut app);
 
-    //deploy kpt_fund
-    let test_contract_addr = kpt_fun_contract_instance(&creator, &mut app, &seilor_token, &ve_seilor_token);
+    //deploy fund
+    let test_contract_addr = fund_contract_instance(&creator, &mut app, &seilor_token, &ve_seilor_token);
 
-    // kpt & ve_seilor set minter role
-    add_seilor_fun_to_seilor_and_ve_seilor_role(&creator, &mut app, &seilor_token, &ve_seilor_token, &test_contract_addr);
+    // seilor & ve_seilor set minter role
+    add_seilor_and_ve_seilor_role_to_fund(&creator, &mut app, &seilor_token, &ve_seilor_token, &test_contract_addr);
 
 
     // stake
@@ -102,12 +102,12 @@ fn test_integration() {
 
 
     // query ve_seilor balance
-    let query_res = get_ve_kpt_balance(&creator, &mut app, &ve_seilor_token);
+    let query_res = get_ve_seilor_balance(&creator, &mut app, &ve_seilor_token);
     assert_eq!(query_res.balance, Uint128::from(stake_amount.clone()));
 
 
-    // query claimable kpt
-    let query_msg = get_claimable_kpt(&creator, &mut app, &test_contract_addr);
+    // query claimable seilor
+    let query_msg = get_claimable_seilor(&creator, &mut app, &test_contract_addr);
     assert_eq!(query_msg.amount, Uint128::from(0u128));
 
     // unstake
@@ -119,12 +119,12 @@ fn test_integration() {
         block.height += 1000000u64;
     });
 
-    // query claimable kpt
-    let query_msg = get_claimable_kpt(&creator, &mut app, &test_contract_addr);
+    // query claimable seilor
+    let query_msg = get_claimable_seilor(&creator, &mut app, &test_contract_addr);
     assert_eq!(query_msg.amount, Uint128::from(1000000u128));
 
     // query ve_seilor balance
-    let query_res = get_ve_kpt_balance(&creator, &mut app, &ve_seilor_token);
+    let query_res = get_ve_seilor_balance(&creator, &mut app, &ve_seilor_token);
     assert_eq!(query_res.balance, Uint128::from(stake_amount.clone() - unstake_amount.clone()));
 
 
@@ -132,7 +132,7 @@ fn test_integration() {
     re_stake(&creator, &mut app, &test_contract_addr);
 
     // query ve_seilor balance
-    let query_res = get_ve_kpt_balance(&creator, &mut app, &ve_seilor_token);
+    let query_res = get_ve_seilor_balance(&creator, &mut app, &ve_seilor_token);
     assert_eq!(query_res.balance, Uint128::from(stake_amount.clone()));
 
 
@@ -145,27 +145,27 @@ fn test_integration() {
         block.height += 1000000u64;
     });
 
-    // query claimable kpt
-    let query_msg = get_claimable_kpt(&creator, &mut app, &test_contract_addr);
+    // query claimable seilor
+    let query_msg = get_claimable_seilor(&creator, &mut app, &test_contract_addr);
     assert_eq!(query_msg.amount, Uint128::from(1000000u128));
 
-    // query kpt balance
-    let query_res = get_kpt_balance(&creator, &mut app, &seilor_token);
+    // query seilor balance
+    let query_res = get_seilor_balance(&creator, &mut app, &seilor_token);
     assert_eq!(query_res.balance, Uint128::from(199999900000000u128));
 
     // withdraw
     withdraw(&creator, &mut app, &test_contract_addr);
 
-    // query claimable kpt
-    let query_msg = get_claimable_kpt(&creator, &mut app, &test_contract_addr);
+    // query claimable seilor
+    let query_msg = get_claimable_seilor(&creator, &mut app, &test_contract_addr);
     assert_eq!(query_msg.amount, Uint128::from(0u128));
 
     // query ve_seilor balance
-    let query_res = get_ve_kpt_balance(&creator, &mut app, &ve_seilor_token);
+    let query_res = get_ve_seilor_balance(&creator, &mut app, &ve_seilor_token);
     assert_eq!(query_res.balance, Uint128::from(stake_amount.clone() - unstake_amount.clone()));
 
-    // query kpt balance
-    let query_res = get_kpt_balance(&creator, &mut app, &seilor_token);
+    // query seilor balance
+    let query_res = get_seilor_balance(&creator, &mut app, &seilor_token);
     assert_eq!(query_res.balance, Uint128::from(199999901000000u128));
 }
 
@@ -256,7 +256,7 @@ fn stake(creator: &Addr, app: &mut App, test_contract_addr: &Addr, stake_amount:
     assert!(res.is_ok());
 }
 
-fn add_seilor_fun_to_seilor_and_ve_seilor_role(creator: &Addr, app: &mut App, seilor_token: &Addr, ve_seilor_token: &Addr, fund: &Addr) {
+fn add_seilor_and_ve_seilor_role_to_fund(creator: &Addr, app: &mut App, seilor_token: &Addr, ve_seilor_token: &Addr, fund: &Addr) {
     let update_config = seilor::msg::ExecuteMsg::UpdateConfig {
         fund: Some(fund.clone()),
         gov: None,
@@ -288,50 +288,50 @@ fn add_seilor_fun_to_seilor_and_ve_seilor_role(creator: &Addr, app: &mut App, se
     assert!(res.is_ok());
 }
 
-fn kpt_fun_contract_instance(creator: &Addr, mut app: &mut App, seilor_token: &Addr, ve_seilor_token: &Addr) -> Addr {
-    let kpt_fun_code_id = store_kpt_fun_contract(&mut app);
-    let kpt_fun_instance_msg = mock_instantiate_msg(seilor_token.clone(), ve_seilor_token.clone());
-    // kpt_fun_instance_msg.kusd_reward_addr = Addr::unchecked(CREATOR.clone().to_string());
+fn fund_contract_instance(creator: &Addr, mut app: &mut App, seilor_token: &Addr, ve_seilor_token: &Addr) -> Addr {
+    let fund_code_id = store_seilor_fun_contract(&mut app);
+    let fund_instance_msg = mock_instantiate_msg(seilor_token.clone(), ve_seilor_token.clone());
+    // fund_instance_msg.kusd_reward_addr = Addr::unchecked(CREATOR.clone().to_string());
     let test_contract_addr = app.instantiate_contract(
-        kpt_fun_code_id,
+        fund_code_id,
         creator.clone(),
-        &kpt_fun_instance_msg,
+        &fund_instance_msg,
         &[], // no funds
-        String::from("KPT_FUN"),
+        String::from("FUND"),
         None,
     ).unwrap();
     test_contract_addr
 }
 
-fn ve_kpt_contract_instance(creator: &Addr, mut app: &mut App) -> Addr {
-    let ve_kpt_code_id = store_ve_kpt_contract(&mut app);
-    let ve_kpt_instance_msg: ve_seilor::msg::InstantiateMsg = mock_ve_kpt_instantiate_msg();
+fn ve_seilor_contract_instance(creator: &Addr, mut app: &mut App) -> Addr {
+    let ve_seilor_code_id = store_ve_seilor_contract(&mut app);
+    let ve_seilor_instance_msg: ve_seilor::msg::InstantiateMsg = mock_ve_seilor_instantiate_msg();
     let ve_seilor_token = app.instantiate_contract(
-        ve_kpt_code_id,
+        ve_seilor_code_id,
         creator.clone(),
-        &ve_kpt_instance_msg,
+        &ve_seilor_instance_msg,
         &[], // no funds
-        String::from("VE_KPT"),
+        String::from("VE_SEILOR"),
         None,
     ).unwrap();
     ve_seilor_token
 }
 
-fn kpt_contract_instance(creator: &Addr, mut app: &mut App) -> Addr {
-    let kpt_code_id = store_kpt_contract(&mut app);
-    let kpt_instance_msg: seilor::msg::InstantiateMsg = mock_kpt_instantiate_msg();
+fn seilor_contract_instance(creator: &Addr, mut app: &mut App) -> Addr {
+    let seilor_code_id = store_seilor_contract(&mut app);
+    let seilor_instance_msg: seilor::msg::InstantiateMsg = mock_seilor_instantiate_msg();
     let seilor_token = app.instantiate_contract(
-        kpt_code_id,
+        seilor_code_id,
         creator.clone(),
-        &kpt_instance_msg,
+        &seilor_instance_msg,
         &[], // no funds
-        String::from("KPT"),
+        String::from("SEILOR"),
         None,
     ).unwrap();
     seilor_token
 }
 
-fn get_kpt_balance(creator: &Addr, app: &mut App, seilor_token: &Addr) -> BalanceResponse {
+fn get_seilor_balance(creator: &Addr, app: &mut App, seilor_token: &Addr) -> BalanceResponse {
     let query_balance_msg = seilor::msg::QueryMsg::Balance {
         address: creator.clone().to_string(),
     };
@@ -342,7 +342,7 @@ fn get_kpt_balance(creator: &Addr, app: &mut App, seilor_token: &Addr) -> Balanc
     query_res
 }
 
-fn get_ve_kpt_balance(creator: &Addr, app: &mut App, ve_seilor_token: &Addr) -> BalanceResponse {
+fn get_ve_seilor_balance(creator: &Addr, app: &mut App, ve_seilor_token: &Addr) -> BalanceResponse {
     let query_balance_msg = ve_seilor::msg::QueryMsg::Balance {
         address: creator.clone().to_string(),
     };
@@ -353,11 +353,11 @@ fn get_ve_kpt_balance(creator: &Addr, app: &mut App, ve_seilor_token: &Addr) -> 
     query_res
 }
 
-fn get_claimable_kpt(creator: &Addr, app: &mut App, test_contract_addr: &Addr) -> GetClaimAbleKptResponse {
+fn get_claimable_seilor(creator: &Addr, app: &mut App, test_contract_addr: &Addr) -> GetClaimAbleSeilorResponse {
     let query_claimable_seilor_msg = QueryMsg::GetClaimAbleSeilor {
         user: creator.clone(),
     };
-    let query_msg: GetClaimAbleKptResponse = app.wrap().query_wasm_smart(
+    let query_msg: GetClaimAbleSeilorResponse = app.wrap().query_wasm_smart(
         test_contract_addr.clone(),
         &query_claimable_seilor_msg,
     ).unwrap();

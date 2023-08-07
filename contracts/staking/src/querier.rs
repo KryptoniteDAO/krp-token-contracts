@@ -107,8 +107,8 @@ pub fn query_staking_config(deps: Deps) -> StdResult<StakingConfigResponse> {
         gov: staking_config.gov,
         staking_token: staking_config.staking_token,
         rewards_token: staking_config.rewards_token,
-        ve_kpt_boost: staking_config.boost,
-        kpt_fund: staking_config.fund,
+        boost: staking_config.boost,
+        fund: staking_config.fund,
         reward_controller_addr: staking_config.reward_controller_addr,
     })
 }

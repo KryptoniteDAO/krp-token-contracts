@@ -8,8 +8,8 @@ use crate::msg::{
 };
 use crate::testing::mock_fn::{mock_instantiate_msg, CREATOR, REWARD_CONTROLLER_ADDR};
 use crate::testing::mock_third_fn::{
-    mock_kpt_fund_instance_msg, mock_kpt_instance_msg, mock_staking_token_instance_msg,
-    mock_ve_kpt_boost_instance_msg, mock_ve_kpt_instance_msg,
+    mock_fund_instance_msg, mock_seilor_instance_msg, mock_staking_token_instance_msg,
+    mock_boost_instance_msg, mock_ve_seilor_instance_msg,
 };
 use cosmwasm_std::testing::mock_env;
 use cosmwasm_std::{to_binary, Addr, Coin, Timestamp, Uint128};
@@ -35,40 +35,40 @@ fn store_staking_token_contract(app: &mut App) -> u64 {
     app.store_code(staking_token_contract)
 }
 
-fn store_ve_kpt_token_contract(app: &mut App) -> u64 {
-    let ve_kpt_token_contract = Box::new(ContractWrapper::new_with_empty(
+fn store_ve_seilor_token_contract(app: &mut App) -> u64 {
+    let ve_seilor_token_contract = Box::new(ContractWrapper::new_with_empty(
         ve_seilor::contract::execute,
         ve_seilor::contract::instantiate,
         ve_seilor::contract::query,
     ));
-    app.store_code(ve_kpt_token_contract)
+    app.store_code(ve_seilor_token_contract)
 }
 
-fn store_ve_kpt_boost_contract(app: &mut App) -> u64 {
-    let ve_kpt_boost_contract = Box::new(ContractWrapper::new_with_empty(
+fn store_boost_contract(app: &mut App) -> u64 {
+    let ve_boost_contract = Box::new(ContractWrapper::new_with_empty(
         boost::contract::execute,
         boost::contract::instantiate,
         boost::contract::query,
     ));
-    app.store_code(ve_kpt_boost_contract)
+    app.store_code(ve_boost_contract)
 }
 
-fn store_kpt_contract(app: &mut App) -> u64 {
-    let kpt_contract = Box::new(ContractWrapper::new_with_empty(
+fn store_seilor_contract(app: &mut App) -> u64 {
+    let seilor_contract = Box::new(ContractWrapper::new_with_empty(
         seilor::contract::execute,
         seilor::contract::instantiate,
         seilor::contract::query,
     ));
-    app.store_code(kpt_contract)
+    app.store_code(seilor_contract)
 }
 
-fn store_kpt_fund_contract(app: &mut App) -> u64 {
-    let kpt_fund_contract = Box::new(ContractWrapper::new_with_empty(
+fn store_fund_contract(app: &mut App) -> u64 {
+    let fund_contract = Box::new(ContractWrapper::new_with_empty(
         fund::contract::execute,
         fund::contract::instantiate,
         fund::contract::query,
     ));
-    app.store_code(kpt_fund_contract)
+    app.store_code(fund_contract)
 }
 
 fn store_staking_reward_contract(app: &mut App) -> u64 {
@@ -93,84 +93,84 @@ fn staking_token_instance(creator: &Addr, mut app: &mut App) -> Addr {
     staking_token
 }
 
-fn ve_kpt_boost_instance(creator: &Addr, mut app: &mut App) -> Addr {
-    let ve_kpt_boost_code_id = store_ve_kpt_boost_contract(&mut app);
-    let ve_kpt_boost_instance_msg = mock_ve_kpt_boost_instance_msg();
-    let ve_kpt_boost = app
+fn boost_instance(creator: &Addr, mut app: &mut App) -> Addr {
+    let boost_code_id = store_boost_contract(&mut app);
+    let boost_instance_msg = mock_boost_instance_msg();
+    let boost = app
         .instantiate_contract(
-            ve_kpt_boost_code_id,
+            boost_code_id,
             creator.clone(),
-            &ve_kpt_boost_instance_msg,
+            &boost_instance_msg,
             &[], // no funds
-            String::from("Ve Kpt Boost"),
+            String::from("Boost"),
             None,
         )
         .unwrap();
-    ve_kpt_boost
+    boost
 }
 
-fn ve_kpt_instance(creator: &Addr, mut app: &mut App) -> Addr {
-    let ve_kpt_code_id = store_ve_kpt_token_contract(&mut app);
-    let ve_kpt_instance_msg = mock_ve_kpt_instance_msg();
-    let ve_kpt = app
+fn ve_seilor_instance(creator: &Addr, mut app: &mut App) -> Addr {
+    let ve_seilor_code_id = store_ve_seilor_token_contract(&mut app);
+    let ve_seilor_instance_msg = mock_ve_seilor_instance_msg();
+    let ve_seilor = app
         .instantiate_contract(
-            ve_kpt_code_id,
+            ve_seilor_code_id,
             creator.clone(),
-            &ve_kpt_instance_msg,
+            &ve_seilor_instance_msg,
             &[], // no funds
-            String::from("Ve Kpt"),
+            String::from("Ve Seilor"),
             None,
         )
         .unwrap();
-    ve_kpt
+    ve_seilor
 }
 
-fn kpt_instance(creator: &Addr, mut app: &mut App) -> Addr {
-    let kpt_code_id = store_kpt_contract(&mut app);
-    let kpt_instance_msg = mock_kpt_instance_msg();
-    let kpt = app
+fn seilor_instance(creator: &Addr, mut app: &mut App) -> Addr {
+    let seilor_code_id = store_seilor_contract(&mut app);
+    let seilor_instance_msg = mock_seilor_instance_msg();
+    let seilor = app
         .instantiate_contract(
-            kpt_code_id,
+            seilor_code_id,
             creator.clone(),
-            &kpt_instance_msg,
+            &seilor_instance_msg,
             &[], // no funds
-            String::from("Kpt"),
+            String::from("Seilor"),
             None,
         )
         .unwrap();
-    kpt
+    seilor
 }
 
-fn kpt_fund_instance(creator: &Addr, mut app: &mut App, ve_kpt: &Addr, kpt: &Addr) -> Addr {
-    let kpt_fund_code_id = store_kpt_fund_contract(&mut app);
-    let kpt_fund_instance_msg = mock_kpt_fund_instance_msg(ve_kpt, kpt);
-    let kpt_fund = app
+fn fund_instance(creator: &Addr, mut app: &mut App, ve_seilor: &Addr, seilor: &Addr) -> Addr {
+    let fund_code_id = store_fund_contract(&mut app);
+    let fund_instance_msg = mock_fund_instance_msg(ve_seilor, seilor);
+    let fund = app
         .instantiate_contract(
-            kpt_fund_code_id,
+            fund_code_id,
             creator.clone(),
-            &kpt_fund_instance_msg,
+            &fund_instance_msg,
             &[], // no funds
-            String::from("Kpt Fund"),
+            String::from("Fund"),
             None,
         )
         .unwrap();
-    kpt_fund
+    fund
 }
 
 fn starking_reward_instance(
     creator: &Addr,
     mut app: &mut App,
     staking_token: &Addr,
-    ve_kpt: &Addr,
-    ve_kpt_boost: &Addr,
-    kpt_fund: &Addr,
+    ve_seilor: &Addr,
+    boost: &Addr,
+    fund: &Addr,
 ) -> Addr {
     let staking_reward_code_id = store_staking_reward_contract(&mut app);
     let instance_msg = mock_instantiate_msg(
         staking_token.clone(),
-        ve_kpt.clone(),
-        ve_kpt_boost.clone(),
-        kpt_fund.clone(),
+        ve_seilor.clone(),
+        boost.clone(),
+        fund.clone(),
     );
     let staking_reward = app
         .instantiate_contract(
@@ -178,7 +178,7 @@ fn starking_reward_instance(
             creator.clone(),
             &instance_msg,
             &[], // no funds
-            String::from("Staking Reward"),
+            String::from("Staking"),
             None,
         )
         .unwrap();
@@ -197,42 +197,42 @@ fn test_integration() {
     let staking_token = staking_token_instance(&creator, &mut app);
     println!("staking_token: {:?}", staking_token);
 
-    // deploy ve_kpt token contract
-    let ve_kpt = ve_kpt_instance(&creator, &mut app);
-    println!("ve_kpt: {:?}", ve_kpt);
+    // deploy ve_seilor token contract
+    let ve_seilor = ve_seilor_instance(&creator, &mut app);
+    println!("ve_seilor: {:?}", ve_seilor);
 
-    // deploy kpt token contract
-    let kpt = kpt_instance(&creator, &mut app);
-    println!("kpt: {:?}", kpt);
+    // deploy seilor token contract
+    let seilor = seilor_instance(&creator, &mut app);
+    println!("seilor: {:?}", seilor);
 
-    // deploy ve kpt boost contract
-    let ve_kpt_boost = ve_kpt_boost_instance(&creator, &mut app);
-    println!("ve_kpt_boost: {:?}", ve_kpt_boost);
+    // deploy ve seilor boost contract
+    let boost = boost_instance(&creator, &mut app);
+    println!("boost: {:?}", boost);
 
-    // deploy kpt fund contract
-    let kpt_fund = kpt_fund_instance(&creator, &mut app, &ve_kpt, &kpt);
-    println!("kpt_fund: {:?}", kpt_fund);
+    // deploy seilor fund contract
+    let fund = fund_instance(&creator, &mut app, &ve_seilor, &seilor);
+    println!("fund: {:?}", fund);
 
     // deploy staking reward contract
     let staking_reward = starking_reward_instance(
         &creator,
         &mut app,
         &staking_token,
-        &ve_kpt,
-        &ve_kpt_boost,
-        &kpt_fund,
+        &ve_seilor,
+        &boost,
+        &fund,
     );
 
-    // set kpt,ve_kpt kpt_fund contract address
-    set_kpt_config_kpt_fund(&creator, &mut app, &kpt, &kpt_fund);
+    // set seilor,ve_seilor fund contract address
+    set_seilor_to_fund(&creator, &mut app, &seilor, &fund);
 
-    set_ve_kpt_config_kpt_fund(&creator, &mut app, &ve_kpt, &kpt_fund);
+    set_ve_seilor_to_fund(&creator, &mut app, &ve_seilor, &fund);
 
-    // set ve_kpt miner
-    set_ve_kpt_miners(
+    // set ve_seilor miner
+    set_ve_seilor_miners(
         &creator,
         &mut app,
-        &ve_kpt,
+        &ve_seilor,
         vec![staking_reward.clone()],
         vec![true],
     );
@@ -331,14 +331,14 @@ fn test_integration() {
     let query_earned_1 = earned(&mut app, &staking_reward, &tom_address);
     println!("query_earned: {:?}", query_earned_1);
 
-    // check tom ve_kpt balance
-    let balance = cw20_balance(&mut app, &ve_kpt, &tom_address);
+    // check tom ve_seilor balance
+    let balance = cw20_balance(&mut app, &ve_seilor, &tom_address);
     assert_eq!(balance.balance, Uint128::zero());
 
     // tom get reward
     get_reward(&tom_address, &mut app, &staking_reward);
-    // check tom ve_kpt balance
-    let balance = cw20_balance(&mut app, &ve_kpt, &tom_address);
+    // check tom ve_seilor balance
+    let balance = cw20_balance(&mut app, &ve_seilor, &tom_address);
     assert_eq!(balance.balance, query_earned_1);
 
     // withdraw stake
@@ -360,8 +360,8 @@ fn test_integration() {
 
     // tom get reward
     get_reward(&tom_address, &mut app, &staking_reward);
-    // check tom ve_kpt balance
-    let balance = cw20_balance(&mut app, &ve_kpt, &tom_address);
+    // check tom ve_seilor balance
+    let balance = cw20_balance(&mut app, &ve_seilor, &tom_address);
     assert_eq!(balance.balance - query_earned_1, query_earned_2);
 
     // update block time
@@ -482,38 +482,38 @@ fn balance_of(app: &mut App, staking_reward: &Addr, user: &Addr) -> Uint128 {
     res.balance_of
 }
 
-fn set_ve_kpt_miners(
+fn set_ve_seilor_miners(
     creator: &Addr,
     app: &mut App,
-    ve_kpt: &Addr,
+    ve_seilor: &Addr,
     contracts: Vec<Addr>,
     is_minter: Vec<bool>,
 ) {
-    let ve_kpt_miner_msg = ve_seilor::msg::ExecuteMsg::SetMinters {
+    let ve_seilor_miner_msg = ve_seilor::msg::ExecuteMsg::SetMinters {
         contracts,
         is_minter,
     };
-    let res = app.execute_contract(creator.clone(), ve_kpt.clone(), &ve_kpt_miner_msg, &[]);
+    let res = app.execute_contract(creator.clone(), ve_seilor.clone(), &ve_seilor_miner_msg, &[]);
     assert!(res.is_ok());
 }
 
-fn set_ve_kpt_config_kpt_fund(creator: &Addr, app: &mut App, ve_kpt: &Addr, fund: &Addr) {
-    let ve_kpt_config = ve_seilor::msg::ExecuteMsg::UpdateConfig {
+fn set_ve_seilor_to_fund(creator: &Addr, app: &mut App, ve_seilor: &Addr, fund: &Addr) {
+    let ve_seilor_config = ve_seilor::msg::ExecuteMsg::UpdateConfig {
         max_minted: None,
         fund: Some(fund.clone()),
         gov: None,
     };
-    let res = app.execute_contract(creator.clone(), ve_kpt.clone(), &ve_kpt_config, &[]);
+    let res = app.execute_contract(creator.clone(), ve_seilor.clone(), &ve_seilor_config, &[]);
     assert!(res.is_ok());
 }
 
-fn set_kpt_config_kpt_fund(creator: &Addr, app: &mut App, kpt: &Addr, fund: &Addr) {
-    let update_kpt_fund_msg = seilor::msg::ExecuteMsg::UpdateConfig {
+fn set_seilor_to_fund(creator: &Addr, app: &mut App, seilor: &Addr, fund: &Addr) {
+    let update_seilor_fund_msg = seilor::msg::ExecuteMsg::UpdateConfig {
         fund: Some(fund.clone()),
         gov: None,
         distribute: None,
     };
-    let res = app.execute_contract(creator.clone(), kpt.clone(), &update_kpt_fund_msg, &[]);
+    let res = app.execute_contract(creator.clone(), seilor.clone(), &update_seilor_fund_msg, &[]);
     assert!(res.is_ok());
 }
 
@@ -592,7 +592,7 @@ fn stake(
     staking_reward: &Addr,
     stake_amount: &Uint128,
 ) {
-    let stake_send_kpt_msg = cw20_base::msg::ExecuteMsg::Send {
+    let stake_send_seilor_msg = cw20_base::msg::ExecuteMsg::Send {
         contract: staking_reward.clone().to_string(),
         amount: stake_amount.clone(),
         msg: to_binary(&Stake {}).unwrap(),
@@ -600,7 +600,7 @@ fn stake(
     let res = app.execute_contract(
         creator.clone(),
         staking_token.clone(),
-        &stake_send_kpt_msg,
+        &stake_send_seilor_msg,
         &[],
     );
     if res.is_err() {

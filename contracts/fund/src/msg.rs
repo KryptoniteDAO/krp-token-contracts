@@ -24,7 +24,7 @@ pub struct InstantiateMsg {
 
 #[cw_serde]
 pub enum ExecuteMsg {
-    UpdateKptFundConfig { update_config_msg: UpdateConfigMsg },
+    UpdateFundConfig { update_config_msg: UpdateConfigMsg },
     RefreshReward { account: Addr },
     Stake { amount: Uint128 },
     Unstake { amount: Uint128 },
@@ -40,9 +40,9 @@ pub enum QueryMsg {
     #[returns(FundConfigResponse)]
     FundConfig {},
 
-    #[returns(GetClaimAbleKptResponse)]
+    #[returns(GetClaimAbleSeilorResponse)]
     GetClaimAbleSeilor { user: Addr },
-    #[returns(GetReservedKptForVestingResponse)]
+    #[returns(GetReservedSeilorForVestingResponse)]
     GetReservedSeilorForVesting { user: Addr },
     #[returns(EarnedResponse)]
     Earned { account: Addr },
@@ -95,12 +95,12 @@ pub struct EarnedResponse {
 }
 
 #[cw_serde]
-pub struct GetReservedKptForVestingResponse {
+pub struct GetReservedSeilorForVestingResponse {
     pub amount: Uint128,
 }
 
 #[cw_serde]
-pub struct GetClaimAbleKptResponse {
+pub struct GetClaimAbleSeilorResponse {
     pub amount: Uint128,
 }
 

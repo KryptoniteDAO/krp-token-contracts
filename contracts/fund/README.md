@@ -435,7 +435,7 @@ pub struct GetClaimAbleSeilorResponse {
 |----------|---------|-------------|
 | `amount` | Uint128 | amount      |
 
-### GetReservedKptForVesting {.tabset}
+### GetReservedSeilorForVesting {.tabset}
 
 Query reserved SEILOR for vesting.
 
@@ -445,8 +445,8 @@ Query reserved SEILOR for vesting.
 #[cw_serde]
 #[derive(QueryResponses)]
 pub enum QueryMsg {
-    #[returns(GetReservedKptForVestingResponse)]
-    GetReservedKptForVesting { user: Addr },
+    #[returns(GetReservedSeilorForVestingResponse)]
+    GetReservedSeilorForVesting { user: Addr },
 }
 ```
 
@@ -454,7 +454,7 @@ pub enum QueryMsg {
 
 ```json
 {
-  "get_reserved_kpt_for_vesting": {
+  "get_reserved_seilor_for_vesting": {
     "user": "sei1..."
   }
 }
@@ -462,15 +462,15 @@ pub enum QueryMsg {
 
 | Key                            | Type | Description  |
 |--------------------------------|------|--------------|
-| `get_reserved_kpt_for_vesting` | Addr | user account |
+| `get_reserved_seilor_for_vesting` | Addr | user account |
 
-### GetReservedKptForVestingResponse {.tabset}
+### GetReservedSeilorForVestingResponse {.tabset}
 
 #### Rust
 
 ```rust
 #[cw_serde]
-pub struct GetReservedKptForVestingResponse {
+pub struct GetReservedSeilorForVestingResponse {
     pub amount: Uint128,
 }
 ```

@@ -31,7 +31,7 @@ fn test_instantiate() {
 }
 
 #[test]
-fn test_update_kpt_fund_config(){
+fn test_update_fund_config(){
     let seilor_addr = Addr::unchecked("seilor".to_string());
     let ve_seilor_addr = Addr::unchecked("ve_seilor".to_string());
     let msg = mock_instantiate_msg(seilor_addr.clone(), ve_seilor_addr.clone());
@@ -40,8 +40,8 @@ fn test_update_kpt_fund_config(){
     // Update the config
     let update_msg = UpdateConfigMsg {
         gov: Option::from(Addr::unchecked("new_gov")),
-        ve_seilor_addr: Option::from(Addr::unchecked("new_ve_kpt")),
-        seilor_addr: Option::from(Addr::unchecked("new_kpt")),
+        ve_seilor_addr: Option::from(Addr::unchecked("new_ve_seilor")),
+        seilor_addr: Option::from(Addr::unchecked("new_seilor")),
         kusd_denom: Option::from("new_kusd".to_string()),
         kusd_reward_addr: Option::from(Addr::unchecked("new_kusd_reward")),
         claim_able_time: Option::from(Uint64::from(20u64)),

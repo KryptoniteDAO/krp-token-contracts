@@ -1,7 +1,7 @@
 use crate::helper::{BASE_RATE_12, BASE_RATE_6};
 use crate::msg::{
-    EarnedResponse, GetClaimAbleKptResponse, GetClaimAbleKusdResponse,
-    GetReservedKptForVestingResponse, FundConfigResponse, UserLastWithdrawTimeResponse,
+    EarnedResponse, GetClaimAbleSeilorResponse, GetClaimAbleKusdResponse,
+    GetReservedSeilorForVestingResponse, FundConfigResponse, UserLastWithdrawTimeResponse,
     UserRewardPerTokenPaidResponse, UserRewardsResponse, UserTime2fullRedemptionResponse,
     UserUnstakeRateResponse,
 };
@@ -55,7 +55,7 @@ pub fn staked_of(deps: Deps, staker: Addr) -> StdResult<Uint128> {
     Ok(res.balance)
 }
 
-pub fn get_claim_able_kpt(deps: Deps, env: Env, user: Addr) -> StdResult<GetClaimAbleKptResponse> {
+pub fn get_claim_able_seilor(deps: Deps, env: Env, user: Addr) -> StdResult<GetClaimAbleSeilorResponse> {
     let time2full_redemption_user = read_time2full_redemption(deps.storage, user.clone());
     let last_withdraw_time_user = read_last_withdraw_time(deps.storage, user.clone());
     let unstake_rate_user = read_unstake_rate(deps.storage, user.clone());
@@ -78,16 +78,16 @@ pub fn get_claim_able_kpt(deps: Deps, env: Env, user: Addr) -> StdResult<GetClai
         amount = unstake_rate_user.multiply_ratio(diff_time, Uint256::from(BASE_RATE_12));
     }
 
-    Ok(GetClaimAbleKptResponse {
+    Ok(GetClaimAbleSeilorResponse {
         amount: Uint128::from_str(&amount.to_string())?,
     })
 }
 
-pub fn get_reserved_kpt_for_vesting(
+pub fn get_reserved_seilor_for_vesting(
     deps: Deps,
     env: Env,
     user: Addr,
-) -> StdResult<GetReservedKptForVestingResponse> {
+) -> StdResult<GetReservedSeilorForVestingResponse> {
     let time2full_redemption_user = read_time2full_redemption(deps.storage, user.clone());
     let unstake_rate_user = read_unstake_rate(deps.storage, user.clone());
     let mut diff_time = Uint256::zero();
@@ -100,7 +100,7 @@ pub fn get_reserved_kpt_for_vesting(
         );
     }
     let amount = unstake_rate_user.multiply_ratio(diff_time, Uint256::from(BASE_RATE_12));
-    Ok(GetReservedKptForVestingResponse {
+    Ok(GetReservedSeilorForVestingResponse {
         amount: Uint128::from_str(&amount.to_string()).unwrap(),
     })
 }
