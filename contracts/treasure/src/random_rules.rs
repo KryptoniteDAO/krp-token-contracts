@@ -1,4 +1,5 @@
 use cosmwasm_std::{Env, TransactionInfo};
+use sha2::{Digest, Sha256};
 use std::collections::HashSet;
 use std::num::ParseIntError;
 
@@ -27,13 +28,20 @@ fn _get_random_seed(env: Env, unique_factor: String, rand_factor: Vec<String>) -
 }
 
 fn _cal_random_number(seed: &str) -> Result<u64, ParseIntError> {
-    let result = sha256::digest(seed);
+    let result = _compute_hash(seed);
     let random_number_bytes_first = &result[..6]; // Take the first 5 bytes
     let random_number_bytes_last = &result[result.len() - 6..]; // Take the last 5 bytes
     let random_number_first = u64::from_str_radix(random_number_bytes_first, 16)?; // Convert to u64 (base 16
     let random_number_last = u64::from_str_radix(random_number_bytes_last, 16)?; // Convert to u64 (base 16
     let random_number = random_number_first + random_number_last; // Add the two numbers
     Ok(random_number)
+}
+
+fn _compute_hash(input: &str) -> String {
+    let mut hasher = Sha256::new();
+    hasher.update(input);
+    let result = hasher.finalize();
+    hex::encode(result)
 }
 
 pub fn get_winning(
@@ -60,7 +68,7 @@ mod tests {
         let res = get_winning(
             env,
             "test2".to_string(),
-            vec!["0".to_string()],
+            vec!["1".to_string()],
             &vec![
                 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22,
                 23, 24,

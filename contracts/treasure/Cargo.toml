@@ -35,7 +35,8 @@ cw20 = { version = "1.0.1" }
 cw20-base = { version = "1.0.1", features = ["library"] }
 cw-utils = "1.0.1"
 serde_json = "1.0.64"
-sha256 = "1.1.4"
+sha2 = "0.10.7"
+hex = "0.4.3"
 
 
 [dev-dependencies]
