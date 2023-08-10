@@ -1,9 +1,9 @@
-use cw20_base::ContractError;
 use crate::helper::is_empty_str;
 use crate::mint_receiver::Cw20MintReceiveMsg;
 use crate::state::{read_seilor_config, store_seilor_config};
 use cosmwasm_std::{attr, Addr, Binary, DepsMut, Env, MessageInfo, Response, StdError, Uint128};
-use cw20_base::contract::{execute_burn, execute_mint};
+use cw20_base::contract::execute_mint;
+use cw20_base::ContractError;
 
 pub fn update_config(
     deps: DepsMut,
@@ -24,10 +24,12 @@ pub fn update_config(
     ];
 
     if let Some(fund) = fund {
+        deps.api.addr_validate(fund.clone().as_str())?;
         seilor_config.fund = fund.clone();
         attrs.push(attr("fund", fund.to_string()));
     }
     if let Some(gov) = gov {
+        deps.api.addr_validate(gov.clone().as_str())?;
         seilor_config.gov = gov.clone();
         attrs.push(attr("gov", gov.to_string()));
     }
@@ -56,7 +58,9 @@ pub fn mint(
     let distribute = seilor_config.distribute;
 
     if is_empty_str(fund.as_str()) && is_empty_str(distribute.as_str()) {
-        return Err(ContractError::Std(StdError::generic_err("Fund or distribute contract must to be configured")));
+        return Err(ContractError::Std(StdError::generic_err(
+            "Fund or distribute contract must to be configured",
+        )));
     }
 
     if msg_sender.ne(&fund.clone()) && msg_sender.ne(&distribute) {
@@ -99,24 +103,25 @@ pub fn mint(
     Ok(cw20_res)
 }
 
-pub fn burn(
-    deps: DepsMut,
-    env: Env,
-    info: MessageInfo,
-    user: Addr,
-    amount: u128,
-) -> Result<Response, ContractError> {
-    let seilor_config = read_seilor_config(deps.storage)?;
-    let msg_sender = info.sender;
-    let fund = seilor_config.fund;
-
-    if msg_sender != fund.clone() {
-        return Err(ContractError::Unauthorized {});
-    }
-
-    let sub_info = MessageInfo {
-        sender: user,
-        funds: vec![],
-    };
-    execute_burn(deps, env.clone(), sub_info, Uint128::from(amount))
-}
+// Burn has been modified to directly inherit the standard, and this modification will add gas to the VE module stacking. And complexity.
+// pub fn burn(
+//     deps: DepsMut,
+//     env: Env,
+//     info: MessageInfo,
+//     user: Addr,
+//     amount: u128,
+// ) -> Result<Response, ContractError> {
+//     let seilor_config = read_seilor_config(deps.storage)?;
+//     let msg_sender = info.sender;
+//     let fund = seilor_config.fund;
+//
+//     if msg_sender != fund.clone() {
+//         return Err(ContractError::Unauthorized {});
+//     }
+//
+//     let sub_info = MessageInfo {
+//         sender: user,
+//         funds: vec![],
+//     };
+//     execute_burn(deps, env.clone(), sub_info, Uint128::from(amount))
+// }

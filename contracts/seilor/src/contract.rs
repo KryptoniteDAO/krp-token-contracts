@@ -1,5 +1,4 @@
-use cw20_base::ContractError;
-use crate::handler::{burn, mint, update_config};
+use crate::handler::{mint, update_config};
 use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 use crate::querier::query_seilor_config;
 use crate::state::{store_seilor_config, SeilorConfig};
@@ -11,10 +10,10 @@ use cosmwasm_std::{
 use cw2::set_contract_version;
 use cw20::MinterResponse;
 use cw20_base::allowances::{
-    execute_decrease_allowance, execute_increase_allowance, execute_send_from,
+    execute_burn_from, execute_decrease_allowance, execute_increase_allowance, execute_send_from,
     execute_transfer_from, query_allowance,
 };
-use cw20_base::contract::instantiate as cw20_instantiate;
+use cw20_base::contract::{execute_burn, instantiate as cw20_instantiate};
 use cw20_base::contract::{
     execute_send, execute_transfer, execute_update_marketing, execute_update_minter,
     execute_upload_logo, query_balance, query_download_logo, query_marketing_info, query_minter,
@@ -22,6 +21,7 @@ use cw20_base::contract::{
 };
 use cw20_base::enumerable::{query_all_accounts, query_owner_allowances, query_spender_allowances};
 use cw20_base::msg::{InstantiateMarketingInfo, InstantiateMsg as Cw20InstantiateMsg};
+use cw20_base::ContractError;
 
 // version info for migration info
 const CONTRACT_NAME: &str = "kryptonite.finance:cw20-seilor";
@@ -95,10 +95,13 @@ pub fn execute(
         }
 
         // we override these from cw20
-        ExecuteMsg::Burn { user, amount } => {
-            let user = deps.api.addr_validate(&user)?;
-            burn(deps, env, info, user, amount.u128())
+        ExecuteMsg::Burn { amount } => {
+            // Burn has been modified to directly inherit the standard, and this modification will add gas to the VE module stacking. And complexity.
+            // let user = deps.api.addr_validate(&user)?;
+            // burn(deps, env, info, user, amount.u128())
+            execute_burn(deps, env, info, amount)
         }
+        ExecuteMsg::BurnFrom { owner, amount } => execute_burn_from(deps, env, info, owner, amount),
         // these all come from cw20-base to implement the cw20 standard
         ExecuteMsg::Transfer { recipient, amount } => {
             execute_transfer(deps, env, info, recipient, amount)
@@ -107,50 +110,36 @@ pub fn execute(
             contract,
             amount,
             msg,
-        } => {
-             execute_send(deps, env, info, contract, amount, msg)
-        }
+        } => execute_send(deps, env, info, contract, amount, msg),
         ExecuteMsg::IncreaseAllowance {
             spender,
             amount,
             expires,
-        } => {
-           execute_increase_allowance(deps, env, info, spender, amount, expires)
-        }
+        } => execute_increase_allowance(deps, env, info, spender, amount, expires),
         ExecuteMsg::DecreaseAllowance {
             spender,
             amount,
             expires,
-        } => {
-           execute_decrease_allowance(deps, env, info, spender, amount, expires)
-        }
+        } => execute_decrease_allowance(deps, env, info, spender, amount, expires),
         ExecuteMsg::TransferFrom {
             owner,
             recipient,
             amount,
-        } => {
-           execute_transfer_from(deps, env, info, owner, recipient, amount)
-        }
+        } => execute_transfer_from(deps, env, info, owner, recipient, amount),
         ExecuteMsg::SendFrom {
             owner,
             contract,
             amount,
             msg,
-        } => {
-           execute_send_from(deps, env, info, owner, contract, amount, msg)
-        }
+        } => execute_send_from(deps, env, info, owner, contract, amount, msg),
         ExecuteMsg::UpdateMarketing {
             project,
             description,
             marketing,
-        } => {
-           execute_update_marketing(deps, env, info, project, description, marketing)
-        }
-        ExecuteMsg::UploadLogo(logo) => {
-           execute_upload_logo(deps, env, info, logo)
-        }
+        } => execute_update_marketing(deps, env, info, project, description, marketing),
+        ExecuteMsg::UploadLogo(logo) => execute_upload_logo(deps, env, info, logo),
         ExecuteMsg::UpdateMinter { new_minter } => {
-          execute_update_minter(deps, env, info, new_minter)
+            execute_update_minter(deps, env, info, new_minter)
         }
     }
 }

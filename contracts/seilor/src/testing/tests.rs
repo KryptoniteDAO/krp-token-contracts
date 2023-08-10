@@ -285,36 +285,10 @@ mod tests {
         assert_eq!(get_balance(deps.as_ref(), "lucky"), Uint128::new(112233));
 
         // Negative test case with insufficient permissions, only seilor_fund
-        let _msg = ExecuteMsg::Burn {
-            user: "lucky".to_string(),
-            amount,
-        };
-        let _info = mock_info("creator", &[]);
+        let _msg = ExecuteMsg::Burn { amount };
+        let _info = mock_info("lucky", &[]);
         let _res = execute(deps.as_mut(), mock_env(), _info, _msg);
-        match _res {
-            Err(ContractError::Unauthorized {}) => {}
-            _ => panic!("Must return unauthorized error"),
-        }
-
-        let _msg = ExecuteMsg::Burn {
-            user: "lucky".to_string(),
-            amount,
-        };
-        let _info = mock_info("new_distribute", &[]);
-        let _res = execute(deps.as_mut(), mock_env(), _info, _msg);
-        match _res {
-            Err(ContractError::Unauthorized {}) => {}
-            _ => panic!("Must return unauthorized error"),
-        }
-
-        // Positive test case, only seilor_fund
-        let _msg = ExecuteMsg::Burn {
-            user: "lucky".to_string(),
-            amount,
-        };
-        let _info = mock_info("new_fund", &[]);
-        let _res = execute(deps.as_mut(), mock_env(), _info, _msg).unwrap();
-        assert_eq!(0, _res.messages.len());
+        assert!(_res.is_ok());
 
         assert_eq!(get_balance(deps.as_ref(), "lucky"), Uint128::zero());
     }
