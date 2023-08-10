@@ -7,8 +7,8 @@ Fund is a derivative version of Synthetix Staking Rewards , distributing Protoco
 | Key                             | Type            | Description                   |
 |---------------------------------|-----------------|-------------------------------|
 | `gov`                           | Addr            | gov contract                  |
-| `ve_seilor_addr`                   | Addr            | veSEILOR contract                |
-| `seilor_addr`                      | Addr            | SEILOR contract                  |
+| `ve_seilor_addr`                | Addr            | veSEILOR contract             |
+| `seilor_addr`                   | Addr            | SEILOR contract               |
 | `kusd_denom`                    | String          | KUSD denom                    |
 | `kusd_reward_addr`              | Addr            | KUSD reward contract          |
 | `kusd_reward_total_amount`      | Uint128         | KUSD reward total amount      |
@@ -49,8 +49,8 @@ pub struct InstantiateMsg {
 | Key                | Type            | Description          |
 |--------------------|-----------------|----------------------|
 | `gov`              | Addr*           | gov contract         |
-| `ve_seilor_addr`      | Addr            | veSEILOR contract       |
-| `seilor_addr`         | Addr            | SEILOR contract         |
+| `ve_seilor_addr`   | Addr            | veSEILOR contract    |
+| `seilor_addr`      | Addr            | SEILOR contract      |
 | `kusd_denom`       | String          | KUSD denom           |
 | `kusd_reward_addr` | Addr            | KUSD reward contract |
 | `exit_cycle`       | claim_able_time | exit cycle           |
@@ -81,8 +81,8 @@ pub enum ExecuteMsg {
 }
 ```
 
-| Key                      | Type            | Description       |
-|--------------------------|-----------------|-------------------|
+| Key                  | Type            | Description       |
+|----------------------|-----------------|-------------------|
 | `update_fund_config` | UpdateConfigMsg | update config msg |
 
 ### UpdateConfigMsg {.tabset}
@@ -117,8 +117,8 @@ pub struct UpdateConfigMsg {
 | Key                | Type            | Description          |
 |--------------------|-----------------|----------------------|
 | `gov`              | Addr*           | gov contract         |
-| `ve_seilor_addr`      | Addr*           | veSEILOR contract       |
-| `seilor_addr`         | Addr*           | SEILOR contract         |
+| `ve_seilor_addr`   | Addr*           | veSEILOR contract    |
+| `seilor_addr`      | Addr*           | SEILOR contract      |
 | `kusd_denom`       | String*         | KUSD denom           |
 | `kusd_reward_addr` | Addr*           | KUSD reward contract |
 | `claim_able_time`  | claim_able_time | claim able time      |
@@ -373,8 +373,8 @@ pub struct FundConfigResponse {
 | Key                             | Type    | Description                                     |
 |---------------------------------|---------|-------------------------------------------------|
 | `gov`                           | Addr    | gov contract                                    |
-| `ve_seilor_addr`                   | Addr    | veSEILOR contract                                  |
-| `seilor_addr`                      | Addr    | SEILOR contract                                    |
+| `ve_seilor_addr`                | Addr    | veSEILOR contract                               |
+| `seilor_addr`                   | Addr    | SEILOR contract                                 |
 | `kusd_denom`                    | String  | KUSD denom                                      |
 | `kusd_reward_addr`              | Addr    | KUSD reward contract                            |
 | `kusd_reward_total_amount`      | Uint128 | KUSD reward total amount                        |
@@ -408,8 +408,8 @@ pub enum QueryMsg {
 }
 ```
 
-| Key                  | Type | Description  |
-|----------------------|------|--------------|
+| Key                     | Type | Description  |
+|-------------------------|------|--------------|
 | `get_claim_able_seilor` | Addr | user account |
 
 ### GetClaimAbleSeilorResponse {.tabset}
@@ -460,8 +460,8 @@ pub enum QueryMsg {
 }
 ```
 
-| Key                            | Type | Description  |
-|--------------------------------|------|--------------|
+| Key                               | Type | Description  |
+|-----------------------------------|------|--------------|
 | `get_reserved_seilor_for_vesting` | Addr | user account |
 
 ### GetReservedSeilorForVestingResponse {.tabset}

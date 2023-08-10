@@ -24,10 +24,12 @@ pub fn update_config(
     let mut attrs = vec![];
     attrs.push(attr("action", "update_config"));
     if let Some(gov) = config_msg.gov {
+        deps.api.addr_validate(gov.clone().as_str())?;
         config.gov = gov.clone();
         attrs.push(attr("gov", gov.to_string()));
     }
     if let Some(lock_token) = config_msg.lock_token {
+        deps.api.addr_validate(lock_token.clone().as_str())?;
         config.lock_token = lock_token.clone();
         attrs.push(attr("lock_token", lock_token.to_string()));
     }
@@ -75,6 +77,7 @@ pub fn update_config(
         attrs.push(attr("mod_num", mod_num.to_string()));
     }
     if let Some(punish_receiver) = config_msg.punish_receiver {
+        deps.api.addr_validate(punish_receiver.clone().as_str())?;
         config.punish_receiver = punish_receiver.clone();
         attrs.push(attr("punish_receiver", punish_receiver.to_string()));
     }

@@ -29,30 +29,37 @@ pub fn update_staking_config(
     attrs.push(attr("action", "update_staking_config"));
 
     if let Some(gov) = update_struct.gov {
+        deps.api.addr_validate(gov.clone().as_str())?; // validate gov address
         staking_config.gov = gov.clone();
         attrs.push(attr("gov", gov.to_string()));
     }
 
     if let Some(staking_token) = update_struct.staking_token {
+        deps.api.addr_validate(staking_token.clone().as_str())?; // validate staking token address
         staking_config.staking_token = staking_token.clone();
         attrs.push(attr("staking_token", staking_token.to_string()));
     }
 
     if let Some(rewards_token) = update_struct.rewards_token {
+        deps.api.addr_validate(rewards_token.clone().as_str())?; // validate rewards token address
         staking_config.rewards_token = rewards_token.clone();
         attrs.push(attr("rewards_token", rewards_token.to_string()));
     }
 
     if let Some(boost) = update_struct.boost {
+        deps.api.addr_validate(boost.clone().as_str())?; // validate boost address
         staking_config.boost = boost.clone();
         attrs.push(attr("boost", boost.to_string()));
     }
 
     if let Some(fund) = update_struct.fund {
+        deps.api.addr_validate(fund.clone().as_str())?; // validate fund address
         staking_config.fund = fund.clone();
         attrs.push(attr("fund", fund.to_string()));
     }
     if let Some(reward_controller_addr) = update_struct.reward_controller_addr {
+        deps.api
+            .addr_validate(reward_controller_addr.clone().as_str())?; // validate reward controller address
         staking_config.reward_controller_addr = reward_controller_addr.clone();
         attrs.push(attr(
             "reward_controller_addr",

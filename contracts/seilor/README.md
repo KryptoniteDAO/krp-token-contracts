@@ -6,16 +6,17 @@ Polling, SEILOR holders can influence the direction of the protocol. The krypton
 powering the kryptonite Protocol. Its utility comprises all core network functionalities, such as staking, governance,
 mint, and liquidators rewards. SEILOR is an ERC-20 governance token with a maximum supply of 100,000,000. SEILOR holders
 manage the kryptonite Protocol and the financial risks of eUSD to ensure its stability, transparency, and efficiency.
-SEILOR voting weight is proportional to the amount of SEILOR a voter stakes in the voting contract. In other words, the more
+SEILOR voting weight is proportional to the amount of SEILOR a voter stakes in the voting contract. In other words, the
+more
 SEILOR tokens locked in the contract, the greater the voter’s decision-making power.
 
 ## Config
 
-| Key| Type| Description                                                       |
-| :--- | :--- |:------------------------------------------------------------------|
-| `max_supply` | `u128` | SEILOR max supply                                                    |
-| `seilor_fund` | `Addr` | SEILOR FUND module contract address (Possess mint permissions)       |
-| `gov` | `Addr` | Address of contract owner that can update config                  |
+| Key                 | Type   | Description                                                          |
+|:--------------------|:-------|:---------------------------------------------------------------------|
+| `max_supply`        | `u128` | SEILOR max supply                                                    |
+| `seilor_fund`       | `Addr` | SEILOR FUND module contract address (Possess mint permissions)       |
+| `gov`               | `Addr` | Address of contract owner that can update config                     |
 | `seilor_distribute` | `Addr` | SEILOR DISTRIBUTE module contract address (Possess mint permissions) |
 
 ## InstantiateMsg {.tabset}
@@ -39,21 +40,21 @@ pub struct InstantiateMsg {
   "cw20_init_msg": {
     "name": "Kryptonite",
     "symbol": "SEILOR",
-    "decimals": 18,
+    "decimals": 6,
     "initial_balances": [],
     "mint": null,
     "marketing": null
   },
-  "max_supply": "100000000000000000000000000",
+  "max_supply": "1000000000000000",
   "gov": null
 }
 ```
 
-| Key| Type| Description|
-| :--- | :--- | :--- |
-| `cw20_init_msg` | `Cw20InstantiateMsg` | The cw20 initialization message structure based on the cw20_base library |
-| `max_supply` | `u128` | SEILOR max supply |
-| `gov` | `Addr`* | Address of contract owner that can update config. If not filled in, it is the initialization call address |
+| Key             | Type                 | Description                                                                                               |
+|:----------------|:---------------------|:----------------------------------------------------------------------------------------------------------|
+| `cw20_init_msg` | `Cw20InstantiateMsg` | The cw20 initialization message structure based on the cw20_base library                                  |
+| `max_supply`    | `u128`               | SEILOR max supply                                                                                         |
+| `gov`           | `Addr`*              | Address of contract owner that can update config. If not filled in, it is the initialization call address |
 
 * = optional
 
@@ -88,11 +89,11 @@ pub enum ExecuteMsg {
 }
 ```
 
-| Key| Type| Description|
-| :--- | :--- | :--- |
-| `seilor_fund`* | `Addr` | SEILOR FUND module contract address (Possess mint permissions) |
-| `gov`* | `Addr` | Address of contract owner that can update config |
-| `seilor_distribute`* | `Addr` | SEILOR token contract address (Possess mint permissions) |
+| Key                  | Type   | Description                                                    |
+|:---------------------|:-------|:---------------------------------------------------------------|
+| `seilor_fund`*       | `Addr` | SEILOR FUND module contract address (Possess mint permissions) |
+| `gov`*               | `Addr` | Address of contract owner that can update config               |
+| `seilor_distribute`* | `Addr` | SEILOR token contract address (Possess mint permissions)       |
 
 * = optional
 
@@ -123,10 +124,10 @@ pub enum ExecuteMsg {
 }
 ```
 
-| Key| Type| Description|
-| :--- | :--- | :--- |
-| `recipient` | `String` | Recipient address |
-| `amount` | `Uint128` | Amount to mint |
+| Key         | Type      | Description       |
+|:------------|:----------|:------------------|
+| `recipient` | `String`  | Recipient address |
+| `amount`    | `Uint128` | Amount to mint    |
 
 ### Burn {.tabset}
 
@@ -155,9 +156,9 @@ pub enum ExecuteMsg {
 }
 ```
 
-| Key| Type| Description|
-| :--- | :--- | :--- |
-| `user` | `String` | User address |
+| Key      | Type      | Description    |
+|:---------|:----------|:---------------|
+| `user`   | `String`  | User address   |
 | `amount` | `Uint128` | Amount to burn |
 
 ### TransferOwner {.tabset}
@@ -187,10 +188,10 @@ pub enum ExecuteMsg {
 }
 ```
 
-| Key| Type| Description|
-| :--- | :--- | :--- |
-| `recipient` | `String` | Recipient address |
-| `amount` | `Uint128` | Amount to transfer |
+| Key         | Type      | Description        |
+|:------------|:----------|:-------------------|
+| `recipient` | `String`  | Recipient address  |
+| `amount`    | `Uint128` | Amount to transfer |
 
 ### Send {.tabset}
 
@@ -221,11 +222,11 @@ pub enum ExecuteMsg {
 }
 ```
 
-| Key| Type| Description|
-| :--- | :--- | :--- |
-| `contract` | `String` | Contract address |
-| `amount` | `Uint128` | Amount to send |
-| `msg` | `Binary` | Message to send |
+| Key        | Type      | Description      |
+|:-----------|:----------|:-----------------|
+| `contract` | `String`  | Contract address |
+| `amount`   | `Uint128` | Amount to send   |
+| `msg`      | `Binary`  | Message to send  |
 
 ### IncreaseAllowance {.tabset}
 
@@ -257,11 +258,11 @@ pub enum ExecuteMsg {
 }
 ```
 
-| Key| Type| Description|
-| :--- | :--- | :--- |
-| `spender` | `String` | Spender address |
-| `amount` | `Uint128` | Amount to increase |
-| `expires`* | `Expiration` | Expiration time |
+| Key        | Type         | Description        |
+|:-----------|:-------------|:-------------------|
+| `spender`  | `String`     | Spender address    |
+| `amount`   | `Uint128`    | Amount to increase |
+| `expires`* | `Expiration` | Expiration time    |
 
 * = optional
 
@@ -295,11 +296,11 @@ pub enum ExecuteMsg {
 }
 ```
 
-| Key| Type| Description|
-| :--- | :--- | :--- |
-| `spender` | `String` | Spender address |
-| `amount` | `Uint128` | Amount to decrease |
-| `expires`* | `Expiration` | Expiration time |
+| Key        | Type         | Description        |
+|:-----------|:-------------|:-------------------|
+| `spender`  | `String`     | Spender address    |
+| `amount`   | `Uint128`    | Amount to decrease |
+| `expires`* | `Expiration` | Expiration time    |
 
 * = optional
 
@@ -333,11 +334,11 @@ pub enum ExecuteMsg {
 }
 ```
 
-| Key| Type| Description|
-| :--- | :--- | :--- |
-| `owner` | `String` | Owner address |
-| `recipient` | `String` | Recipient address |
-| `amount` | `Uint128` | Amount to transfer |
+| Key         | Type      | Description        |
+|:------------|:----------|:-------------------|
+| `owner`     | `String`  | Owner address      |
+| `recipient` | `String`  | Recipient address  |
+| `amount`    | `Uint128` | Amount to transfer |
 
 ### SendFrom {.tabset}
 
@@ -368,12 +369,12 @@ pub enum ExecuteMsg {
 }
 ```
 
-| Key| Type| Description|
-| :--- | :--- | :--- |
-| `owner` | `String` | Owner address |
-| `contract` | `String` | Contract address |
-| `amount` | `Uint128` | Amount to send |
-| `msg` | `Binary` | Message to send |
+| Key        | Type      | Description      |
+|:-----------|:----------|:-----------------|
+| `owner`    | `String`  | Owner address    |
+| `contract` | `String`  | Contract address |
+| `amount`   | `Uint128` | Amount to send   |
+| `msg`      | `Binary`  | Message to send  |
 
 ### BurnFrom {.tabset}
 
@@ -402,9 +403,9 @@ pub enum ExecuteMsg {
 }
 ```
 
-| Key| Type| Description|
-| :--- | :--- | :--- |
-| `owner` | `String` | Owner address |
+| Key      | Type      | Description    |
+|:---------|:----------|:---------------|
+| `owner`  | `String`  | Owner address  |
 | `amount` | `Uint128` | Amount to burn |
 
 ### UpdateMinter {.tabset}
@@ -433,8 +434,8 @@ pub enum ExecuteMsg {
 }
 ```
 
-| Key| Type| Description|
-| :--- | :--- | :--- |
+| Key      | Type     | Description    |
+|:---------|:---------|:---------------|
 | `minter` | `Option` | Minter address |
 
 * = optional
@@ -469,11 +470,11 @@ pub enum ExecuteMsg {
 }
 ```
 
-| Key| Type| Description|
-| :--- | :--- | :--- |
-| `project` | `Option` | Project name |
+| Key           | Type     | Description         |
+|:--------------|:---------|:--------------------|
+| `project`     | `Option` | Project name        |
 | `description` | `Option` | Project description |
-| `marketing` | `Option` | Marketing URL |
+| `marketing`   | `Option` | Marketing URL       |
 
 * = optional
 
@@ -502,11 +503,11 @@ pub enum ExecuteMsg {
 }
 ```
 
-| Key| Type| Description|
-| :--- | :--- | :--- |
-| `logo` | `String` | Logo URL |
+| Key    | Type     | Description |
+|:-------|:---------|:------------|
+| `logo` | `String` | Logo URL    |
 
-## QueryMsg 
+## QueryMsg
 
 ### SeilorConfig {.tabset}
 
@@ -529,8 +530,8 @@ pub enum QueryMsg {
 }
 ```
 
-| Key| Type| Description|
-| :--- | :--- | :--- |
+| Key | Type | Description |
+|:----|:-----|:------------|
 
 ### SeilorConfigResponse {.tabset}
 
@@ -557,12 +558,12 @@ pub struct SeilorConfigResponse {
 }
 ```
 
-| Key| Type| Description|
-| :--- | :--- | :--- |
-| `max_supply` | `u128` | Maximum supply |
-| `seilor_fund` | `Addr` | SEILOR fund address |
+| Key                 | Type   | Description               |
+|:--------------------|:-------|:--------------------------|
+| `max_supply`        | `u128` | Maximum supply            |
+| `seilor_fund`       | `Addr` | SEILOR fund address       |
 | `seilor_distribute` | `Addr` | SEILOR distribute address |
-| `gov` | `Addr` | Governance address |
+| `gov`               | `Addr` | Governance address        |
 
 ### Balance {.tabset}
 
@@ -589,9 +590,9 @@ pub enum QueryMsg {
 }
 ```
 
-| Key| Type| Description|
-| :--- | :--- | :--- |
-| `address` | `String` | Address |
+| Key       | Type     | Description |
+|:----------|:---------|:------------|
+| `address` | `String` | Address     |
 
 ### BalanceResponse {.tabset}
 
@@ -612,9 +613,9 @@ pub struct BalanceResponse {
 }
 ```
 
-| Key| Type| Description|
-| :--- | :--- | :--- |
-| `balance` | `Uint128` | Balance |
+| Key       | Type      | Description |
+|:----------|:----------|:------------|
+| `balance` | `Uint128` | Balance     |
 
 ### TokenInfo {.tabset}
 
@@ -637,8 +638,8 @@ pub enum QueryMsg {
 }
 ```
 
-| Key| Type| Description|
-| :--- | :--- | :--- |
+| Key | Type | Description |
+|:----|:-----|:------------|
 
 ### TokenInfoResponse {.tabset}
 
@@ -665,11 +666,11 @@ pub struct TokenInfoResponse {
 }
 ```
 
-| Key| Type| Description|
-| :--- | :--- | :--- |
-| `name` | `String` | Name |
-| `symbol` | `String` | Symbol |
-| `decimals` | `u8` | Decimals |
+| Key            | Type      | Description  |
+|:---------------|:----------|:-------------|
+| `name`         | `String`  | Name         |
+| `symbol`       | `String`  | Symbol       |
+| `decimals`     | `u8`      | Decimals     |
 | `total_supply` | `Uint128` | Total supply |
 
 ### Allowance {.tabset}
@@ -700,9 +701,9 @@ pub enum QueryMsg {
 }
 ```
 
-| Key| Type| Description|
-| :--- | :--- | :--- |
-| `owner` | `String` | Owner address |
+| Key       | Type     | Description     |
+|:----------|:---------|:----------------|
+| `owner`   | `String` | Owner address   |
 | `spender` | `String` | Spender address |
 
 ### AllowanceResponse {.tabset}
@@ -730,10 +731,10 @@ pub struct AllowanceResponse {
 }
 ```
 
-| Key| Type| Description|
-| :--- | :--- | :--- |
-| `allowance` | `Uint128` | Allowance |
-| `expires` | `Expiration` | Expiration |
+| Key         | Type         | Description |
+|:------------|:-------------|:------------|
+| `allowance` | `Uint128`    | Allowance   |
+| `expires`   | `Expiration` | Expiration  |
 
 ### Expiration {.tabset}
 
@@ -765,11 +766,11 @@ pub enum Expiration {
 }
 ```
 
-| Key| Type| Description|
-| :--- | :--- | :--- |
-| `at_height` | `u64` | AtHeight will expire when `env.block.height` >= height |
-| `at_time` | `Timestamp` | AtTime will expire when `env.block.time` >= time |
-| `never` | `Never` | Never will never expire. Used to express the empty variant |
+| Key         | Type        | Description                                                |
+|:------------|:------------|:-----------------------------------------------------------|
+| `at_height` | `u64`       | AtHeight will expire when `env.block.height` >= height     |
+| `at_time`   | `Timestamp` | AtTime will expire when `env.block.time` >= time           |
+| `never`     | `Never`     | Never will never expire. Used to express the empty variant |
 
 ### Minter {.tabset}
 
@@ -793,8 +794,8 @@ pub enum QueryMsg {
 }
 ```
 
-| Key| Type| Description|
-| :--- | :--- | :--- |
+| Key | Type | Description |
+|:----|:-----|:------------|
 
 ### MinterResponse {.tabset}
 
@@ -817,10 +818,10 @@ pub struct MinterResponse {
 }
 ```
 
-| Key| Type| Description|
-| :--- | :--- | :--- |
-| `minter` | `Addr` | Minter address |
-| `cap` | `Option` | cap is a hard cap on total supply that can be achieved by minting. Note that this refers to total_supply. If None, there is unlimited cap. |
+| Key      | Type     | Description                                                                                                                                |
+|:---------|:---------|:-------------------------------------------------------------------------------------------------------------------------------------------|
+| `minter` | `Addr`   | Minter address                                                                                                                             |
+| `cap`    | `Option` | cap is a hard cap on total supply that can be achieved by minting. Note that this refers to total_supply. If None, there is unlimited cap. |
 
 ### MarketingInfo {.tabset}
 
@@ -844,8 +845,8 @@ pub enum QueryMsg {
 }
 ```
 
-| Key| Type| Description|
-| :--- | :--- | :--- |
+| Key | Type | Description |
+|:----|:-----|:------------|
 
 ### MarketingInfoResponse {.tabset}
 
@@ -879,12 +880,12 @@ pub struct MarketingInfoResponse {
 }
 ```
 
-| Key| Type| Description|
-| :--- | :--- | :--- |
-| `project` | `Option<String>` | A URL pointing to the project behind this token. |
+| Key           | Type             | Description                                                                       |
+|:--------------|:-----------------|:----------------------------------------------------------------------------------|
+| `project`     | `Option<String>` | A URL pointing to the project behind this token.                                  |
 | `description` | `Option<String>` | A longer description of the token and it's utility. Designed for tooltips or such |
-| `logo` | `Option<String>` | A link to the logo, or a comment there is an on-chain logo stored |
-| `marketing` | `Option<Addr>` | The address (if any) who can update this data structure |
+| `logo`        | `Option<String>` | A link to the logo, or a comment there is an on-chain logo stored                 |
+| `marketing`   | `Option<Addr>`   | The address (if any) who can update this data structure                           |
 
 ### DownloadLogo {.tabset}
 
@@ -908,8 +909,8 @@ pub enum QueryMsg {
 }
 ```
 
-| Key| Type| Description|
-| :--- | :--- | :--- |
+| Key | Type | Description |
+|:----|:-----|:------------|
 
 ### DownloadLogoResponse {.tabset}
 
@@ -937,10 +938,10 @@ pub struct DownloadLogoResponse {
 }
 ```
 
-| Key| Type| Description|
-| :--- | :--- | :--- |
+| Key         | Type     | Description                |
+|:------------|:---------|:---------------------------|
 | `mime_type` | `String` | The mime type of the image |
-| `data` | `Binary` | The raw bytes of the image |
+| `data`      | `Binary` | The raw bytes of the image |
 
 ### AllAllowances {.tabset}
 
@@ -972,11 +973,11 @@ pub enum QueryMsg {
 }
 ```
 
-| Key| Type| Description|
-| :--- | :--- | :--- |
-| `owner` | `String` | The owner of the allowances |
+| Key           | Type             | Description                                     |
+|:--------------|:-----------------|:------------------------------------------------|
+| `owner`       | `String`         | The owner of the allowances                     |
 | `start_after` | `Option<String>` | The address to start after, used for pagination |
-| `limit` | `Option<u32>` | The number of allowances to limit the query to |
+| `limit`       | `Option<u32>`    | The number of allowances to limit the query to  |
 
 ### AllAllowancesResponse {.tabset}
 
@@ -1007,8 +1008,8 @@ pub struct AllAllowancesResponse {
 }
 ```
 
-| Key| Type| Description|
-| :--- | :--- | :--- |
+| Key          | Type                 | Description            |
+|:-------------|:---------------------|:-----------------------|
 | `allowances` | `Vec<AllowanceInfo>` | The list of allowances |
 
 ### AllowanceInfo {.tabset}
@@ -1038,15 +1039,16 @@ pub struct AllowanceInfo {
 }
 ```
 
-| Key| Type| Description|
-| :--- | :--- | :--- |
-| `spender` | `Addr` | The address of the spender |
-| `allowance` | `Uint128` | The amount of tokens the spender is allowed to spend |
-| `expires` | `Expiration` | When the allowance expires |
+| Key         | Type         | Description                                          |
+|:------------|:-------------|:-----------------------------------------------------|
+| `spender`   | `Addr`       | The address of the spender                           |
+| `allowance` | `Uint128`    | The amount of tokens the spender is allowed to spend |
+| `expires`   | `Expiration` | When the allowance expires                           |
 
 ### AllAccounts {.tabset}
 
-Only with "enumerable" extension Returns all accounts that have balances. Supports pagination. Return type: AllAccountsResponse.
+Only with "enumerable" extension Returns all accounts that have balances. Supports pagination. Return type:
+AllAccountsResponse.
 
 #### Rust
 
@@ -1071,10 +1073,10 @@ pub enum QueryMsg {
 }
 ```
 
-| Key| Type| Description|
-| :--- | :--- | :--- |
+| Key           | Type             | Description                                     |
+|:--------------|:-----------------|:------------------------------------------------|
 | `start_after` | `Option<String>` | The address to start after, used for pagination |
-| `limit` | `Option<u32>` | The number of accounts to limit the query to |
+| `limit`       | `Option<u32>`    | The number of accounts to limit the query to    |
 
 
 

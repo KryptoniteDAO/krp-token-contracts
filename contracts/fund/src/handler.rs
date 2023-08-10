@@ -1,15 +1,18 @@
 use crate::helper::{BASE_RATE_12, BASE_RATE_6};
-use crate::msg::UpdateConfigMsg;
-use crate::querier::{earned, get_claim_able_seilor, get_reserved_seilor_for_vesting, total_staked};
+use crate::msg::{Cw20HookMsg, UpdateConfigMsg};
+use crate::querier::{
+    earned, get_claim_able_seilor, get_reserved_seilor_for_vesting, total_staked,
+};
 use crate::state::{
     read_fund_config, read_rewards, read_time2full_redemption, read_unstake_rate,
     store_fund_config, store_last_withdraw_time, store_rewards, store_time2full_redemption,
     store_unstake_rate, store_user_reward_per_token_paid, FundConfig,
 };
 use cosmwasm_std::{
-    attr, coin, to_binary, Addr, BankMsg, CosmosMsg, DepsMut, Env, MessageInfo, Response, StdError,
-    StdResult, SubMsg, Uint128, Uint256, Uint64, WasmMsg,
+    attr, coin, from_binary, to_binary, Addr, BankMsg, CosmosMsg, DepsMut, Env, MessageInfo,
+    Response, StdError, StdResult, SubMsg, Uint128, Uint256, Uint64, WasmMsg,
 };
+use cw20::Cw20ReceiveMsg;
 
 /**
  * This is a function that updates the configuration of a SEILOR Fund contract.
@@ -33,14 +36,17 @@ pub fn update_fund_config(
         attr("sender", info.sender.to_string()),
     ];
     if let Some(gov) = msg.gov {
+        deps.api.addr_validate(gov.clone().as_str())?;
         config.gov = gov.clone();
         attrs.push(attr("gov", gov.to_string()));
     }
     if let Some(ve_seilor_addr) = msg.ve_seilor_addr {
+        deps.api.addr_validate(ve_seilor_addr.clone().as_str())?;
         config.ve_seilor_addr = ve_seilor_addr.clone();
         attrs.push(attr("ve_seilor_addr", ve_seilor_addr.to_string()));
     }
     if let Some(seilor_addr) = msg.seilor_addr {
+        deps.api.addr_validate(seilor_addr.clone().as_str())?;
         config.seilor_addr = seilor_addr.clone();
         attrs.push(attr("seilor_addr", seilor_addr.to_string()));
     }
@@ -49,6 +55,7 @@ pub fn update_fund_config(
         attrs.push(attr("kusd_denom", kusd_denom));
     }
     if let Some(kusd_reward_addr) = msg.kusd_reward_addr {
+        deps.api.addr_validate(kusd_reward_addr.clone().as_str())?;
         config.kusd_reward_addr = kusd_reward_addr.clone();
         attrs.push(attr("kusd_reward_addr", kusd_reward_addr.to_string()));
     }
@@ -86,14 +93,11 @@ pub fn refresh_reward(deps: DepsMut, account: Addr) -> StdResult<Response> {
     ]))
 }
 
-pub fn stake(mut deps: DepsMut, info: MessageInfo, amount: Uint128) -> StdResult<Response> {
-    let sender = info.sender;
-
+pub fn stake(mut deps: DepsMut, sender: Addr, amount: Uint128) -> StdResult<Response> {
     refresh_reward(deps.branch(), sender.clone())?;
     let config = read_fund_config(deps.storage)?;
     let mut sub_msgs = vec![];
     let seilor_burn_msg = seilor::msg::ExecuteMsg::Burn {
-        user: sender.clone().to_string(),
         amount: amount.clone(),
     };
     let sub_burn_msg = SubMsg::new(CosmosMsg::Wasm(WasmMsg::Execute {
@@ -230,7 +234,8 @@ pub fn re_stake(mut deps: DepsMut, env: Env, info: MessageInfo) -> StdResult<Res
     let mut sub_msgs = vec![];
     let config = read_fund_config(deps.storage)?;
     let claim_able_res = get_claim_able_seilor(deps.as_ref(), env.clone(), sender.clone())?;
-    let reserve_seilor_res = get_reserved_seilor_for_vesting(deps.as_ref(), env.clone(), sender.clone())?;
+    let reserve_seilor_res =
+        get_reserved_seilor_for_vesting(deps.as_ref(), env.clone(), sender.clone())?;
     let claim_able = claim_able_res.amount;
     let reserve_seilor = reserve_seilor_res.amount;
     let total = claim_able.checked_add(reserve_seilor)?;
@@ -334,4 +339,36 @@ pub fn notify_reward_amount(deps: DepsMut, info: MessageInfo) -> StdResult<Respo
         attr("amount", amount.to_string()),
         attr("sender", sender.to_string()),
     ]))
+}
+
+/// ## Description
+/// Receives a message of type [`Cw20ReceiveMsg`] and processes it depending on the received template.
+/// If the template is not found in the received message, then an [`ContractError`] is returned,
+/// otherwise it returns the [`Response`] with the specified attributes if the operation was successful.
+/// ## Params
+/// * **deps** is an object of type [`DepsMut`].
+///
+/// * **env** is an object of type [`Env`].
+///
+/// * **info** is an object of type [`MessageInfo`].
+///
+/// * **cw20_msg** is an object of type [`Cw20ReceiveMsg`]. This is the CW20 message that has to be processed.
+pub fn receive_cw20(
+    deps: DepsMut,
+    _env: Env,
+    info: MessageInfo,
+    cw20_msg: Cw20ReceiveMsg,
+) -> StdResult<Response> {
+    let contract_addr = info.sender.clone();
+    let msg_sender = deps.api.addr_validate(&cw20_msg.sender)?;
+    match from_binary(&cw20_msg.msg) {
+        Ok(Cw20HookMsg::Stake {}) => {
+            let config = read_fund_config(deps.storage)?;
+            if contract_addr.ne(&config.seilor_addr) {
+                return Err(StdError::generic_err("not staking token"));
+            }
+            stake(deps, msg_sender, cw20_msg.amount)
+        }
+        Err(_) => Err(StdError::generic_err("data should be given")),
+    }
 }

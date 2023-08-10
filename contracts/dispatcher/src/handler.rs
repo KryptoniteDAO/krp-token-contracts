@@ -25,6 +25,7 @@ pub fn update_config(
     attrs.push(attr("action", "update_config"));
 
     if let Some(gov) = msg.gov {
+        deps.api.addr_validate(gov.clone().as_str())?;
         config.gov = gov.clone();
         attrs.push(attr("gov", gov));
     }
@@ -67,6 +68,8 @@ pub fn update_config(
     }
 
     if let Some(regret_token_receiver) = msg.regret_token_receiver {
+        deps.api
+            .addr_validate(regret_token_receiver.clone().as_str())?;
         config.regret_token_receiver = regret_token_receiver.clone();
         attrs.push(attr("regret_token_receiver", regret_token_receiver));
     }

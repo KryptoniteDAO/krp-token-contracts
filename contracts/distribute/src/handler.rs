@@ -100,10 +100,12 @@ pub fn update_config(
         attr("sender", info.sender.to_string()),
     ];
     if let Some(gov) = gov {
+        deps.api.addr_validate(gov.clone().as_str())?;
         distribute_config.gov = gov.clone();
         attrs.push(attr("gov", gov.to_string()));
     }
     if let Some(distribute_token) = distribute_token {
+        deps.api.addr_validate(distribute_token.clone().as_str())?;
         distribute_config.distribute_token = distribute_token.clone();
         attrs.push(attr("distribute_token", distribute_token.to_string()));
     }

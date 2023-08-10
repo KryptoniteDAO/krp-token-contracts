@@ -1,5 +1,6 @@
 use cosmwasm_schema::{cw_serde, QueryResponses};
 use cosmwasm_std::{Addr, Uint128, Uint256, Uint64};
+use cw20::Cw20ReceiveMsg;
 
 #[cw_serde]
 pub struct UpdateConfigMsg {
@@ -24,11 +25,20 @@ pub struct InstantiateMsg {
 
 #[cw_serde]
 pub enum ExecuteMsg {
-    UpdateFundConfig { update_config_msg: UpdateConfigMsg },
-    RefreshReward { account: Addr },
-    Stake { amount: Uint128 },
-    Unstake { amount: Uint128 },
-    Withdraw { user: Addr },
+    /// Receives a message of type [`Cw20ReceiveMsg`]
+    Receive(Cw20ReceiveMsg),
+    UpdateFundConfig {
+        update_config_msg: UpdateConfigMsg,
+    },
+    RefreshReward {
+        account: Addr,
+    },
+    Unstake {
+        amount: Uint128,
+    },
+    Withdraw {
+        user: Addr,
+    },
     ReStake {},
     GetReward {},
     NotifyRewardAmount {},
@@ -123,3 +133,9 @@ pub struct FundConfigResponse {
 
 #[cw_serde]
 pub struct MigrateMsg {}
+
+/// This structure describes a CW20 hook message.
+#[cw_serde]
+pub enum Cw20HookMsg {
+    Stake {},
+}
