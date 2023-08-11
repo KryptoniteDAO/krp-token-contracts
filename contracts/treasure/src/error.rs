@@ -31,9 +31,18 @@ pub enum ContractError {
     #[error("InsufficientLockFunds")]
     InsufficientLockFunds {},
 
+    #[error("InsufficientUnlockFunds")]
+    InsufficientUnlockFunds {},
+
     #[error("InsufficientIntegralFunds")]
     InsufficientIntegralFunds {},
 
     #[error("InvalidMintNum")]
     InvalidMintNum {},
+    #[error("PreMintTimeNotReach")]
+    PreMintTimeNotReach {},
+    #[error("PreMintTimeEnd")]
+    PreMintTimeEnd {},
+    #[error("LockTimeNotEnd")]
+    LockTimeNotEnd {},
 }

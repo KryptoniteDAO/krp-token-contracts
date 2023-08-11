@@ -1,6 +1,7 @@
-use crate::msg::{ConfigInfosResponse, QueryUserInfosMsg, UserInfosResponse};
+use crate::helper::BASE_RATE_12;
+use crate::msg::{ConfigInfosResponse, UserInfosResponse};
 use crate::state::read_treasure_config;
-use cosmwasm_std::{Deps, StdResult};
+use cosmwasm_std::{Addr, Deps, Env, StdResult, Uint128};
 
 pub fn query_config_infos(deps: Deps) -> StdResult<ConfigInfosResponse> {
     let config = read_treasure_config(deps.storage)?;
@@ -8,49 +9,43 @@ pub fn query_config_infos(deps: Deps) -> StdResult<ConfigInfosResponse> {
     Ok(ConfigInfosResponse { config, state })
 }
 
-pub fn query_user_infos(deps: Deps, msg: QueryUserInfosMsg) -> StdResult<UserInfosResponse> {
-    let mut user_state = None;
-    let mut lock_records = None;
-    let mut withdraw_records = None;
-    let mut mint_nft_records = None;
-    if msg.query_user_state {
-        user_state = Some(crate::state::read_treasure_user_state(
-            deps.storage,
-            &msg.user_addr,
-        )?);
-    }
+pub fn query_user_infos(deps: Deps, env: Env, user: Addr) -> StdResult<UserInfosResponse> {
+    let mut user_state = crate::state::read_treasure_user_state(deps.storage, &user)?;
+    let config = read_treasure_config(deps.storage)?;
+    let current_dust_amount = compute_user_dust(
+        env.block.time.seconds(),
+        user_state.last_lock_time,
+        config.end_lock_time,
+        user_state.current_locked_amount,
+        config.dust_reward_per_second,
+    )?;
+    user_state.current_dust_amount += current_dust_amount;
+    Ok(UserInfosResponse { user_state })
+}
 
-    if msg.query_lock_records {
-        lock_records = Some(crate::state::read_user_lock_records(
-            deps.storage,
-            &msg.user_addr,
-            msg.start_after.clone(),
-            msg.limit.clone(),
-        )?);
-    }
+// 计算用户积分奖励
+pub fn compute_user_dust(
+    block_time: u64,
+    user_last_lock_time: u64,
+    global_end_time: u64,
+    user_current_locked_amount: Uint128,
+    dust_reward_per_second: Uint128,
+) -> StdResult<Uint128> {
+    let mut dust_amount = Uint128::zero();
 
-    if msg.query_withdraw_records {
-        withdraw_records = Some(crate::state::read_user_withdraw_records(
-            deps.storage,
-            &msg.user_addr,
-            msg.start_after.clone(),
-            msg.limit.clone(),
-        )?);
+    if user_last_lock_time < block_time
+        && user_last_lock_time < global_end_time
+        && user_current_locked_amount > Uint128::zero()
+    {
+        let diff_time;
+        if block_time > global_end_time {
+            diff_time = global_end_time - user_last_lock_time;
+        } else {
+            diff_time = block_time - user_last_lock_time;
+        }
+        dust_amount =
+            user_current_locked_amount * Uint128::from(diff_time) * dust_reward_per_second
+                / Uint128::from(BASE_RATE_12);
     }
-
-    if msg.query_mint_nft_records {
-        mint_nft_records = Some(crate::state::read_user_mint_nft_records(
-            deps.storage,
-            &msg.user_addr,
-            msg.start_after.clone(),
-            msg.limit.clone(),
-        )?);
-    }
-
-    Ok(UserInfosResponse {
-        user_state,
-        lock_records,
-        withdraw_records,
-        mint_nft_records,
-    })
+    Ok(dust_amount)
 }

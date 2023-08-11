@@ -36,19 +36,23 @@ numbers. The random number generation is based on a seed derived from environmen
 pub struct TreasureConfig {
     pub gov: Addr,
     pub lock_token: Addr,
-    pub start_time: u64,
-    pub end_time: u64,
-    // Integral reward coefficient
-    pub integral_reward_coefficient: Uint128,
-    pub lock_duration: u64,
-    // punish coefficient
-    pub punish_coefficient: Uint128,
-    // nft cost integral
-    pub mint_nft_cost_integral: Uint128,
-    pub winning_num: HashSet<u64>,
-    pub mod_num: u64,
+    pub start_lock_time: u64,
+    pub end_lock_time: u64,
+    //dust reward per second
+    pub dust_reward_per_second: Uint128,
+    pub withdraw_delay_duration: u64,
+    // no delay punish coefficient
+    pub no_delay_punish_coefficient: Uint128,
     // punish receiver
     pub punish_receiver: Addr,
+    // nft start pre mint time
+    pub nft_start_pre_mint_time: u64,
+    // nft end pre mint time
+    pub nft_end_pre_mint_time: u64,
+    // nft cost dust
+    pub mint_nft_cost_dust: Uint128,
+    pub winning_num: HashSet<u64>,
+    pub mod_num: u64,
 }
 ```
 
@@ -56,15 +60,17 @@ pub struct TreasureConfig {
 |-------------------------------|----------------|---------------------------------|
 | `gov`                         | `Addr`         | The governance contract address |
 | `lock_token`                  | `Addr`         | The lock token contract address |
-| `start_time`                  | `u64`          | The start time of the game      |
-| `end_time`                    | `u64`          | The end time of the game        |
-| `integral_reward_coefficient` | `Uint128`      | The integral reward coefficient |
-| `lock_duration`               | `u64`          | The lock duration               |
-| `punish_coefficient`          | `Uint128`      | The punish coefficient          |
-| `mint_nft_cost_integral`      | `Uint128`      | The mint NFT cost integral      |
+| `start_lock_time`             | `u64`          | The start time of the game      |
+| `end_lock_time`               | `u64`          | The end time of the game        |
+| `dust_reward_per_second`      | `Uint128`      | The dust reward per second      |
+| `withdraw_delay_duration`     | `u64`          | The withdraw delay duration     |
+| `no_delay_punish_coefficient` | `Uint128`      | The no delay punish coefficient |
+| `punish_receiver`             | `Addr`         | The punish receiver address     |
+| `nft_start_pre_mint_time`     | `u64`          | The NFT start pre mint time     |
+| `nft_end_pre_mint_time`       | `u64`          | The NFT end pre mint time       |
+| `mint_nft_cost_dust`          | `Uint128`      | The mint NFT cost dust          |
 | `winning_num`                 | `HashSet<u64>` | The winning numbers             |
 | `mod_num`                     | `u64`          | The mod number                  |
-| `punish_receiver`             | `Addr`         | The punish receiver address     |
 
 ## InstantiateMsg {.tabset}
 
@@ -75,15 +81,17 @@ pub struct TreasureConfig {
 pub struct InstantiateMsg {
     pub gov: Option<Addr>,
     pub lock_token: Addr,
-    pub start_time: u64,
-    pub end_time: u64,
-    pub integral_reward_coefficient: Uint128,
-    pub lock_duration: u64,
-    pub punish_coefficient: Uint128,
-    pub mint_nft_cost_integral: Uint128,
+    pub start_lock_time: u64,
+    pub end_lock_time: u64,
+    pub dust_reward_per_second: Uint128,
+    pub withdraw_delay_duration: u64,
+    pub no_delay_punish_coefficient: Uint128,
+    pub punish_receiver: Addr,
+    pub nft_start_pre_mint_time: u64,
+    pub nft_end_pre_mint_time: u64,
+    pub mint_nft_cost_dust: Uint128,
     pub winning_num: HashSet<u64>,
     pub mod_num: u64,
-    pub punish_receiver: Addr,
 }
 ```
 
@@ -93,15 +101,21 @@ pub struct InstantiateMsg {
 {
   "gov": "sei1...",
   "lock_token": "sei1...",
-  "start_time": "1688128677",
-  "end_time": "1690720710",
-  "integral_reward_coefficient": "10",
-  "lock_duration": "2592000",
-  "punish_coefficient": "300000",
-  "mint_nft_cost_integral": "10000000000",
-  "winning_num": "[0,1,2,...,22,23,24,]",
-  "mod_num": "100",
-  "punish_receiver": "sei1..."
+  "start_lock_time": "1620000000",
+  "end_lock_time": "1620000000",
+  "dust_reward_per_second": "1000000000",
+  "withdraw_delay_duration": "86400",
+  "no_delay_punish_coefficient": "1000000000",
+  "punish_receiver": "sei1...",
+  "nft_start_pre_mint_time": "1620000000",
+  "nft_end_pre_mint_time": "1620000000",
+  "mint_nft_cost_dust": "1000000000",
+  "winning_num": [
+    1,
+    2,
+    3
+  ],
+  "mod_num": 100
 }
 ```
 
@@ -109,15 +123,17 @@ pub struct InstantiateMsg {
 |-------------------------------|-----------------|---------------------------------|
 | `gov`                         | `Option<Addr>`* | The governance contract address |
 | `lock_token`                  | `Addr`          | The lock token contract address |
-| `start_time`                  | `u64`           | The start time of the game      |
-| `end_time`                    | `u64`           | The end time of the game        |
-| `integral_reward_coefficient` | `Uint128`       | The integral reward coefficient |
-| `lock_duration`               | `u64`           | The lock duration               |
-| `punish_coefficient`          | `Uint128`       | The punish coefficient          |
-| `mint_nft_cost_integral`      | `Uint128`       | The mint NFT cost integral      |
+| `start_lock_time`             | `u64`           | The start time of the game      |
+| `end_lock_time`               | `u64`           | The end time of the game        |
+| `dust_reward_per_second`      | `Uint128`       | The dust reward per second      |
+| `withdraw_delay_duration`     | `u64`           | The withdraw delay duration     |
+| `no_delay_punish_coefficient` | `Uint128`       | The no delay punish coefficient |
+| `punish_receiver`             | `Addr`          | The punish receiver address     |
+| `nft_start_pre_mint_time`     | `u64`           | The NFT start pre mint time     |
+| `nft_end_pre_mint_time`       | `u64`           | The NFT end pre mint time       |
+| `mint_nft_cost_dust`          | `Uint128`       | The mint NFT cost dust          |
 | `winning_num`                 | `HashSet<u64>`  | The winning numbers             |
 | `mod_num`                     | `u64`           | The mod number                  |
-| `punish_receiver`             | `Addr`          | The punish receiver address     |
 
 * = optional
 
@@ -218,6 +234,31 @@ pub enum ExecuteMsg {
 |----------|-----------|--------------------------------------------------------|
 | `amount` | `Uint128` | The amount of lock token to withdraw from the contract |
 
+### UserUnlock {.tabset}
+
+#### Rust
+
+```rust
+#[cw_serde]
+pub enum ExecuteMsg {
+    UserUnlock { amount: Uint128 },
+}
+```
+
+#### JSON
+
+```json
+{
+  "user_unlock": {
+    "amount": "1000000000"
+  }
+}
+```
+
+| Key      | Type      | Description                                          |
+|----------|-----------|------------------------------------------------------|
+| `amount` | `Uint128` | The amount of lock token to unlock from the contract |
+
 ### PreMintNft {.tabset}
 
 #### Rust
@@ -225,7 +266,7 @@ pub enum ExecuteMsg {
 ```rust
 #[cw_serde]
 pub enum ExecuteMsg {
-    PreMintNft { token_id: String },
+    PreMintNft { mint_num: u64 },
 }
 ```
 
@@ -234,14 +275,14 @@ pub enum ExecuteMsg {
 ```json
 {
   "pre_mint_nft": {
-    "mint_num": "1"
+    "mint_num": 1
   }
 }
 ```
 
-| Key        | Type     | Description     |
-|------------|----------|-----------------|
-| `mint_num` | `String` | The mint number |
+| Key        | Type  | Description     |
+|------------|-------|-----------------|
+| `mint_num` | `u64` | The mint number |
 
 ## QueryMsg
 
@@ -399,7 +440,7 @@ pub struct TreasureState {
 #[derive(QueryResponses)]
 pub enum QueryMsg {
     #[returns(UserInfosResponse)]
-    QueryUserInfos { msg: QueryUserInfosMsg },
+    QueryUserInfos { user: Addr },
 }
 ```
 
@@ -407,49 +448,11 @@ pub enum QueryMsg {
 
 ```json
 {
-  "user_infos": {}
+  "user_infos": {
+    "user": "sei1..."
+  }
 }
 ```
-
-### QueryUserInfosMsg {.tabset}
-
-#### Rust
-
-```rust
-#[cw_serde]
-pub struct QueryUserInfosMsg {
-    pub user_addr: Addr,
-    pub query_user_state: bool,
-    pub query_lock_records: bool,
-    pub query_withdraw_records: bool,
-    pub query_mint_nft_records: bool,
-    pub start_after: Option<String>,
-    pub limit: Option<u32>,
-}
-```
-
-#### JSON
-
-```json
-{
-  "user_addr": "sei1...",
-  "query_user_state": true,
-  "query_lock_records": true,
-  "query_withdraw_records": true,
-  "query_mint_nft_records": true,
-  "start_after": "sei1...",
-  "limit": 100
-}
-```
-
-| Key                      | Type             | Description             |
-|--------------------------|------------------|-------------------------|
-| `user_addr`              | `Addr`           | The user address        |
-| `query_user_state`       | `bool`           | Query user state        |
-| `query_lock_records`     | `bool`           | Query lock records      |
-| `query_withdraw_records` | `bool`           | Query withdraw records  |
-| `query_mint_nft_records` | `bool`           | Query mint NFT records  |
-| `start_after`            | `Option<String>` | The start after address |
 
 ### UserInfosResponse {.tabset}
 
@@ -459,9 +462,6 @@ pub struct QueryUserInfosMsg {
 #[cw_serde]
 pub struct UserInfosResponse {
     pub user_state: Option<crate::state::TreasureUserState>,
-    pub lock_records: Option<Vec<crate::state::UserLockRecord>>,
-    pub withdraw_records: Option<Vec<crate::state::UserWithdrawRecord>>,
-    pub mint_nft_records: Option<Vec<crate::state::UserMintNftRecord>>,
 }
 ```
 
@@ -469,19 +469,13 @@ pub struct UserInfosResponse {
 
 ```json
 {
-  "user_state": {},
-  "lock_records": [],
-  "withdraw_records": [],
-  "mint_nft_records": []
+  "user_state": {}
 }
 ```
 
-| Key                | Type                                            | Description          |
-|--------------------|-------------------------------------------------|----------------------|
-| `user_state`       | `Option<crate::state::TreasureUserState>`       | The user state       |
-| `lock_records`     | `Option<Vec<crate::state::UserLockRecord>>`     | The lock records     |
-| `withdraw_records` | `Option<Vec<crate::state::UserWithdrawRecord>>` | The withdraw records |
-| `mint_nft_records` | `Option<Vec<crate::state::UserMintNftRecord>>`  | The mint NFT records |
+| Key          | Type                                      | Description    |
+|--------------|-------------------------------------------|----------------|
+| `user_state` | `Option<crate::state::TreasureUserState>` | The user state |
 
 ### TreasureUserState {.tabset}
 
@@ -491,18 +485,19 @@ pub struct UserInfosResponse {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct TreasureUserState {
     pub current_locked_amount: Uint128,
-    pub current_integral_amount: Uint128,
+    pub last_lock_time: u64,
+    pub current_unlock_amount: Uint128,
+    pub last_unlock_time: u64,
+    pub current_dust_amount: Uint128,
 
     pub win_nft_num: u64,
     pub lose_nft_num: u64,
 
-    pub start_lock_time: u64,
-    pub end_lock_time: u64,
-
     pub total_locked_amount: Uint128,
+    pub total_unlock_amount: Uint128,
     pub total_withdraw_amount: Uint128,
     pub total_punish_amount: Uint128,
-    pub total_cost_integral_amount: Uint128,
+    pub total_cost_dust_amount: Uint128,
 }
 ```
 
@@ -511,141 +506,16 @@ pub struct TreasureUserState {
 ```json
 {
   "current_locked_amount": "1000000000",
-  "current_integral_amount": "1000000000",
-  "win_nft_num": 1000000000,
-  "lose_nft_num": 1000000000,
-  "start_lock_time": 1000000000,
-  "end_lock_time": 1000000000,
+  "last_lock_time": "1000000000",
+  "current_unlock_amount": "1000000000",
+  "last_unlock_time": "1000000000",
+  "current_dust_amount": "1000000000",
+  "win_nft_num": "1000000000",
+  "lose_nft_num": "1000000000",
   "total_locked_amount": "1000000000",
+  "total_unlock_amount": "1000000000",
   "total_withdraw_amount": "1000000000",
   "total_punish_amount": "1000000000",
-  "total_cost_integral_amount": "1000000000"
+  "total_cost_dust_amount": "1000000000"
 }
 ```
-
-| Key                          | Type      | Description                    |
-|------------------------------|-----------|--------------------------------|
-| `current_locked_amount`      | `Uint128` | The current locked amount      |
-| `current_integral_amount`    | `Uint128` | The current integral amount    |
-| `win_nft_num`                | `u64`     | The win NFT number             |
-| `lose_nft_num`               | `u64`     | The lose NFT number            |
-| `start_lock_time`            | `u64`     | The start lock time            |
-| `end_lock_time`              | `u64`     | The end lock time              |
-| `total_locked_amount`        | `Uint128` | The total locked amount        |
-| `total_withdraw_amount`      | `Uint128` | The total withdraw amount      |
-| `total_punish_amount`        | `Uint128` | The total punish amount        |
-| `total_cost_integral_amount` | `Uint128` | The total cost integral amount |
-
-### UserLockRecord {.tabset}
-
-#### Rust
-
-```rust
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-pub struct UserLockRecord {
-    pub record_id: u64,
-    pub user_addr: Addr,
-    pub lock_amount: Uint128,
-    pub integral_reward_coefficient: Uint128,
-    pub lock_duration: u64,
-    pub start_lock_time: u64,
-    pub end_lock_time: u64,
-}
-```
-
-#### JSON
-
-```json
-{
-  "record_id": 1000000000,
-  "user_addr": "sei1...",
-  "lock_amount": "1000000000",
-  "integral_reward_coefficient": "1000000000",
-  "lock_duration": 1000000000,
-  "start_lock_time": 1000000000,
-  "end_lock_time": 1000000000
-}
-```
-
-| Key                           | Type      | Description                     |
-|-------------------------------|-----------|---------------------------------|
-| `record_id`                   | `u64`     | The record ID                   |
-| `user_addr`                   | `Addr`    | The user address                |
-| `lock_amount`                 | `Uint128` | The lock amount                 |
-| `integral_reward_coefficient` | `Uint128` | The integral reward coefficient |
-| `lock_duration`               | `u64`     | The lock duration               |
-| `start_lock_time`             | `u64`     | The start lock time             |
-| `end_lock_time`               | `u64`     | The end lock time               |
-
-### UserWithdrawRecord {.tabset}
-
-#### Rust
-
-```rust
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-pub struct UserWithdrawRecord {
-    pub record_id: u64,
-    pub user_addr: Addr,
-    pub withdraw_amount: Uint128,
-    pub withdraw_time: u64,
-    pub punish_amount: Uint128,
-}
-```
-
-#### JSON
-
-```json
-{
-  "record_id": 1000000000,
-  "user_addr": "sei1...",
-  "withdraw_amount": "1000000000",
-  "withdraw_time": 1000000000,
-  "punish_amount": "1000000000"
-}
-```
-
-| Key               | Type      | Description         |
-|-------------------|-----------|---------------------|
-| `record_id`       | `u64`     | The record ID       |
-| `user_addr`       | `Addr`    | The user address    |
-| `withdraw_amount` | `Uint128` | The withdraw amount |
-| `withdraw_time`   | `u64`     | The withdraw time   |
-| `punish_amount`   | `Uint128` | The punish amount   |
-
-### UserMintNftRecord {.tabset}
-
-#### Rust
-
-```rust
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-pub struct UserMintNftRecord {
-    pub record_id: u64,
-    pub user_addr: Addr,
-    pub mint_nft_num: u64,
-    pub win_nft_num: u64,
-    pub mint_nft_cost_integral_amount: Uint128,
-    pub mint_time: u64,
-}
-```
-
-#### JSON
-
-```json
-{
-  "record_id": 1000000000,
-  "user_addr": "sei1...",
-  "mint_nft_num": 1000000000,
-  "win_nft_num": 1000000000,
-  "mint_nft_cost_integral_amount": "1000000000",
-  "mint_time": 1000000000
-}
-```
-
-| Key                             | Type      | Description                       |
-|---------------------------------|-----------|-----------------------------------|
-| `record_id`                     | `u64`     | The record ID                     |
-| `user_addr`                     | `Addr`    | The user address                  |
-| `mint_nft_num`                  | `u64`     | The mint NFT number               |
-| `win_nft_num`                   | `u64`     | The win NFT number                |
-| `mint_nft_cost_integral_amount` | `Uint128` | The mint NFT cost integral amount |
-| `mint_time`                     | `u64`     | The mint time                     |

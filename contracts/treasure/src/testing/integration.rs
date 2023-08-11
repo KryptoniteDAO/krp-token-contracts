@@ -1,4 +1,5 @@
-use crate::msg::{ConfigInfosResponse, QueryUserInfosMsg, UserInfosResponse};
+use crate::helper::BASE_RATE_12;
+use crate::msg::{ConfigInfosResponse, UserInfosResponse};
 use crate::testing::mock_fn::{CREATOR, PUNISH_RECEIVER};
 use crate::testing::mock_third_fn::mock_cw20_instantiate_msg;
 use cosmwasm_std::testing::mock_env;
@@ -113,6 +114,16 @@ fn test_integration() {
     let treasure_balance = get_token_balance(&mut app, &cw20_token, &treasure_contact);
     assert_eq!(treasure_balance.balance, tom_lock_amount);
 
+    let user_state = query_user_infos(&mut app, &treasure_contact, &tom_address).user_state;
+    assert_eq!(user_state.current_dust_amount, Uint128::zero());
+    assert_eq!(user_state.current_locked_amount, tom_lock_amount);
+    assert_eq!(user_state.total_locked_amount, tom_lock_amount);
+    assert_eq!(user_state.last_lock_time, 1688128677 + 1000u64);
+
+    let global_state = query_config_infos(&mut app, &treasure_contact).state;
+    assert_eq!(global_state.total_locked_amount, tom_lock_amount);
+    assert_eq!(global_state.current_locked_amount, tom_lock_amount);
+
     // tom mint nft error,not enough locked token
     let res = pre_mint_nft(&mut app, &treasure_contact, &tom_address, 1);
     assert!(res.is_err());
@@ -126,11 +137,6 @@ fn test_integration() {
         &treasure_contact,
         &tom_lock_2_amount,
     );
-    assert!(res.is_ok());
-
-    // tome mint nft success
-    let res = pre_mint_nft(&mut app, &treasure_contact, &tom_address, 1);
-    println!("pre_mint_nft success: {:?}", res);
     assert!(res.is_ok());
 
     // check tom balance
@@ -153,68 +159,38 @@ fn test_integration() {
         global_info.state.total_locked_amount,
         tom_lock_amount + tom_lock_2_amount
     );
-    assert_eq!(
-        global_info.state.current_integral_amount,
-        global_info.config.integral_reward_coefficient * (tom_lock_amount + tom_lock_2_amount)
-            - global_info.config.mint_nft_cost_integral * Uint128::one()
-    );
+
     assert_eq!(
         global_info.state.current_locked_amount,
         tom_lock_amount + tom_lock_2_amount
     );
-    assert_eq!(global_info.state.total_lose_nft_num, 1u64);
+    assert_eq!(global_info.state.total_lose_nft_num, 0u64);
     assert_eq!(global_info.state.total_win_nft_num, 0u64);
     assert_eq!(global_info.state.total_withdraw_amount, Uint128::zero());
     assert_eq!(global_info.state.total_punish_amount, Uint128::zero());
 
     //check tom state
-    let query_tom_msg = QueryUserInfosMsg {
-        user_addr: tom_address.clone(),
-        query_user_state: true,
-        query_lock_records: true,
-        query_withdraw_records: true,
-        query_mint_nft_records: true,
-        start_after: None,
-        limit: None,
-    };
-    let tom_state = query_user_infos(&mut app, &treasure_contact, &query_tom_msg);
-    let user_state = tom_state.user_state.unwrap();
-    let lock_records = tom_state.lock_records.unwrap();
-    let withdraw_records = tom_state.withdraw_records.unwrap();
-    let mint_nft_records = tom_state.mint_nft_records.unwrap();
+
+    let tom_state = query_user_infos(&mut app, &treasure_contact, &tom_address);
+    let user_state = tom_state.user_state;
     assert_eq!(
         user_state.current_locked_amount,
         tom_lock_amount + tom_lock_2_amount
     );
-    assert_eq!(
-        user_state.current_integral_amount,
-        global_info.config.integral_reward_coefficient * (tom_lock_amount + tom_lock_2_amount)
-            - global_info.config.mint_nft_cost_integral * Uint128::one()
-    );
+    assert_eq!(user_state.current_dust_amount, Uint128::zero());
     assert_eq!(
         user_state.total_locked_amount,
         tom_lock_amount + tom_lock_2_amount
     );
-    assert_eq!(
-        user_state.total_cost_integral_amount,
-        global_info.config.mint_nft_cost_integral * Uint128::one()
-    );
+    assert_eq!(user_state.total_cost_dust_amount, Uint128::zero());
 
     assert_eq!(user_state.total_withdraw_amount, Uint128::zero());
     assert_eq!(user_state.total_withdraw_amount, Uint128::zero());
     assert_eq!(user_state.win_nft_num, 0u64);
-    assert_eq!(user_state.lose_nft_num, 1u64);
-    assert_eq!(user_state.start_lock_time, 1688128677 + 1000u64);
-    assert_eq!(
-        user_state.end_lock_time,
-        1688128677 + 1000u64 + global_info.config.lock_duration
-    );
+    assert_eq!(user_state.lose_nft_num, 0u64);
+    assert_eq!(user_state.last_lock_time, 1688128677 + 1000u64);
 
-    assert_eq!(lock_records.len(), 2);
-    assert_eq!(withdraw_records.len(), 0);
-    assert_eq!(mint_nft_records.len(), 1);
-
-    // tom withdraw 1_000_000_000 token
+    // tom withdraw 1_000_000_000 token error not unlock
     let tom_withdraw_amount = Uint128::from(1_000_000_000u128);
     let res = user_withdraw(
         &mut app,
@@ -222,53 +198,93 @@ fn test_integration() {
         &tom_address,
         &tom_withdraw_amount,
     );
-    assert!(res.is_ok());
+    assert!(res.is_err());
 
-    // check teasure contract balance
-    let treasure_balance = get_token_balance(&mut app, &cw20_token, &treasure_contact);
-    assert_eq!(
-        treasure_balance.balance,
-        tom_lock_amount + tom_lock_2_amount - tom_withdraw_amount
-    );
-    // check punish amount
-    let punish_receiver_balance =
-        get_token_balance(&mut app, &cw20_token, &punish_receiver_address);
-    println!(
-        "punish_receiver_balance: {:?}",
-        punish_receiver_balance.balance
-    );
-    assert_eq!(
-        punish_receiver_balance.balance,
-        tom_withdraw_amount * global_info.config.punish_coefficient / Uint128::from(1_000_000u128)
-    );
-
-    // check tom balance
-    let tom_balance = get_token_balance(&mut app, &cw20_token, &tom_address);
-    assert_eq!(
-        tom_balance.balance,
-        transfer_amount - tom_lock_amount - tom_lock_2_amount + tom_withdraw_amount
-            - punish_receiver_balance.balance
-    );
-
-    // end lock time
     // update block time
     app.update_block(|block| {
-        block.time = Timestamp::from_seconds(1690720710 + 1000u64);
+        block.time = Timestamp::from_seconds(1688128677 + 2000u64);
         block.height += 1000000u64;
     });
 
-    // tom lock 100_000_000 token
-    let res = user_lock(
-        &tom_address,
+    // tom unlock 100_000_000 token
+    let tom_unlock_amount = Uint128::from(1_000_000_000u128);
+    let res = user_unlock(
         &mut app,
-        &cw20_token,
         &treasure_contact,
-        &tom_lock_amount,
+        &tom_address,
+        &tom_unlock_amount,
     );
-    assert!(res.is_err());
+    assert!(res.is_ok());
 
-    // tom withdraw 1_000_000_000 token
-    let tom_withdraw_amount_2 = Uint128::from(1_000_000_000u128);
+    let user_state = query_user_infos(&mut app, &treasure_contact, &tom_address).user_state;
+    assert_eq!(
+        user_state.current_locked_amount,
+        tom_lock_amount + tom_lock_2_amount - tom_unlock_amount
+    );
+    assert_eq!(
+        user_state.current_dust_amount,
+        global_info.config.dust_reward_per_second
+            * Uint128::from(1000u128)
+            * (tom_lock_amount + tom_lock_2_amount)
+            / Uint128::from(BASE_RATE_12)
+    );
+    assert_eq!(user_state.current_unlock_amount, tom_unlock_amount);
+
+    let global_info = query_config_infos(&mut app, &treasure_contact);
+    assert_eq!(
+        global_info.state.current_locked_amount,
+        tom_lock_amount + tom_lock_2_amount - tom_unlock_amount
+    );
+    assert_eq!(global_info.state.current_unlock_amount, tom_unlock_amount);
+
+    // tom withdraw 100_000_000 token will punish
+    let tom_withdraw_amount = Uint128::from(100_000_000u128);
+
+    let res = user_withdraw(
+        &mut app,
+        &treasure_contact,
+        &tom_address,
+        &tom_withdraw_amount,
+    );
+    assert!(res.is_ok());
+    // check user state
+    let user_state = query_user_infos(&mut app, &treasure_contact, &tom_address).user_state;
+    let punish_amount = tom_withdraw_amount * global_info.config.no_delay_punish_coefficient
+        / Uint128::from(1_000_000u128);
+    assert_eq!(
+        user_state.current_locked_amount,
+        tom_lock_amount + tom_lock_2_amount - tom_unlock_amount
+    );
+    assert_eq!(
+        user_state.current_unlock_amount,
+        tom_unlock_amount - tom_withdraw_amount
+    );
+    assert_eq!(user_state.total_punish_amount, punish_amount);
+    // check global state
+    let global_info = query_config_infos(&mut app, &treasure_contact);
+    assert_eq!(
+        global_info.state.current_locked_amount,
+        tom_lock_amount + tom_lock_2_amount - tom_unlock_amount
+    );
+    assert_eq!(
+        global_info.state.current_unlock_amount,
+        tom_unlock_amount - tom_withdraw_amount
+    );
+    assert_eq!(global_info.state.total_punish_amount, punish_amount);
+
+    // check punish receiver balance
+    let punish_receiver_balance =
+        get_token_balance(&mut app, &cw20_token, &punish_receiver_address);
+    assert_eq!(punish_receiver_balance.balance, punish_amount);
+
+    // update block time
+    app.update_block(|block| {
+        block.time = Timestamp::from_seconds(1688128677 + 2000u64 + 86400 * 14);
+        block.height += 1000000u64;
+    });
+
+    // tom withdraw 200_000_000 token will not punish
+    let tom_withdraw_amount_2 = Uint128::from(200_000_000u128);
     let res = user_withdraw(
         &mut app,
         &treasure_contact,
@@ -276,14 +292,42 @@ fn test_integration() {
         &tom_withdraw_amount_2,
     );
     assert!(res.is_ok());
-
-    //check tom balance
-    let tom_balance = get_token_balance(&mut app, &cw20_token, &tom_address);
+    // check user state
+    let user_state = query_user_infos(&mut app, &treasure_contact, &tom_address).user_state;
     assert_eq!(
-        tom_balance.balance,
-        transfer_amount - tom_lock_amount - tom_lock_2_amount + tom_withdraw_amount
-            - punish_receiver_balance.balance
-            + tom_withdraw_amount_2
+        user_state.current_unlock_amount,
+        tom_unlock_amount - tom_withdraw_amount - tom_withdraw_amount_2
+    );
+    assert_eq!(user_state.total_punish_amount, punish_amount);
+
+    app.update_block(|block| {
+        block.time = Timestamp::from_seconds(1690720710 + 2000u64);
+        block.height += 1000000u64;
+    });
+    let user_state = query_user_infos(&mut app, &treasure_contact, &tom_address).user_state;
+    let tom_current_dust_amount = user_state.current_dust_amount;
+    println!("tom_current_dust_amount: {}", tom_current_dust_amount);
+    // pre nft mint
+    let pre_nft_mint_amount = 1u64;
+    let res = pre_mint_nft(
+        &mut app,
+        &treasure_contact,
+        &tom_address,
+        pre_nft_mint_amount.clone(),
+    );
+    assert!(res.is_ok());
+    // check user state
+    let user_state = query_user_infos(&mut app, &treasure_contact, &tom_address).user_state;
+    let global_info = query_config_infos(&mut app, &treasure_contact);
+    let pre_nft_mint_cost_dust = global_info.config.mint_nft_cost_dust * Uint128::one();
+    assert_eq!(
+        user_state.current_dust_amount,
+        tom_current_dust_amount - pre_nft_mint_cost_dust
+    );
+    assert_eq!(user_state.lose_nft_num, 1u64);
+    assert_eq!(
+        user_state.total_cost_dust_amount,
+        global_info.state.total_cost_dust_amount
     );
 }
 
@@ -312,6 +356,28 @@ fn transfer_token(
     }
 }
 
+fn user_unlock(
+    app: &mut App,
+    treasure_contact: &Addr,
+    user: &Addr,
+    amount: &Uint128,
+) -> StdResult<Response> {
+    let user_withdraw_msg = crate::msg::ExecuteMsg::UserUnlock {
+        amount: amount.clone(),
+    };
+    let res = app.execute_contract(
+        user.clone(),
+        treasure_contact.clone(),
+        &user_withdraw_msg,
+        &[], // no funds
+    );
+    if res.is_err() {
+        println!("user_unlock error: {:?}", res);
+        Err(StdError::generic_err("user_unlock error"))
+    } else {
+        Ok(Response::default())
+    }
+}
 fn user_withdraw(
     app: &mut App,
     treasure_contact: &Addr,
@@ -403,12 +469,8 @@ fn query_config_infos(app: &mut App, treasure_contact: &Addr) -> ConfigInfosResp
     res
 }
 
-fn query_user_infos(
-    app: &mut App,
-    treasure_contact: &Addr,
-    msg: &QueryUserInfosMsg,
-) -> UserInfosResponse {
-    let query_msg = crate::msg::QueryMsg::QueryUserInfos { msg: msg.clone() };
+fn query_user_infos(app: &mut App, treasure_contact: &Addr, user: &Addr) -> UserInfosResponse {
+    let query_msg = crate::msg::QueryMsg::QueryUserInfos { user: user.clone() };
     let res: UserInfosResponse = app
         .wrap()
         .query_wasm_smart(treasure_contact.clone().to_string(), &query_msg)

@@ -1,9 +1,10 @@
 use crate::error::ContractError;
 use crate::helper::BASE_RATE_6;
 use crate::msg::{Cw20HookMsg, TreasureConfigMsg};
+use crate::querier::compute_user_dust;
 use crate::random_rules::get_winning;
 use crate::state::{
-    generate_next_record_id, read_treasure_config, read_treasure_state, read_treasure_user_state,
+    generate_next_global_id, read_treasure_config, read_treasure_state, read_treasure_user_state,
     store_treasure_config, store_treasure_user_state,
 };
 use cosmwasm_std::{
@@ -33,35 +34,58 @@ pub fn update_config(
         config.lock_token = lock_token.clone();
         attrs.push(attr("lock_token", lock_token.to_string()));
     }
-    if let Some(start_time) = config_msg.start_time {
-        config.start_time = start_time.clone();
-        attrs.push(attr("start_time", start_time.to_string()));
+    if let Some(start_lock_time) = config_msg.start_lock_time {
+        config.start_lock_time = start_lock_time.clone();
+        attrs.push(attr("start_lock_time", start_lock_time.to_string()));
     }
-    if let Some(end_time) = config_msg.end_time {
-        config.end_time = end_time.clone();
-        attrs.push(attr("end_time", end_time.to_string()));
+    if let Some(end_lock_time) = config_msg.end_lock_time {
+        config.end_lock_time = end_lock_time.clone();
+        attrs.push(attr("end_lock_time", end_lock_time.to_string()));
     }
-    if let Some(integral_reward_coefficient) = config_msg.integral_reward_coefficient {
-        config.integral_reward_coefficient = integral_reward_coefficient.clone();
+    if let Some(dust_reward_per_second) = config_msg.dust_reward_per_second {
+        config.dust_reward_per_second = dust_reward_per_second.clone();
         attrs.push(attr(
-            "integral_reward_coefficient",
-            integral_reward_coefficient.to_string(),
+            "dust_reward_per_second",
+            dust_reward_per_second.to_string(),
         ));
     }
-    if let Some(lock_duration) = config_msg.lock_duration {
-        config.lock_duration = lock_duration.clone();
-        attrs.push(attr("lock_duration", lock_duration.to_string()));
-    }
-    if let Some(punish_coefficient) = config_msg.punish_coefficient {
-        config.punish_coefficient = punish_coefficient.clone();
-        attrs.push(attr("punish_coefficient", punish_coefficient.to_string()));
-    }
-    if let Some(mint_nft_cost_integral) = config_msg.mint_nft_cost_integral {
-        config.mint_nft_cost_integral = mint_nft_cost_integral.clone();
+    if let Some(withdraw_delay_duration) = config_msg.withdraw_delay_duration {
+        config.withdraw_delay_duration = withdraw_delay_duration.clone();
         attrs.push(attr(
-            "mint_nft_cost_integral",
-            mint_nft_cost_integral.to_string(),
+            "withdraw_delay_duration",
+            withdraw_delay_duration.to_string(),
         ));
+    }
+    if let Some(no_delay_punish_coefficient) = config_msg.no_delay_punish_coefficient {
+        config.no_delay_punish_coefficient = no_delay_punish_coefficient.clone();
+        attrs.push(attr(
+            "no_delay_punish_coefficient",
+            no_delay_punish_coefficient.to_string(),
+        ));
+    }
+    if let Some(punish_receiver) = config_msg.punish_receiver {
+        deps.api.addr_validate(punish_receiver.clone().as_str())?;
+        config.punish_receiver = punish_receiver.clone();
+        attrs.push(attr("punish_receiver", punish_receiver.to_string()));
+    }
+
+    if let Some(nft_start_pre_mint_time) = config_msg.nft_start_pre_mint_time {
+        config.nft_start_pre_mint_time = nft_start_pre_mint_time.clone();
+        attrs.push(attr(
+            "nft_start_pre_mint_time",
+            nft_start_pre_mint_time.to_string(),
+        ));
+    }
+    if let Some(nft_end_pre_mint_time) = config_msg.nft_end_pre_mint_time {
+        config.nft_end_pre_mint_time = nft_end_pre_mint_time.clone();
+        attrs.push(attr(
+            "nft_end_pre_mint_time",
+            nft_end_pre_mint_time.to_string(),
+        ));
+    }
+    if let Some(mint_nft_cost_dust) = config_msg.mint_nft_cost_dust {
+        config.mint_nft_cost_dust = mint_nft_cost_dust.clone();
+        attrs.push(attr("mint_nft_cost_dust", mint_nft_cost_dust.to_string()));
     }
     if let Some(winning_num) = config_msg.winning_num {
         config.winning_num = winning_num.clone();
@@ -76,11 +100,7 @@ pub fn update_config(
         config.mod_num = mod_num.clone();
         attrs.push(attr("mod_num", mod_num.to_string()));
     }
-    if let Some(punish_receiver) = config_msg.punish_receiver {
-        deps.api.addr_validate(punish_receiver.clone().as_str())?;
-        config.punish_receiver = punish_receiver.clone();
-        attrs.push(attr("punish_receiver", punish_receiver.to_string()));
-    }
+
     store_treasure_config(deps.storage, &config)?;
 
     Ok(Response::default().add_attributes(attrs))
@@ -94,45 +114,35 @@ pub fn user_lock_hook(
 ) -> Result<Response, ContractError> {
     let config = read_treasure_config(deps.storage)?;
     let current_time = env.block.time.seconds();
-    if current_time < config.start_time {
+    if current_time < config.start_lock_time {
         return Err(ContractError::TreasureNotStart {});
     }
-    if current_time > config.end_time {
+    if current_time > config.end_lock_time {
         return Err(ContractError::TreasureEnd {});
     }
-    let reward_integral_amount = lock_amount * config.integral_reward_coefficient;
-    let user_end_time = current_time + config.lock_duration;
 
     // user data
     let mut user_state = read_treasure_user_state(deps.storage, &user_addr)?;
-    if user_state.start_lock_time == 0 {
-        user_state.start_lock_time = current_time;
-    }
-    user_state.end_lock_time = user_end_time;
-    user_state.current_locked_amount += lock_amount;
-    user_state.current_integral_amount += reward_integral_amount;
-    user_state.total_locked_amount += lock_amount;
 
-    // user lock record
-    let record_id = generate_next_record_id(deps.storage)?;
-    let record = crate::state::UserLockRecord {
-        record_id: record_id.clone(),
-        user_addr: user_addr.clone(),
-        lock_amount,
-        integral_reward_coefficient: config.integral_reward_coefficient.clone(),
-        lock_duration: config.lock_duration.clone(),
-        start_lock_time: current_time,
-        end_lock_time: user_end_time,
-    };
+    //compute reward dust
+    let reward_dust_amount = compute_user_dust(
+        current_time.clone(),
+        user_state.last_lock_time.clone(),
+        config.end_lock_time.clone(),
+        user_state.current_locked_amount.clone(),
+        config.dust_reward_per_second.clone(),
+    )?;
+
+    user_state.last_lock_time = current_time;
+    user_state.current_locked_amount += lock_amount;
+    user_state.current_dust_amount += reward_dust_amount;
+    user_state.total_locked_amount += lock_amount;
 
     // global data
     let mut global_state = read_treasure_state(deps.storage)?;
     global_state.total_locked_amount += lock_amount;
     global_state.current_locked_amount += lock_amount;
-    global_state.current_integral_amount += reward_integral_amount;
 
-    //save user lock record
-    crate::state::store_user_lock_record(deps.storage, &record)?;
     //save user data
     store_treasure_user_state(deps.storage, &user_addr, &user_state)?;
 
@@ -141,12 +151,9 @@ pub fn user_lock_hook(
 
     let mut attrs = vec![];
     attrs.push(attr("action", "user_lock_hock"));
-    attrs.push(attr("user_addr", user_addr.clone()));
+    attrs.push(attr("user_addr", user_addr.to_string()));
     attrs.push(attr("lock_amount", lock_amount.to_string()));
-    attrs.push(attr(
-        "reward_integral_amount",
-        reward_integral_amount.to_string(),
-    ));
+    attrs.push(attr("reward_dust_amount", reward_dust_amount.to_string()));
     Ok(Response::default().add_attributes(attrs))
 }
 
@@ -182,7 +189,7 @@ pub fn receive_cw20(
     }
 }
 
-pub fn user_withdraw(
+pub fn user_unlock(
     deps: DepsMut,
     env: Env,
     info: MessageInfo,
@@ -196,14 +203,66 @@ pub fn user_withdraw(
     if amount > user_state.current_locked_amount {
         return Err(ContractError::InsufficientLockFunds {});
     }
+
+    //compute reward dust
+    let reward_dust_amount = compute_user_dust(
+        current_time.clone(),
+        user_state.last_lock_time.clone(),
+        config.end_lock_time.clone(),
+        user_state.current_locked_amount.clone(),
+        config.dust_reward_per_second.clone(),
+    )?;
+
+    // update user state
+    user_state.last_lock_time = current_time;
+    user_state.last_unlock_time = current_time;
+    user_state.current_locked_amount -= amount;
+    user_state.current_unlock_amount += amount;
+    user_state.current_dust_amount += reward_dust_amount;
+    user_state.total_unlock_amount += amount;
+
+    // global data
+    let mut global_state = read_treasure_state(deps.storage)?;
+    global_state.current_locked_amount -= amount;
+    global_state.current_unlock_amount += amount;
+
+    //save user data
+    store_treasure_user_state(deps.storage, &info.sender, &user_state)?;
+
+    // save global data
+    crate::state::store_treasure_state(deps.storage, &global_state)?;
+
+    let attrs = vec![
+        attr("action", "user_unlock"),
+        attr("user_addr", info.sender.to_string()),
+        attr("unlock_amount", amount.to_string()),
+        attr("reward_dust_amount", reward_dust_amount.to_string()),
+    ];
+    Ok(Response::default().add_attributes(attrs))
+}
+
+pub fn user_withdraw(
+    deps: DepsMut,
+    env: Env,
+    info: MessageInfo,
+    amount: Uint128,
+) -> Result<Response, ContractError> {
+    let config = read_treasure_config(deps.storage)?;
+    let current_time = env.block.time.seconds();
+    let mut user_state = read_treasure_user_state(deps.storage, &info.sender)?;
+
+    // check user unlock amount
+    if amount > user_state.current_unlock_amount {
+        return Err(ContractError::InsufficientUnlockFunds {});
+    }
     let mut global_state = read_treasure_state(deps.storage)?;
 
     let mut withdraw_amount = amount.clone();
     let mut punish_amount = Uint128::zero();
     let mut transfer_msgs = vec![];
     // check user lock time , if user lock time is not end , punish user
-    if current_time < user_state.end_lock_time {
-        punish_amount = amount * config.punish_coefficient / Uint128::from(BASE_RATE_6);
+    if current_time < (user_state.last_unlock_time + config.withdraw_delay_duration) {
+        punish_amount = amount * config.no_delay_punish_coefficient / Uint128::from(BASE_RATE_6);
         withdraw_amount -= punish_amount;
         // user data
         user_state.total_punish_amount += punish_amount;
@@ -221,25 +280,13 @@ pub fn user_withdraw(
         }));
     }
 
-    // user withdraw record
-
-    let record_id = generate_next_record_id(deps.storage)?;
-    let record = crate::state::UserWithdrawRecord {
-        record_id: record_id.clone(),
-        user_addr: info.sender.clone(),
-        withdraw_amount: withdraw_amount.clone(),
-        punish_amount: punish_amount.clone(),
-        withdraw_time: current_time,
-    };
-
     // user data
-    user_state.current_locked_amount -= amount;
+    user_state.current_unlock_amount -= amount;
+    user_state.total_withdraw_amount += amount;
 
     // global data
-    global_state.current_locked_amount -= amount;
+    global_state.current_unlock_amount -= amount;
 
-    // save user withdraw record
-    crate::state::store_user_withdraw_record(deps.storage, &record)?;
     // save user data
     store_treasure_user_state(deps.storage, &info.sender, &user_state)?;
     // save global data
@@ -277,17 +324,40 @@ pub fn pre_mint_nft(
 
     let config = read_treasure_config(deps.storage)?;
     let current_time = env.block.time.seconds();
+
+    // check mint time
+    if current_time < config.nft_start_pre_mint_time {
+        return Err(ContractError::PreMintTimeNotReach {});
+    }
+    if current_time > config.nft_end_pre_mint_time {
+        return Err(ContractError::PreMintTimeEnd {});
+    }
+    if current_time < config.end_lock_time {
+        return Err(ContractError::LockTimeNotEnd {});
+    }
+
     let mut user_state = read_treasure_user_state(deps.storage, &info.sender)?;
 
-    // check user integral amount
-    let mint_integral_amount = config.mint_nft_cost_integral * Uint128::from(mint_num);
+    //compute reward dust
+    let reward_dust_amount = compute_user_dust(
+        current_time.clone(),
+        user_state.last_lock_time.clone(),
+        config.end_lock_time.clone(),
+        user_state.current_locked_amount.clone(),
+        config.dust_reward_per_second.clone(),
+    )?;
+    user_state.current_dust_amount += reward_dust_amount;
 
-    if mint_integral_amount > user_state.current_integral_amount {
+    // check user dust amount
+    let mint_dust_amount = config.mint_nft_cost_dust * Uint128::from(mint_num);
+
+    if mint_dust_amount > user_state.current_dust_amount {
         return Err(ContractError::InsufficientIntegralFunds {});
     }
+
     let mut win_nft_num = 0u64;
     let mut lost_nft_num = 0u64;
-    let record_id = generate_next_record_id(deps.storage)?;
+    let record_id = generate_next_global_id(deps.storage)?;
     let winning_num = &config.winning_num;
     let mod_num = &config.mod_num;
     for i in 0..mint_num {
@@ -308,32 +378,19 @@ pub fn pre_mint_nft(
 
     let mut global_state = read_treasure_state(deps.storage)?;
 
-    // user withdraw record
-    let record_id = generate_next_record_id(deps.storage)?;
-    let record = crate::state::UserMintNftRecord {
-        record_id: record_id.clone(),
-        user_addr: info.sender.clone(),
-        mint_nft_num: mint_num.clone(),
-        mint_time: current_time,
-        mint_nft_cost_integral_amount: mint_integral_amount.clone(),
-        win_nft_num: win_nft_num.clone(),
-    };
-
     // user data
-    user_state.current_integral_amount -= mint_integral_amount;
-    user_state.total_cost_integral_amount += mint_integral_amount;
+    user_state.current_dust_amount -= mint_dust_amount;
+    user_state.total_cost_dust_amount += mint_dust_amount;
+    user_state.last_lock_time = current_time;
 
     user_state.win_nft_num += win_nft_num;
     user_state.lose_nft_num += lost_nft_num;
 
     // global data
-    global_state.current_integral_amount -= mint_integral_amount;
-
+    global_state.total_cost_dust_amount += mint_dust_amount;
     global_state.total_win_nft_num += win_nft_num;
     global_state.total_lose_nft_num += lost_nft_num;
 
-    // save user withdraw record
-    crate::state::store_user_mint_nft_record(deps.storage, &record)?;
     // save user data
     store_treasure_user_state(deps.storage, &info.sender, &user_state)?;
     // save global data
@@ -342,10 +399,7 @@ pub fn pre_mint_nft(
     let mut attrs = vec![];
     attrs.push(attr("action", "pre_mint_nft"));
     attrs.push(attr("user_addr", info.sender));
-    attrs.push(attr(
-        "mint_integral_amount",
-        mint_integral_amount.to_string(),
-    ));
+    attrs.push(attr("mint_dust_amount", mint_dust_amount.to_string()));
     attrs.push(attr("win_nft_num", win_nft_num.to_string()));
 
     Ok(Response::default().add_attributes(attrs))

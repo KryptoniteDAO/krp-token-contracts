@@ -1,5 +1,5 @@
 use crate::error::ContractError;
-use crate::handler::{pre_mint_nft, receive_cw20, update_config, user_withdraw};
+use crate::handler::{pre_mint_nft, receive_cw20, update_config, user_unlock, user_withdraw};
 use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 use crate::querier::{query_config_infos, query_user_infos};
 use crate::state::{store_treasure_config, store_treasure_state, TreasureConfig, TreasureState};
@@ -27,23 +27,27 @@ pub fn instantiate(
     let config = TreasureConfig {
         gov: gov.clone(),
         lock_token: msg.lock_token.clone(),
-        start_time: msg.start_time,
-        end_time: msg.end_time,
-        integral_reward_coefficient: msg.integral_reward_coefficient,
-        lock_duration: msg.lock_duration,
-        punish_coefficient: msg.punish_coefficient,
-        mint_nft_cost_integral: msg.mint_nft_cost_integral,
+        start_lock_time: msg.start_lock_time,
+        end_lock_time: msg.end_lock_time,
+        dust_reward_per_second: msg.dust_reward_per_second,
+        withdraw_delay_duration: msg.withdraw_delay_duration,
         winning_num: msg.winning_num,
         mod_num: msg.mod_num,
         punish_receiver: msg.punish_receiver,
+        nft_start_pre_mint_time: msg.nft_start_pre_mint_time,
+        nft_end_pre_mint_time: msg.nft_end_pre_mint_time,
+        no_delay_punish_coefficient: msg.no_delay_punish_coefficient,
+        mint_nft_cost_dust: msg.mint_nft_cost_dust,
     };
 
     let state = TreasureState {
+        current_unlock_amount: Uint128::zero(),
         current_locked_amount: Uint128::zero(),
-        current_integral_amount: Uint128::zero(),
         total_locked_amount: Uint128::zero(),
+        total_unlock_amount: Uint128::zero(),
         total_withdraw_amount: Uint128::zero(),
         total_punish_amount: Uint128::zero(),
+        total_cost_dust_amount: Uint128::zero(),
         total_win_nft_num: 0,
         total_lose_nft_num: 0,
     };
@@ -67,15 +71,16 @@ pub fn execute(
         ExecuteMsg::Receive(msg) => receive_cw20(deps, env, info, msg),
         ExecuteMsg::UpdateConfig(msg) => update_config(deps, info, msg),
         ExecuteMsg::UserWithdraw { amount } => user_withdraw(deps, env, info, amount),
+        ExecuteMsg::UserUnlock { amount } => user_unlock(deps, env, info, amount),
         ExecuteMsg::PreMintNft { mint_num } => pre_mint_nft(deps, env, info, mint_num),
     }
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
-pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
+pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
         QueryMsg::QueryConfigInfos { .. } => to_binary(&query_config_infos(deps)?),
-        QueryMsg::QueryUserInfos { msg } => to_binary(&query_user_infos(deps, msg)?),
+        QueryMsg::QueryUserInfos { user } => to_binary(&query_user_infos(deps, env, user)?),
     }
 }
 
