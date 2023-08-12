@@ -13,14 +13,13 @@ fn test_instantiate() {
 #[test]
 fn test_update_config() {
     let msg = mock_instantiate_msg(Addr::unchecked(CLAIM_TOKEN.clone()));
-    let (mut deps, _env, info, _) = mock_instantiate(msg.clone());
+    let (mut deps, env, info, _) = mock_instantiate(msg.clone());
 
     let res = add_users(
         deps.as_mut(),
         info.clone(),
         vec![AddUserMsg {
             user: Addr::unchecked("user1".to_string()),
-            unlock_amount: Uint256::from(11114u128),
             lock_amount: Uint256::from(11114u128),
             replace: false,
         }],
@@ -29,34 +28,26 @@ fn test_update_config() {
 
     let res = update_config(
         deps.as_mut(),
+        env.clone(),
         info.clone(),
         UpdateGlobalConfigMsg {
             gov: Option::from(Addr::unchecked("new_gov".to_string())),
             claim_token: Option::from(Addr::unchecked("new_claim_token".to_string())),
-            start_time: Option::from(11111),
-            end_regret_time: Option::from(11112),
-            regret_token_receiver: Option::from(Addr::unchecked(
-                "new_regret_token_receiver".to_string(),
-            )),
+            start_lock_period_time: Option::from(11111),
             total_lock_amount: Option::from(Uint256::from(11113u128)),
-            total_unlock_amount: Option::from(Uint256::from(11114u128)),
         },
     );
     assert!(res.is_err());
 
     let res = update_config(
         deps.as_mut(),
+        env.clone(),
         info.clone(),
         UpdateGlobalConfigMsg {
             gov: Option::from(Addr::unchecked("new_gov".to_string())),
             claim_token: Option::from(Addr::unchecked("new_claim_token".to_string())),
-            start_time: Option::from(11111),
-            end_regret_time: Option::from(11112),
-            regret_token_receiver: Option::from(Addr::unchecked(
-                "new_regret_token_receiver".to_string(),
-            )),
+            start_lock_period_time: Option::from(11111),
             total_lock_amount: Option::from(Uint256::from(11115u128)),
-            total_unlock_amount: Option::from(Uint256::from(11116u128)),
         },
     );
     assert!(res.is_ok());
@@ -70,18 +61,9 @@ fn test_update_config() {
         new_config.config.claim_token,
         Addr::unchecked("new_claim_token".to_string())
     );
-    assert_eq!(new_config.config.start_time, 11111);
-    assert_eq!(new_config.config.end_regret_time, 11112);
-    assert_eq!(
-        new_config.config.regret_token_receiver,
-        Addr::unchecked("new_regret_token_receiver".to_string())
-    );
+    assert_eq!(new_config.config.start_lock_period_time, 11111);
     assert_eq!(
         new_config.config.total_lock_amount,
         Uint256::from(11115u128)
-    );
-    assert_eq!(
-        new_config.config.total_unlock_amount,
-        Uint256::from(11116u128)
     );
 }

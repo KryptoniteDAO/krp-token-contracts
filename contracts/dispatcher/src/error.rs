@@ -28,6 +28,8 @@ pub enum ContractError {
 
     #[error("ClaimTimeIsNotArrived")]
     ClaimTimeIsNotArrived {},
+    #[error("InvalidStartLockPeriodTime")]
+    InvalidStartLockPeriodTime {},
 
     #[error("RegretTimeNotStart")]
     RegretTimeNotStart {},
@@ -58,4 +60,6 @@ pub enum ContractError {
 
     #[error("UserClaimUnlockAmountTooLarge:{0}")]
     UserClaimUnlockAmountTooLarge(Addr),
+    #[error("UserClaimAmountIsZero:{0}")]
+    UserClaimAmountIsZero(Addr),
 }

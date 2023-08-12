@@ -9,14 +9,7 @@ use serde::{Deserialize, Serialize};
 pub struct GlobalConfig {
     pub gov: Addr,
     pub claim_token: Addr,
-    pub start_time: u64,
-
-    pub end_regret_time: u64,
-    pub regret_token_receiver: Addr,
-
     pub total_lock_amount: Uint256,
-    pub total_unlock_amount: Uint256,
-
     pub start_lock_period_time: u64,
     pub duration_per_period: u64,
     pub periods: u64,
@@ -24,8 +17,6 @@ pub struct GlobalConfig {
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct GlobalState {
-    pub total_user_unlock_amount: Uint256,
-    pub total_user_claimed_unlock_amount: Uint256,
     pub total_user_lock_amount: Uint256,
     pub total_user_claimed_lock_amount: Uint256,
 }
@@ -33,29 +24,11 @@ pub struct GlobalState {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct UserState {
     pub user: Addr,
-    pub total_user_unlock_amount: Uint256,
     pub total_user_lock_amount: Uint256,
-
-    pub claimed_unlock_amount: Uint256,
     pub claimed_lock_amount: Uint256,
 
     pub last_claimed_period: u64,
     pub user_per_lock_amount: Uint256,
-
-    pub is_regret: bool,
-    pub regret_time: u64,
-}
-
-#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-pub struct RegretInfo {
-    pub total_unlock_amount: Uint256,
-    pub total_claimed_unlock_amount: Uint256,
-
-    pub last_claimed_period: u64,
-    pub per_lock_amount: Uint256,
-
-    pub total_lock_amount: Uint256,
-    pub total_claimed_lock_amount: Uint256,
 }
 
 const GLOBAL_CONFIG: Item<GlobalConfig> = Item::new("global_config");
@@ -64,7 +37,7 @@ const GLOBAL_STATE: Item<GlobalState> = Item::new("global_state");
 
 const USER_STATE_MAP: Map<Addr, UserState> = Map::new("user_state");
 
-const REGRET_INFO: Item<RegretInfo> = Item::new("regret_info");
+// const REGRET_INFO: Item<RegretInfo> = Item::new("regret_info");
 
 const USER_PAGE_NAMESPACE: &[u8] = b"user_page_namespace";
 
@@ -101,37 +74,13 @@ pub fn read_user_state(storage: &dyn Storage, user: &Addr) -> StdResult<UserStat
         |_| {
             Ok(UserState {
                 user: Addr::unchecked(""),
-                total_user_unlock_amount: Uint256::zero(),
                 total_user_lock_amount: Uint256::zero(),
-                claimed_unlock_amount: Uint256::zero(),
                 claimed_lock_amount: Uint256::zero(),
                 last_claimed_period: 0,
                 user_per_lock_amount: Uint256::zero(),
-                is_regret: false,
-                regret_time: 0,
             })
         },
         |state| Ok(state),
-    )
-}
-
-pub fn store_regret_info(storage: &mut dyn Storage, info: &RegretInfo) -> StdResult<()> {
-    REGRET_INFO.save(storage, info)
-}
-
-pub fn read_regret_info(storage: &dyn Storage) -> StdResult<RegretInfo> {
-    REGRET_INFO.load(storage).map_or_else(
-        |_| {
-            Ok(RegretInfo {
-                total_unlock_amount: Uint256::zero(),
-                total_claimed_unlock_amount: Uint256::zero(),
-                last_claimed_period: 0,
-                per_lock_amount: Uint256::zero(),
-                total_lock_amount: Uint256::zero(),
-                total_claimed_lock_amount: Uint256::zero(),
-            })
-        },
-        |info| Ok(info),
     )
 }
 
