@@ -5,24 +5,15 @@
   "required": [
     "claim_token",
     "duration_per_period",
-    "end_regret_time",
     "periods",
-    "regret_token_receiver",
     "start_lock_period_time",
-    "start_time",
-    "total_lock_amount",
-    "total_unlock_amount"
+    "total_lock_amount"
   ],
   "properties": {
     "claim_token": {
       "$ref": "#/definitions/Addr"
     },
     "duration_per_period": {
-      "type": "integer",
-      "format": "uint64",
-      "minimum": 0.0
-    },
-    "end_regret_time": {
       "type": "integer",
       "format": "uint64",
       "minimum": 0.0
@@ -42,23 +33,12 @@
       "format": "uint64",
       "minimum": 0.0
     },
-    "regret_token_receiver": {
-      "$ref": "#/definitions/Addr"
-    },
     "start_lock_period_time": {
       "type": "integer",
       "format": "uint64",
       "minimum": 0.0
     },
-    "start_time": {
-      "type": "integer",
-      "format": "uint64",
-      "minimum": 0.0
-    },
     "total_lock_amount": {
-      "$ref": "#/definitions/Uint256"
-    },
-    "total_unlock_amount": {
       "$ref": "#/definitions/Uint256"
     }
   },

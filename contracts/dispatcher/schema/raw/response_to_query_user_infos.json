@@ -18,15 +18,11 @@
       "type": "object",
       "required": [
         "claimable_lock_amount",
-        "claimable_unlock_amount",
         "current_period",
         "state"
       ],
       "properties": {
         "claimable_lock_amount": {
-          "$ref": "#/definitions/Uint256"
-        },
-        "claimable_unlock_amount": {
           "$ref": "#/definitions/Uint256"
         },
         "current_period": {
@@ -44,12 +40,8 @@
       "type": "object",
       "required": [
         "claimed_lock_amount",
-        "claimed_unlock_amount",
-        "is_regret",
         "last_claimed_period",
-        "regret_time",
         "total_user_lock_amount",
-        "total_user_unlock_amount",
         "user",
         "user_per_lock_amount"
       ],
@@ -57,26 +49,12 @@
         "claimed_lock_amount": {
           "$ref": "#/definitions/Uint256"
         },
-        "claimed_unlock_amount": {
-          "$ref": "#/definitions/Uint256"
-        },
-        "is_regret": {
-          "type": "boolean"
-        },
         "last_claimed_period": {
           "type": "integer",
           "format": "uint64",
           "minimum": 0.0
         },
-        "regret_time": {
-          "type": "integer",
-          "format": "uint64",
-          "minimum": 0.0
-        },
         "total_user_lock_amount": {
-          "$ref": "#/definitions/Uint256"
-        },
-        "total_user_unlock_amount": {
           "$ref": "#/definitions/Uint256"
         },
         "user": {
