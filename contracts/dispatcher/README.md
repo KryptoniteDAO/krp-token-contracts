@@ -380,7 +380,7 @@ pub struct UserInfoResponse {
 {
   "state": {},
   "current_period": "0",
-  "claimable_lock_amount": "0",
+  "claimable_lock_amount": "0"
 }
 ```
 
@@ -416,7 +416,7 @@ pub struct UserState {
   "total_user_lock_amount": "20_000_000_000_000",
   "claimed_lock_amount": "0",
   "last_claimed_period": "0",
-  "user_per_lock_amount": "0",
+  "user_per_lock_amount": "0"
 }
 ```
 
