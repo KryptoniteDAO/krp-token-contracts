@@ -34,6 +34,7 @@ pub fn update_config(
         attrs.push(attr("gov", gov.to_string()));
     }
     if let Some(distribute) = distribute {
+        deps.api.addr_validate(gov.clone().as_str())?;
         seilor_config.distribute = distribute.clone();
         attrs.push(attr("distribute", distribute.to_string()));
     }
