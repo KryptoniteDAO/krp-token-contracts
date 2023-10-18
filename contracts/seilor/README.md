@@ -5,7 +5,7 @@ the world who hold its governance token, SEILOR. Through a governance system inv
 Polling, SEILOR holders can influence the direction of the protocol. The kryptonite (SEILOR) Token is the native token
 powering the kryptonite Protocol. Its utility comprises all core network functionalities, such as staking, governance,
 mint, and liquidators rewards. SEILOR is an ERC-20 governance token with a maximum supply of 100,000,000. SEILOR holders
-manage the kryptonite Protocol and the financial risks of eUSD to ensure its stability, transparency, and efficiency.
+manage the kryptonite Protocol and the financial risks of kUSD to ensure its stability, transparency, and efficiency.
 SEILOR voting weight is proportional to the amount of SEILOR a voter stakes in the voting contract. In other words, the
 more
 SEILOR tokens locked in the contract, the greater the voter’s decision-making power.

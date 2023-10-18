@@ -18,7 +18,7 @@ pub struct VeSeilorLockSetting {
 }
 ```
 
-## InstantiateMsg {.tabset}
+## InstantiateMsg  {.tabset}
 
 ### Rust
 
@@ -44,10 +44,11 @@ pub struct InstantiateMsg {
 }
 ```
 
-| Key                    | Type     | Description                             |
-|------------------------|----------|-----------------------------------------|
-| `gov`                  | `string` | The address of the governance contract. |
-| `ve_seilor_lock_settings` | `array`  | The list of veSEILOR lock settings.        |
+
+| Key                       | Type     | Description                             |
+| ------------------------- | -------- | --------------------------------------- |
+| `gov`                     | `string` | The address of the governance contract. |
+| `ve_seilor_lock_settings` | `array`  | The list of veSEILOR lock settings.     |
 
 ## VeSeilorLockSetting {.tabset}
 
@@ -72,8 +73,9 @@ pub struct VeSeilorLockSetting {
 }
 ```
 
+
 | Key            | Type     | Description               |
-|----------------|----------|---------------------------|
+| -------------- | -------- | ------------------------- |
 | `duration`     | `string` | The duration of the lock. |
 | `mining_boost` | `string` | The boost percentage.     |
 
@@ -104,8 +106,9 @@ pub enum ExecuteMsg {
 }
 ```
 
+
 | Key            | Type     | Description               |
-|----------------|----------|---------------------------|
+| -------------- | -------- | ------------------------- |
 | `duration`     | `string` | The duration of the lock. |
 | `mining_boost` | `string` | The boost percentage.     |
 
@@ -132,8 +135,9 @@ pub enum ExecuteMsg {
 }
 ```
 
+
 | Key   | Type     | Description                             |
-|-------|----------|-----------------------------------------|
+| ----- | -------- | --------------------------------------- |
 | `gov` | `string` | The address of the governance contract. |
 
 ### SetLockStatus {.tabset}
@@ -159,8 +163,9 @@ pub enum ExecuteMsg {
 }
 ```
 
+
 | Key     | Type     | Description                              |
-|---------|----------|------------------------------------------|
+| ------- | -------- | ---------------------------------------- |
 | `index` | `number` | The index of the lock setting to update. |
 
 ## QueryMsg
@@ -190,8 +195,9 @@ pub enum QueryMsg {
 }
 ```
 
+
 | Key    | Type     | Description              |
-|--------|----------|--------------------------|
+| ------ | -------- | ------------------------ |
 | `user` | `string` | The address of the user. |
 
 ### GetUnlockTimeResponse {.tabset}
@@ -213,8 +219,9 @@ pub struct GetUnlockTimeResponse {
 }
 ```
 
+
 | Key           | Type     | Description              |
-|---------------|----------|--------------------------|
+| ------------- | -------- | ------------------------ |
 | `unlock_time` | `string` | The unlock time of user. |
 
 ### GetUserLockStatus {.tabset}
@@ -242,8 +249,9 @@ pub enum QueryMsg {
 }
 ```
 
+
 | Key    | Type     | Description              |
-|--------|----------|--------------------------|
+| ------ | -------- | ------------------------ |
 | `user` | `string` | The address of the user. |
 
 ### LockStatusResponse {.tabset}
@@ -269,8 +277,9 @@ pub struct LockStatusResponse {
 }
 ```
 
+
 | Key            | Type     | Description               |
-|----------------|----------|---------------------------|
+| -------------- | -------- | ------------------------- |
 | `unlock_time`  | `string` | The unlock time of user.  |
 | `duration`     | `string` | The duration of the lock. |
 | `mining_boost` | `string` | The boost percentage.     |
@@ -304,8 +313,9 @@ pub enum QueryMsg {
 }
 ```
 
+
 | Key               | Type     | Description                    |
-|-------------------|----------|--------------------------------|
+| ----------------- | -------- | ------------------------------ |
 | `user`            | `string` | The address of the user.       |
 | `user_updated_at` | `string` | The last updated time of user. |
 | `finish_at`       | `string` | The finish time of user.       |
@@ -329,8 +339,9 @@ pub struct GetUserBoostResponse {
 }
 ```
 
+
 | Key          | Type     | Description           |
-|--------------|----------|-----------------------|
+| ------------ | -------- | --------------------- |
 | `user_boost` | `string` | The boost percentage. |
 
 ### GetBoostConfig {.tabset}
@@ -380,9 +391,8 @@ pub struct GetBoostConfigResponse {
 }
 ```
 
-| Key                    | Type     | Description                             |
-|------------------------|----------|-----------------------------------------|
-| `gov`                  | `string` | The address of the governance contract. |
+
+| Key                       | Type     | Description                             |
+| ------------------------- | -------- | --------------------------------------- |
+| `gov`                     | `string` | The address of the governance contract. |
 | `ve_seilor_lock_settings` | `array`  | The array of the lock settings.         |
-
-

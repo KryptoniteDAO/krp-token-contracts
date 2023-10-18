@@ -1,6 +1,6 @@
 # Dispatcher
 
-This contract mainly releases KOL's currency monthly according to the rules.
+This contract mainly releases Seilor tokens of KOL on a monthly basis. (Lock the locked Seilor tokens in this contract)
 
 ## GlobalConfig
 

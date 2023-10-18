@@ -1,6 +1,7 @@
 # Staking Rewards
 
-veSEILOR holders receive a varied percentage of yield boost depending on the lock-up length. Details TBD.
+Lock LP tokens to obtain veSEILOR tokens. The total amount of rewards is determined based on the configuration of this contract and the boost locking time.
+LP tokens can be withdrawn in advance, but the rewards cannot be withdrawn until they expire according to the lock.
 
 ## StakingConfig
 
