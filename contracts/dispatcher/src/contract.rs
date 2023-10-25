@@ -29,6 +29,12 @@ pub fn instantiate(
             "start_lock_period_time must be greater than the current block time",
         ));
     }
+    // verify that duration_per_period is greater than 0
+    if msg.duration_per_period <= 0 {
+        return Err(StdError::generic_err(
+            "duration_per_period must be greater than 0",
+        ));
+    }
     let global_config = GlobalConfig {
         gov,
         claim_token: msg.claim_token,
