@@ -6,7 +6,7 @@ use crate::state::{store_global_config, store_global_state, GlobalConfig, Global
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
-    to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult, Uint256,
+    to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdError, StdResult, Uint256,
 };
 use cw2::set_contract_version;
 
@@ -17,12 +17,18 @@ const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(
     deps: DepsMut,
-    _env: Env,
+    env: Env,
     info: MessageInfo,
     msg: InstantiateMsg,
 ) -> StdResult<Response> {
     let gov = msg.gov.unwrap_or_else(|| info.sender.clone());
 
+    // verify that start_lock_period_time is greater than the current block time.
+    if msg.start_lock_period_time < env.block.time.seconds() {
+        return Err(StdError::generic_err(
+            "start_lock_period_time must be greater than the current block time",
+        ));
+    }
     let global_config = GlobalConfig {
         gov,
         claim_token: msg.claim_token,
