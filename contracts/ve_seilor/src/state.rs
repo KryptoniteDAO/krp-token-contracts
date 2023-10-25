@@ -5,7 +5,6 @@ use cosmwasm_std::{Addr, StdError, StdResult, Storage, Uint128};
 
 use cw_storage_plus::{Item, Map};
 
-
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct Checkpoint {
     pub from_block: u64,
@@ -22,16 +21,15 @@ pub struct VoteConfig {
     pub max_supply: u128,
     pub fund: Addr,
     pub gov: Addr,
-    pub max_minted:Uint128,
-    pub total_minted:Uint128,
+    pub max_minted: Uint128,
+    pub total_minted: Uint128,
 }
 
 // const DELEGATES: Map<Addr, Addr> = Map::new("delegates");
 const CHECK_POINTS: Map<Addr, Vec<Checkpoint>> = Map::new("checkpoints");
-const VOTE_INFO: Item<VoteInfo> = Item::new("vote_info");
+// const VOTE_INFO: Item<VoteInfo> = Item::new("vote_info");
 const VOTE_CONFIG: Item<VoteConfig> = Item::new("vote_config");
 const MINTERS: Map<Addr, bool> = Map::new("minters");
-
 
 // pub fn store_delegates(storage: &mut dyn Storage, delegator: Addr, delegate: &Addr) -> StdResult<()> {
 //     DELEGATES.save(storage, delegator, delegate)?;
@@ -42,12 +40,15 @@ const MINTERS: Map<Addr, bool> = Map::new("minters");
 //     DELEGATES.may_load(storage, delegator)?.ok_or_else(|| StdError::generic_err("Delegate not found"))
 // }
 
-
 // pub fn read_delegates_default(storage: &dyn Storage, delegator: Addr) -> StdResult<Addr> {
 //     Ok(DELEGATES.may_load(storage, delegator)?.unwrap_or(Addr::unchecked("")))
 // }
 
-pub fn store_checkpoints(storage: &mut dyn Storage, delegator: Addr, checkpoints: &Vec<Checkpoint>) -> StdResult<()> {
+pub fn store_checkpoints(
+    storage: &mut dyn Storage,
+    delegator: Addr,
+    checkpoints: &Vec<Checkpoint>,
+) -> StdResult<()> {
     CHECK_POINTS.save(storage, delegator, checkpoints)?;
     Ok(())
 }
@@ -70,8 +71,13 @@ pub fn store_checkpoints(storage: &mut dyn Storage, delegator: Addr, checkpoints
 //     CHECK_POINTS.may_load(storage, delegator)?.ok_or_else(|| StdError::generic_err("Checkpoints not found"))
 // }
 
-pub fn read_checkpoints_default(storage: &dyn Storage, delegator: Addr) -> StdResult<Vec<Checkpoint>> {
-    Ok(CHECK_POINTS.may_load(storage, delegator)?.unwrap_or_default())
+pub fn read_checkpoints_default(
+    storage: &dyn Storage,
+    delegator: Addr,
+) -> StdResult<Vec<Checkpoint>> {
+    Ok(CHECK_POINTS
+        .may_load(storage, delegator)?
+        .unwrap_or_default())
 }
 
 // pub fn store_vote_info(storage: &mut dyn Storage, vote_info: &VoteInfo) -> StdResult<()> {
@@ -83,11 +89,11 @@ pub fn read_checkpoints_default(storage: &dyn Storage, delegator: Addr) -> StdRe
 //     VOTE_INFO.may_load(storage)?.ok_or_else(|| StdError::generic_err("Vote info not found"))
 // }
 
-pub fn read_vote_info_default(storage: &dyn Storage) -> StdResult<VoteInfo> {
-    Ok(VOTE_INFO.may_load(storage)?.unwrap_or(VoteInfo {
-        total_supply_checkpoints: Vec::new()
-    }))
-}
+// pub fn read_vote_info_default(storage: &dyn Storage) -> StdResult<VoteInfo> {
+//     Ok(VOTE_INFO.may_load(storage)?.unwrap_or(VoteInfo {
+//         total_supply_checkpoints: Vec::new()
+//     }))
+// }
 
 pub fn store_vote_config(storage: &mut dyn Storage, vote_config: &VoteConfig) -> StdResult<()> {
     VOTE_CONFIG.save(storage, vote_config)?;
@@ -95,7 +101,9 @@ pub fn store_vote_config(storage: &mut dyn Storage, vote_config: &VoteConfig) ->
 }
 
 pub fn read_vote_config(storage: &dyn Storage) -> StdResult<VoteConfig> {
-    VOTE_CONFIG.may_load(storage)?.ok_or_else(|| StdError::generic_err("Vote config not found"))
+    VOTE_CONFIG
+        .may_load(storage)?
+        .ok_or_else(|| StdError::generic_err("Vote config not found"))
 }
 
 pub fn store_minters(storage: &mut dyn Storage, minter: Addr, is_minter: &bool) -> StdResult<()> {
@@ -110,5 +118,3 @@ pub fn store_minters(storage: &mut dyn Storage, minter: Addr, is_minter: &bool) 
 pub fn is_minter(storage: &dyn Storage, minter: Addr) -> StdResult<bool> {
     Ok(MINTERS.may_load(storage, minter)?.unwrap_or(false))
 }
-
-
