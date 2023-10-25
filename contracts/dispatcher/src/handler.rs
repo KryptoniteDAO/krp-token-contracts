@@ -179,6 +179,10 @@ pub fn user_claim(deps: DepsMut, env: Env, info: MessageInfo) -> Result<Response
         }
     }
 
+    // validate that global_state.total_user_claimed_lock_amount <= global_state.total_user_lock_amount
+    if global_state.total_user_claimed_lock_amount > global_state.total_user_lock_amount {
+        return Err(ContractError::GlobalClaimLockAmountTooLarge {});
+    }
     // check claimable amount is not zero
     if claimable_amount == Uint256::zero() {
         return Err(ContractError::UserClaimAmountIsZero(sender.clone()));

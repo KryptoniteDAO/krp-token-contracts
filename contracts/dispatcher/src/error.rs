@@ -62,4 +62,7 @@ pub enum ContractError {
     UserClaimUnlockAmountTooLarge(Addr),
     #[error("UserClaimAmountIsZero:{0}")]
     UserClaimAmountIsZero(Addr),
+
+    #[error("Global Claim Lock Amount Too Large")]
+    GlobalClaimLockAmountTooLarge {},
 }
