@@ -1,6 +1,6 @@
 use crate::handler::{
-    get_reward, notify_reward_amount, re_stake, receive_cw20, refresh_reward, unstake,
-    update_fund_config, withdraw,
+    accept_gov, get_reward, notify_reward_amount, re_stake, receive_cw20, refresh_reward, set_gov,
+    unstake, update_fund_config, withdraw,
 };
 use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 use crate::querier::{
@@ -42,6 +42,7 @@ pub fn instantiate(
         reward_per_token_stored: Uint128::zero(),
         exit_cycle: msg.exit_cycle,
         claim_able_time: msg.claim_able_time,
+        new_gov: None,
     };
 
     store_fund_config(deps.storage, &config)?;
@@ -65,6 +66,8 @@ pub fn execute(deps: DepsMut, env: Env, info: MessageInfo, msg: ExecuteMsg) -> S
         ExecuteMsg::ReStake { .. } => re_stake(deps, env, info),
         ExecuteMsg::GetReward { .. } => get_reward(deps, info),
         ExecuteMsg::NotifyRewardAmount { .. } => notify_reward_amount(deps, info),
+        ExecuteMsg::SetGov { gov } => set_gov(deps, info, gov),
+        ExecuteMsg::AcceptGov {} => accept_gov(deps, info),
     }
 }
 

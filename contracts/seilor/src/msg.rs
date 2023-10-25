@@ -16,7 +16,6 @@ pub struct InstantiateMsg {
 pub enum ExecuteMsg {
     UpdateConfig {
         fund: Option<Addr>,
-        gov: Option<Addr>,
         distribute: Option<Addr>,
     },
     Mint {
@@ -26,11 +25,19 @@ pub enum ExecuteMsg {
         msg: Option<Binary>,
     },
     /// Burn is a base message to destroy tokens forever
-    Burn { amount: Uint128 },
+    Burn {
+        amount: Uint128,
+    },
     /// Only with "approval" extension. Destroys tokens forever
-    BurnFrom { owner: String, amount: Uint128 },
+    BurnFrom {
+        owner: String,
+        amount: Uint128,
+    },
     /// Implements CW20. Transfer is a base message to move tokens to another account without triggering actions
-    Transfer { recipient: String, amount: Uint128 },
+    Transfer {
+        recipient: String,
+        amount: Uint128,
+    },
     /// Implements CW20.  Send is a base message to transfer tokens to a contract and trigger an action
     /// on the receiving contract.
     Send {
@@ -73,7 +80,9 @@ pub enum ExecuteMsg {
     /// Only with the "mintable" extension. The current minter may set
     /// a new minter. Setting the minter to None will remove the
     /// token's minter forever.
-    UpdateMinter { new_minter: Option<String> },
+    UpdateMinter {
+        new_minter: Option<String>,
+    },
     /// Only with the "marketing" extension. If authorized, updates marketing metadata.
     /// Setting None/null for any of these will leave it unchanged.
     /// Setting Some("") will clear this field on the contract storage
@@ -87,6 +96,10 @@ pub enum ExecuteMsg {
     },
     /// If set as the "marketing" role on the contract, upload a new URL, SVG, or PNG for the token
     UploadLogo(Logo),
+    SetGov {
+        gov: Addr,
+    },
+    AcceptGov {},
 }
 
 #[cw_serde]

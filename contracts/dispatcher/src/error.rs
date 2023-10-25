@@ -11,6 +11,8 @@ pub enum ContractError {
 
     #[error("Unauthorized")]
     Unauthorized {},
+    #[error("No New Gov")]
+    NoNewGov {},
 
     #[error("ConversionOverflow")]
     ConversionOverflow(#[from] ConversionOverflowError),

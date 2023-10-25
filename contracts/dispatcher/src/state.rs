@@ -13,6 +13,7 @@ pub struct GlobalConfig {
     pub start_lock_period_time: u64,
     pub duration_per_period: u64,
     pub periods: u64,
+    pub new_gov: Option<Addr>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]

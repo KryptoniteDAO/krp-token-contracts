@@ -1,6 +1,7 @@
 use crate::testing::mock_fn::{CREATOR, KUSD_DENOM, KUSD_REWARD_ADDR};
-use cosmwasm_std::{Addr, Uint128, Uint64};
 use boost::state::VeSeilorLockSetting;
+use cosmwasm_std::{Addr, Uint128, Uint64};
+use cw20_base::msg::InstantiateMarketingInfo;
 
 pub fn mock_staking_token_instance_msg() -> cw20_base::msg::InstantiateMsg {
     let cw20_init_msg = cw20_base::msg::InstantiateMsg {
@@ -12,7 +13,12 @@ pub fn mock_staking_token_instance_msg() -> cw20_base::msg::InstantiateMsg {
             amount: Uint128::from(100000000000u128),
         }],
         mint: None,
-        marketing: None,
+        marketing: Some(InstantiateMarketingInfo {
+            project: None,
+            description: None,
+            marketing: Some("aass".to_string()),
+            logo: None,
+        }),
     };
     cw20_init_msg
 }
@@ -25,7 +31,12 @@ pub fn mock_ve_seilor_instance_msg() -> ve_seilor::msg::InstantiateMsg {
             decimals: 6,
             initial_balances: vec![],
             mint: None,
-            marketing: None,
+            marketing: Some(InstantiateMarketingInfo {
+                project: None,
+                description: None,
+                marketing: Some("aass".to_string()),
+                logo: None,
+            }),
         },
         max_supply: 990000000000000u128,
         gov: None,
@@ -70,7 +81,12 @@ pub fn mock_seilor_instance_msg() -> seilor::msg::InstantiateMsg {
                 amount: Uint128::from(10000000000000u128),
             }],
             mint: None,
-            marketing: None,
+            marketing: Some(InstantiateMarketingInfo {
+                project: None,
+                description: None,
+                marketing: Some("aass".to_string()),
+                logo: None,
+            }),
         },
         max_supply: 1000000000000000u128,
         gov: None,

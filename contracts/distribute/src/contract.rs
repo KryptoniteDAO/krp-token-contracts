@@ -1,5 +1,7 @@
 use crate::error::ContractError;
-use crate::handler::{add_rule_config, claim, update_config, update_rule_config};
+use crate::handler::{
+    accept_gov, add_rule_config, claim, set_gov, update_config, update_rule_config,
+};
 use crate::helper::BASE_RATE_12;
 use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 use crate::querier::{query_claimable_info, query_config, query_rule_info};
@@ -64,6 +66,7 @@ pub fn instantiate(
         total_amount: msg.total_amount,
         distribute_token: msg.distribute_token,
         rules_total_amount: rule_total_amount,
+        new_gov: None,
     };
 
     if distribute_config.total_amount < rule_total_amount {
@@ -98,10 +101,9 @@ pub fn execute(
 ) -> Result<Response, ContractError> {
     match msg {
         ExecuteMsg::Claim { rule_type, msg } => claim(deps, env, info, rule_type, msg),
-        ExecuteMsg::UpdateConfig {
-            gov,
-            distribute_token,
-        } => update_config(deps, info, gov, distribute_token),
+        ExecuteMsg::UpdateConfig { distribute_token } => {
+            update_config(deps, info, distribute_token)
+        }
         ExecuteMsg::UpdateRuleConfig { update_rule_msg } => {
             update_rule_config(deps, info, update_rule_msg)
         }
@@ -109,6 +111,8 @@ pub fn execute(
             rule_type,
             rule_msg,
         } => add_rule_config(deps, info, rule_type, rule_msg),
+        ExecuteMsg::SetGov { gov } => set_gov(deps, info, gov),
+        ExecuteMsg::AcceptGov {} => accept_gov(deps, info),
     }
 }
 

@@ -1,7 +1,7 @@
 use crate::error::ContractError;
 use crate::handler::{
-    get_reward, notify_reward_amount, receive_cw20, update_staking_config, update_staking_duration,
-    withdraw,
+    accept_gov, get_reward, notify_reward_amount, receive_cw20, set_gov, update_staking_config,
+    update_staking_duration, withdraw,
 };
 use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 use crate::querier::{
@@ -38,6 +38,7 @@ pub fn instantiate(
         boost: msg.boost,
         fund: msg.fund,
         reward_controller_addr: msg.reward_controller_addr,
+        new_gov: None,
     };
 
     store_staking_config(deps.storage, &staking_config)?;
@@ -77,6 +78,8 @@ pub fn execute(
         ExecuteMsg::GetReward {} => get_reward(deps, env, info),
         ExecuteMsg::NotifyRewardAmount { amount } => notify_reward_amount(deps, env, info, amount),
         ExecuteMsg::Withdraw { amount } => withdraw(deps, env, info, amount),
+        ExecuteMsg::SetGov { gov } => set_gov(deps, info, gov),
+        ExecuteMsg::AcceptGov {} => accept_gov(deps, info),
     }
 }
 

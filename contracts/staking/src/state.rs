@@ -12,6 +12,7 @@ pub struct StakingConfig {
     pub boost: Addr,
     pub fund: Addr,
     pub reward_controller_addr: Addr,
+    pub new_gov: Option<Addr>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]

@@ -5,7 +5,6 @@ use std::collections::HashSet;
 
 #[cw_serde]
 pub struct TreasureConfigMsg {
-    pub gov: Option<Addr>,
     pub lock_token: Option<Addr>,
     pub start_lock_time: Option<u64>,
     pub end_lock_time: Option<u64>,
@@ -49,6 +48,8 @@ pub enum ExecuteMsg {
     UserWithdraw { amount: Uint128 },
     UserUnlock { amount: Uint128 },
     PreMintNft { mint_num: u64 },
+    SetGov { gov: Addr },
+    AcceptGov {},
 }
 
 #[cw_serde]

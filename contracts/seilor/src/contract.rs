@@ -1,4 +1,4 @@
-use crate::handler::{mint, update_config};
+use crate::handler::{accept_gov, mint, set_gov, update_config};
 use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 use crate::querier::query_seilor_config;
 use crate::state::{store_seilor_config, SeilorConfig};
@@ -70,6 +70,7 @@ pub fn instantiate(
         fund: Addr::unchecked(""),
         gov,
         distribute: Addr::unchecked(""),
+        new_gov: None,
     };
 
     store_seilor_config(deps.storage, &seilor_config)?;
@@ -87,11 +88,9 @@ pub fn execute(
     msg: ExecuteMsg,
 ) -> Result<Response, ContractError> {
     match msg {
-        ExecuteMsg::UpdateConfig {
-            fund,
-            gov,
-            distribute,
-        } => update_config(deps, info, fund, gov, distribute),
+        ExecuteMsg::UpdateConfig { fund, distribute } => {
+            update_config(deps, info, fund, distribute)
+        }
         ExecuteMsg::Mint {
             recipient,
             amount,
@@ -149,6 +148,8 @@ pub fn execute(
         ExecuteMsg::UpdateMinter { new_minter } => {
             execute_update_minter(deps, env, info, new_minter)
         }
+        ExecuteMsg::SetGov { gov } => set_gov(deps, info, gov),
+        ExecuteMsg::AcceptGov {} => accept_gov(deps, info),
     }
 }
 

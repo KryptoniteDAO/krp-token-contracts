@@ -9,7 +9,6 @@ pub fn update_config(
     deps: DepsMut,
     info: MessageInfo,
     fund: Option<Addr>,
-    gov: Option<Addr>,
     distribute: Option<Addr>,
 ) -> Result<Response, ContractError> {
     let mut seilor_config = read_seilor_config(deps.storage)?;
@@ -27,11 +26,6 @@ pub fn update_config(
         deps.api.addr_validate(fund.clone().as_str())?;
         seilor_config.fund = fund.clone();
         attrs.push(attr("fund", fund.to_string()));
-    }
-    if let Some(gov) = gov {
-        deps.api.addr_validate(gov.clone().as_str())?;
-        seilor_config.gov = gov.clone();
-        attrs.push(attr("gov", gov.to_string()));
     }
     if let Some(distribute) = distribute {
         deps.api.addr_validate(distribute.clone().as_str())?;
@@ -126,3 +120,39 @@ pub fn mint(
 //     };
 //     execute_burn(deps, env.clone(), sub_info, Uint128::from(amount))
 // }
+
+pub fn set_gov(deps: DepsMut, info: MessageInfo, gov: Addr) -> Result<Response, ContractError> {
+    let mut seilor_config = read_seilor_config(deps.storage)?;
+    if seilor_config.gov != info.sender {
+        return Err(ContractError::Unauthorized {});
+    }
+    deps.api.addr_validate(gov.clone().as_str())?;
+
+    seilor_config.new_gov = Some(gov.clone());
+    store_seilor_config(deps.storage, &seilor_config)?;
+    Ok(Response::default().add_attributes(vec![
+        attr("action", "set_gov"),
+        attr("gov", gov.to_string()),
+    ]))
+}
+
+pub fn accept_gov(deps: DepsMut, info: MessageInfo) -> Result<Response, ContractError> {
+    let mut seilor_config = read_seilor_config(deps.storage)?;
+    if seilor_config.new_gov.is_none() {
+        return Err(ContractError::Std(StdError::generic_err(
+            "No new gov to accept",
+        )));
+    }
+    if info.sender != seilor_config.new_gov.unwrap() {
+        return Err(ContractError::Unauthorized {});
+    }
+
+    seilor_config.gov = info.sender.clone();
+    seilor_config.new_gov = None;
+    store_seilor_config(deps.storage, &seilor_config)?;
+    Ok(Response::default().add_attributes(vec![
+        attr("action", "accept_gov"),
+        attr("gov", seilor_config.gov.clone().to_string()),
+        attr("new_gov", ""),
+    ]))
+}

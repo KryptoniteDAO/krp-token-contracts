@@ -88,7 +88,6 @@ pub fn claim(
 pub fn update_config(
     deps: DepsMut,
     info: MessageInfo,
-    gov: Option<Addr>,
     distribute_token: Option<Addr>,
 ) -> Result<Response, ContractError> {
     let mut distribute_config = read_distribute_config(deps.storage)?;
@@ -99,11 +98,6 @@ pub fn update_config(
         attr("action", "update_config"),
         attr("sender", info.sender.to_string()),
     ];
-    if let Some(gov) = gov {
-        deps.api.addr_validate(gov.clone().as_str())?;
-        distribute_config.gov = gov.clone();
-        attrs.push(attr("gov", gov.to_string()));
-    }
     if let Some(distribute_token) = distribute_token {
         deps.api.addr_validate(distribute_token.clone().as_str())?;
         distribute_config.distribute_token = distribute_token.clone();
@@ -212,5 +206,39 @@ pub fn add_rule_config(
     Ok(Response::new().add_attributes(vec![
         ("action", "add_rule_config"),
         ("rule_type", rule_type.as_str()),
+    ]))
+}
+
+pub fn set_gov(deps: DepsMut, info: MessageInfo, gov: Addr) -> Result<Response, ContractError> {
+    let mut distribute_config = read_distribute_config(deps.storage)?;
+    if distribute_config.gov != info.sender {
+        return Err(ContractError::Unauthorized {});
+    }
+    deps.api.addr_validate(gov.clone().as_str())?;
+
+    distribute_config.new_gov = Some(gov.clone());
+    store_distribute_config(deps.storage, &distribute_config)?;
+    Ok(Response::new().add_attributes(vec![
+        attr("action", "set_gov"),
+        attr("gov", gov.to_string()),
+    ]))
+}
+
+pub fn accept_gov(deps: DepsMut, info: MessageInfo) -> Result<Response, ContractError> {
+    let mut distribute_config = read_distribute_config(deps.storage)?;
+    if distribute_config.new_gov.is_none() {
+        return Err(ContractError::NoNewGov {});
+    }
+    if info.sender != distribute_config.new_gov.unwrap() {
+        return Err(ContractError::Unauthorized {});
+    }
+
+    distribute_config.gov = info.sender.clone();
+    distribute_config.new_gov = None;
+    store_distribute_config(deps.storage, &distribute_config)?;
+    Ok(Response::new().add_attributes(vec![
+        attr("action", "accept_gov"),
+        attr("gov", distribute_config.gov.to_string()),
+        attr("new_gov", ""),
     ]))
 }

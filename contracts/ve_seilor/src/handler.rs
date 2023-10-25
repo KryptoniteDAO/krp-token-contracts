@@ -13,7 +13,6 @@ pub fn update_config(
     info: MessageInfo,
     max_minted: Option<Uint128>,
     fund: Option<Addr>,
-    gov: Option<Addr>,
 ) -> Result<Response, ContractError> {
     let mut vote_config = read_vote_config(deps.storage)?;
 
@@ -38,10 +37,6 @@ pub fn update_config(
     if let Some(fund) = fund {
         vote_config.fund = fund.clone();
         attrs.push(attr("fund", fund.to_string()));
-    }
-    if let Some(gov) = gov {
-        vote_config.gov = gov.clone();
-        attrs.push(attr("gov", gov.to_string()));
     }
 
     store_vote_config(deps.storage, &vote_config)?;
@@ -158,4 +153,42 @@ pub fn burn(
     Ok(Response::new()
         .add_submessages(sub_msgs)
         .add_attributes(ve_res.attributes))
+}
+
+pub fn set_gov(deps: DepsMut, info: MessageInfo, gov: Addr) -> Result<Response, ContractError> {
+    let mut vote_config = read_vote_config(deps.storage)?;
+
+    if info.sender != vote_config.gov {
+        return Err(ContractError::Unauthorized {});
+    }
+
+    vote_config.new_gov = Some(gov.clone());
+    store_vote_config(deps.storage, &vote_config)?;
+
+    Ok(Response::new().add_attributes(vec![
+        attr("action", "set_gov"),
+        attr("sender", info.sender.to_string()),
+        attr("gov", gov.to_string()),
+    ]))
+}
+
+pub fn accept_gov(deps: DepsMut, info: MessageInfo) -> Result<Response, ContractError> {
+    let mut vote_config = read_vote_config(deps.storage)?;
+
+    if vote_config.new_gov.is_none() {
+        return Err(ContractError::NoNewGov {});
+    }
+    if info.sender != vote_config.new_gov.unwrap() {
+        return Err(ContractError::Unauthorized {});
+    }
+
+    vote_config.gov = info.sender.clone();
+    vote_config.new_gov = None;
+    store_vote_config(deps.storage, &vote_config)?;
+
+    Ok(Response::new().add_attributes(vec![
+        attr("action", "accept_gov"),
+        attr("gov", vote_config.gov.clone().to_string()),
+        attr("new_gov", ""),
+    ]))
 }

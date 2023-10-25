@@ -1,5 +1,7 @@
 use crate::error::ContractError;
-use crate::handler::{distribute_rewards, optional_addr_validate, update_config};
+use crate::handler::{
+    accept_ownership, distribute_rewards, optional_addr_validate, set_owner, update_config,
+};
 use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 
 use crate::querier::{query_config, query_state};
@@ -35,6 +37,7 @@ pub fn instantiate(
         threshold: msg.threshold,
         rewards_contract: api.addr_canonicalize(&msg.rewards_contract)?,
         rewards_denom: msg.rewards_denom,
+        new_owner: None,
     };
     store_config(deps.storage, &config)?;
 
@@ -60,7 +63,6 @@ pub fn execute(
 ) -> Result<Response, ContractError> {
     match msg {
         ExecuteMsg::UpdateConfig {
-            owner,
             threshold,
             rewards_contract,
             rewards_denom,
@@ -69,13 +71,14 @@ pub fn execute(
             update_config(
                 deps,
                 info,
-                optional_addr_validate(api, owner)?,
                 threshold,
                 optional_addr_validate(api, rewards_contract)?,
                 rewards_denom,
             )
         }
         ExecuteMsg::Distribute {} => distribute_rewards(deps, env),
+        ExecuteMsg::SetOwner { owner } => set_owner(deps, info, owner),
+        ExecuteMsg::AcceptOwnership {} => accept_ownership(deps, env, info),
     }
 }
 

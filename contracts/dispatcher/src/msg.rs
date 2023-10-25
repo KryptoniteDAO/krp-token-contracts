@@ -4,7 +4,6 @@ use cosmwasm_std::{Addr, Uint256};
 
 #[cw_serde]
 pub struct UpdateGlobalConfigMsg {
-    pub gov: Option<Addr>,
     pub claim_token: Option<Addr>,
     pub start_lock_period_time: Option<u64>,
     pub total_lock_amount: Option<Uint256>,
@@ -32,6 +31,8 @@ pub enum ExecuteMsg {
     UpdateConfig(UpdateGlobalConfigMsg),
     AddUser(Vec<AddUserMsg>),
     UserClaim {},
+    SetGov { gov: Addr },
+    AcceptGov {},
 }
 
 #[cw_serde]

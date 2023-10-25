@@ -25,12 +25,6 @@ pub fn update_config(
     let mut attrs = vec![];
     attrs.push(attr("action", "update_config"));
 
-    if let Some(gov) = msg.gov {
-        deps.api.addr_validate(gov.clone().as_str())?;
-        config.gov = gov.clone();
-        attrs.push(attr("gov", gov));
-    }
-
     if let Some(total_lock_amount) = msg.total_lock_amount {
         let global_state = read_global_state(deps.storage)?;
         // Check if the new total_amount is less than the stored total_amount
@@ -62,6 +56,40 @@ pub fn update_config(
     store_global_config(deps.storage, &config)?;
 
     Ok(Response::default().add_attributes(attrs))
+}
+
+pub fn set_gov(deps: DepsMut, info: MessageInfo, gov: Addr) -> Result<Response, ContractError> {
+    let mut config = read_global_config(deps.storage)?;
+    if config.gov != info.sender {
+        return Err(ContractError::Unauthorized {});
+    }
+    deps.api.addr_validate(gov.clone().as_str())?;
+
+    config.new_gov = Some(gov.clone());
+    store_global_config(deps.storage, &config)?;
+    Ok(Response::default().add_attributes(vec![
+        attr("action", "set_gov"),
+        attr("gov", gov.to_string()),
+    ]))
+}
+
+pub fn accept_gov(deps: DepsMut, info: MessageInfo) -> Result<Response, ContractError> {
+    let mut config = read_global_config(deps.storage)?;
+    if config.new_gov.is_none() {
+        return Err(ContractError::NoNewGov {});
+    }
+    if info.sender != config.new_gov.unwrap() {
+        return Err(ContractError::Unauthorized {});
+    }
+
+    config.gov = info.sender.clone();
+    config.new_gov = None;
+    store_global_config(deps.storage, &config)?;
+    Ok(Response::default().add_attributes(vec![
+        attr("action", "accept_gov"),
+        attr("gov", config.gov.to_string()),
+        attr("new_gov", ""),
+    ]))
 }
 
 pub fn add_users(

@@ -4,7 +4,6 @@ use cw20::Cw20ReceiveMsg;
 
 #[cw_serde]
 pub struct UpdateStakingConfigStruct {
-    pub gov: Option<Addr>,
     pub staking_token: Option<Addr>,
     pub rewards_token: Option<Addr>,
     pub boost: Option<Addr>,
@@ -83,6 +82,10 @@ pub enum ExecuteMsg {
     NotifyRewardAmount {
         amount: Uint128,
     },
+    SetGov {
+        gov: Addr,
+    },
+    AcceptGov {},
 }
 
 #[cw_serde]

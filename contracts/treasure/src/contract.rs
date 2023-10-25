@@ -1,5 +1,7 @@
 use crate::error::ContractError;
-use crate::handler::{pre_mint_nft, receive_cw20, update_config, user_unlock, user_withdraw};
+use crate::handler::{
+    accept_gov, pre_mint_nft, receive_cw20, set_gov, update_config, user_unlock, user_withdraw,
+};
 use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 use crate::querier::{query_config_infos, query_user_infos};
 use crate::state::{store_treasure_config, store_treasure_state, TreasureConfig, TreasureState};
@@ -38,6 +40,7 @@ pub fn instantiate(
         nft_end_pre_mint_time: msg.nft_end_pre_mint_time,
         no_delay_punish_coefficient: msg.no_delay_punish_coefficient,
         mint_nft_cost_dust: msg.mint_nft_cost_dust,
+        new_gov: None,
     };
 
     let state = TreasureState {
@@ -73,6 +76,8 @@ pub fn execute(
         ExecuteMsg::UserWithdraw { amount } => user_withdraw(deps, env, info, amount),
         ExecuteMsg::UserUnlock { amount } => user_unlock(deps, env, info, amount),
         ExecuteMsg::PreMintNft { mint_num } => pre_mint_nft(deps, env, info, mint_num),
+        ExecuteMsg::SetGov { gov } => set_gov(deps, info, gov),
+        ExecuteMsg::AcceptGov {} => accept_gov(deps, info),
     }
 }
 

@@ -1,7 +1,7 @@
 use crate::helper::{BASE_RATE_12, BASE_RATE_6};
 use crate::msg::{
-    EarnedResponse, GetClaimAbleSeilorResponse, GetClaimAbleKusdResponse,
-    GetReservedSeilorForVestingResponse, FundConfigResponse, UserLastWithdrawTimeResponse,
+    EarnedResponse, FundConfigResponse, GetClaimAbleKusdResponse, GetClaimAbleSeilorResponse,
+    GetReservedSeilorForVestingResponse, UserLastWithdrawTimeResponse,
     UserRewardPerTokenPaidResponse, UserRewardsResponse, UserTime2fullRedemptionResponse,
     UserUnstakeRateResponse,
 };
@@ -29,6 +29,7 @@ pub fn fund_config(deps: Deps) -> StdResult<FundConfigResponse> {
         reward_per_token_stored: config.reward_per_token_stored,
         exit_cycle: config.exit_cycle,
         claim_able_time: config.claim_able_time,
+        new_gov: config.new_gov,
     })
 }
 
@@ -55,7 +56,11 @@ pub fn staked_of(deps: Deps, staker: Addr) -> StdResult<Uint128> {
     Ok(res.balance)
 }
 
-pub fn get_claim_able_seilor(deps: Deps, env: Env, user: Addr) -> StdResult<GetClaimAbleSeilorResponse> {
+pub fn get_claim_able_seilor(
+    deps: Deps,
+    env: Env,
+    user: Addr,
+) -> StdResult<GetClaimAbleSeilorResponse> {
     let time2full_redemption_user = read_time2full_redemption(deps.storage, user.clone());
     let last_withdraw_time_user = read_last_withdraw_time(deps.storage, user.clone());
     let unstake_rate_user = read_unstake_rate(deps.storage, user.clone());

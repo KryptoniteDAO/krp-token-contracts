@@ -5,7 +5,10 @@ use cosmwasm_std::{Addr, BalanceResponse, BankQuery, Deps, QueryRequest, StdResu
 
 pub fn query_config(deps: Deps) -> StdResult<ConfigResponse> {
     let config = read_config(deps.storage)?;
-
+    let mut new_owner: Option<String> = None;
+    if let Some(addr) = config.new_owner {
+        new_owner = Some(deps.api.addr_humanize(&addr)?.to_string());
+    }
     Ok(ConfigResponse {
         owner: deps.api.addr_humanize(&config.owner)?.to_string(),
         threshold: config.threshold,
@@ -14,6 +17,7 @@ pub fn query_config(deps: Deps) -> StdResult<ConfigResponse> {
             .addr_humanize(&config.rewards_contract)?
             .to_string(),
         rewards_denom: config.rewards_denom,
+        new_owner,
     })
 }
 
