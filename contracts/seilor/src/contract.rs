@@ -43,14 +43,22 @@ pub fn instantiate(
         cap: Some(msg.max_supply.into()),
     });
 
-    if let Some(marketing) = cw20_instantiate_msg.marketing {
-        cw20_instantiate_msg.marketing = Some(InstantiateMarketingInfo {
+    cw20_instantiate_msg.marketing = if let Some(marketing) = cw20_instantiate_msg.marketing {
+        Some(InstantiateMarketingInfo {
             project: marketing.project,
             description: marketing.description,
             logo: marketing.logo,
-            marketing: Some(gov.to_string()),
-        });
-    }
+            marketing: Some(
+                marketing
+                    .marketing
+                    .unwrap_or_else(|| gov.clone().to_string()),
+            ),
+        })
+    } else {
+        return Err(ContractError::Std(StdError::generic_err(
+            "Missing marketing info",
+        )));
+    };
 
     let ins_res = cw20_instantiate(deps.branch(), env, info, cw20_instantiate_msg);
     if let Err(err) = ins_res {

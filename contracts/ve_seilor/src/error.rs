@@ -17,4 +17,7 @@ pub enum ContractError {
 
     #[error("Unable initial balances")]
     UnableInitialBalances {},
+
+    #[error("Missing marketing info")]
+    MissingMarketingInfo {},
 }
