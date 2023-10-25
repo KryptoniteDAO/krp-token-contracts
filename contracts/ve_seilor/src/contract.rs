@@ -51,10 +51,14 @@ pub fn instantiate(
             project: marketing.project,
             description: marketing.description,
             logo: marketing.logo,
-            marketing: Option::from(gov.clone().to_string()),
+            marketing: Some(
+                marketing
+                    .marketing
+                    .unwrap_or_else(|| gov.clone().to_string()),
+            ),
         })
     } else {
-        None
+        return Err(ContractError::MissingMarketingInfo {});
     };
 
     let ins_res = cw20_instantiate(deps.branch(), env, info, cw20_instantiate_msg);

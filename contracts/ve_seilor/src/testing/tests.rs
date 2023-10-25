@@ -439,7 +439,10 @@ mod tests {
         let _res = execute(deps.as_mut(), mock_env(), _info, _msg).unwrap();
         assert_eq!(0, _res.messages.len());
 
-        assert_eq!(get_balance(deps.as_ref(), "lucky"), Uint128::from(112232u128));
+        assert_eq!(
+            get_balance(deps.as_ref(), "lucky"),
+            Uint128::from(112232u128)
+        );
 
         // Positive test case by minter
         let _msg = ExecuteMsg::Burn {
@@ -450,6 +453,9 @@ mod tests {
         let _res = execute(deps.as_mut(), mock_env(), _info, _msg).unwrap();
         assert_eq!(1, _res.messages.len());
 
-        assert_eq!(get_balance(deps.as_ref(), "lucky"), Uint128::from(112231u128));
+        assert_eq!(
+            get_balance(deps.as_ref(), "lucky"),
+            Uint128::from(112231u128)
+        );
     }
 }
