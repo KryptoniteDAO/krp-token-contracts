@@ -1,5 +1,5 @@
+use cosmwasm_schema::{cw_serde, QueryResponses};
 use cosmwasm_std::{Addr, Uint128};
-use cosmwasm_schema::{cw_serde,QueryResponses};
 use cw20::Logo;
 
 use cw20_base::msg::InstantiateMsg as Cw20InstantiateMsg;
@@ -16,18 +16,24 @@ pub struct InstantiateMsg {
 
 #[cw_serde]
 pub enum ExecuteMsg {
-    UpdateConfig{
+    UpdateConfig {
         max_minted: Option<Uint128>,
         fund: Option<Addr>,
         gov: Option<Addr>,
     },
     SetMinters {
         contracts: Vec<Addr>,
-        is_minter: Vec<bool>
+        is_minter: Vec<bool>,
     },
-    Mint { recipient: String, amount: Uint128 },
+    Mint {
+        recipient: String,
+        amount: Uint128,
+    },
     /// Implements CW20. Burn is a base message to destroy tokens forever
-    Burn { user: String, amount: Uint128 },
+    Burn {
+        user: String,
+        amount: Uint128,
+    },
 
     /// Only with the "marketing" extension. If authorized, updates marketing metadata.
     /// Setting None/null for any of these will leave it unchanged.
@@ -48,22 +54,21 @@ pub enum ExecuteMsg {
 #[derive(QueryResponses)]
 pub enum QueryMsg {
     #[returns(VoteConfigResponse)]
-    VoteConfig{},
+    VoteConfig {},
     #[returns(IsMinterResponse)]
     IsMinter { address: String },
     #[returns(CheckpointResponse)]
-    Checkpoints {account: Addr, pos: u32},
+    Checkpoints { account: Addr, pos: u32 },
     #[returns(NumCheckpointsResponse)]
-    NumCheckpoints{account: Addr},
+    NumCheckpoints { account: Addr },
     // #[returns(DelegatesResponse)]
     // Delegates { account: Addr },
     #[returns(GetVotesResponse)]
-    GetVotes{account:Addr},
+    GetVotes { account: Addr },
     #[returns(GetPastVotesResponse)]
-    GetPastVotes{account:Addr, block_number:u64},
-    #[returns(GetPastTotalSupplyResponse)]
-    GetPastTotalSupply{block_number:u64},
-
+    GetPastVotes { account: Addr, block_number: u64 },
+    // #[returns(GetPastTotalSupplyResponse)]
+    // GetPastTotalSupply{block_number:u64},
     /// Implements CW20. Returns the current balance of the given address, 0 if unset.
     #[returns(cw20::BalanceResponse)]
     Balance { address: String },
@@ -113,10 +118,10 @@ pub enum QueryMsg {
     DownloadLogo {},
 }
 
-#[cw_serde]
-pub struct GetPastTotalSupplyResponse {
-    pub total_supply: u128,
-}
+// #[cw_serde]
+// pub struct GetPastTotalSupplyResponse {
+//     pub total_supply: u128,
+// }
 #[cw_serde]
 pub struct GetPastVotesResponse {
     pub votes: u128,
@@ -138,9 +143,7 @@ pub struct NumCheckpointsResponse {
 
 #[cw_serde]
 pub enum FundMsg {
-    RefreshReward {
-        account: Addr,
-    },
+    RefreshReward { account: Addr },
 }
 
 #[cw_serde]
@@ -148,13 +151,12 @@ pub struct VoteConfigResponse {
     pub max_supply: u128,
     pub fund: Addr,
     pub gov: Addr,
-    pub max_minted:Uint128,
-    pub total_minted:Uint128,
+    pub max_minted: Uint128,
+    pub total_minted: Uint128,
 }
 
-
 #[cw_serde]
-pub struct CheckpointResponse{
+pub struct CheckpointResponse {
     pub from_block: u64,
     pub votes: u128,
 }
@@ -164,9 +166,5 @@ pub struct IsMinterResponse {
     pub is_minter: bool,
 }
 
-
-
 #[cw_serde]
 pub struct MigrateMsg {}
-
-

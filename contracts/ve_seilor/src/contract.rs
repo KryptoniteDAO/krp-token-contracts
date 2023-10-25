@@ -3,9 +3,7 @@ use crate::handler::{burn, mint, set_minters, update_config};
 use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 use crate::querier::{query_is_minter, query_vote_config};
 use crate::state::{store_vote_config, VoteConfig};
-use crate::ve_querier::{
-    checkpoints, get_past_total_supply, get_past_votes, get_votes, num_checkpoints,
-};
+use crate::ve_querier::{checkpoints, get_past_votes, get_votes, num_checkpoints};
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::Uint128;
@@ -149,9 +147,9 @@ pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
             account,
             block_number,
         } => to_binary(&get_past_votes(deps, env, account, block_number)?),
-        QueryMsg::GetPastTotalSupply { block_number } => {
-            to_binary(&get_past_total_supply(deps, env, block_number)?)
-        }
+        // QueryMsg::GetPastTotalSupply { block_number } => {
+        //     to_binary(&get_past_total_supply(deps, env, block_number)?)
+        // }
 
         // inherited from cw20-base
         QueryMsg::Balance { address } => to_binary(&query_balance(deps, address)?),

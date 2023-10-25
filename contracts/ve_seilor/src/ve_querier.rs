@@ -1,8 +1,7 @@
-use std::ops::{Add, Div, Sub};
+use crate::msg::{GetPastVotesResponse, GetVotesResponse, NumCheckpointsResponse};
+use crate::state::{read_checkpoints_default, Checkpoint};
 use cosmwasm_std::{Addr, Deps, Env, Isqrt, StdError, StdResult};
-use crate::msg::{GetPastTotalSupplyResponse, GetPastVotesResponse, GetVotesResponse, NumCheckpointsResponse};
-use crate::state::{Checkpoint, read_checkpoints_default, read_vote_info_default};
-
+use std::ops::{Add, Div, Sub};
 
 /**
  * @dev Get the `pos`-th checkpoint for `account`.
@@ -21,9 +20,10 @@ pub fn checkpoints(deps: Deps, account: Addr, pos: u32) -> StdResult<Checkpoint>
  */
 pub fn num_checkpoints(deps: Deps, account: Addr) -> StdResult<NumCheckpointsResponse> {
     let check_points = read_checkpoints_default(deps.storage, account)?;
-    Ok(NumCheckpointsResponse { num: check_points.len() })
+    Ok(NumCheckpointsResponse {
+        num: check_points.len(),
+    })
 }
-
 
 // /**
 //  * @dev Get the address `account` is currently delegating to.
@@ -46,7 +46,6 @@ pub fn get_votes(deps: Deps, account: Addr) -> StdResult<GetVotesResponse> {
     Ok(GetVotesResponse { votes })
 }
 
-
 /**
  * @dev Retrieve the number of votes for `account` at the end of `blockNumber`.
  *
@@ -54,7 +53,12 @@ pub fn get_votes(deps: Deps, account: Addr) -> StdResult<GetVotesResponse> {
  *
  * - `blockNumber` must have been already mined
  */
-pub fn get_past_votes(deps: Deps, env: Env, account: Addr, block_number: u64) -> StdResult<GetPastVotesResponse> {
+pub fn get_past_votes(
+    deps: Deps,
+    env: Env,
+    account: Addr,
+    block_number: u64,
+) -> StdResult<GetPastVotesResponse> {
     if block_number >= env.block.height {
         return Err(StdError::generic_err("Block not yet mined"));
     }
@@ -62,7 +66,6 @@ pub fn get_past_votes(deps: Deps, env: Env, account: Addr, block_number: u64) ->
     let votes = _check_points_lookup(check_points, block_number);
     Ok(GetPastVotesResponse { votes })
 }
-
 
 /**
  * @dev Retrieve the `totalSupply` at the end of `blockNumber`. Note, this value is the sum of all balances.
@@ -72,14 +75,14 @@ pub fn get_past_votes(deps: Deps, env: Env, account: Addr, block_number: u64) ->
  *
  * - `blockNumber` must have been already mined
  */
-pub fn get_past_total_supply(deps: Deps, env: Env, block_number: u64) -> StdResult<GetPastTotalSupplyResponse> {
-    if block_number >= env.block.height {
-        return Err(StdError::generic_err("Block not yet mined"));
-    }
-    let vote_info = read_vote_info_default(deps.storage)?;
-    let total_supply = _check_points_lookup(vote_info.total_supply_checkpoints, block_number);
-    Ok(GetPastTotalSupplyResponse { total_supply })
-}
+// pub fn get_past_total_supply(deps: Deps, env: Env, block_number: u64) -> StdResult<GetPastTotalSupplyResponse> {
+//     if block_number >= env.block.height {
+//         return Err(StdError::generic_err("Block not yet mined"));
+//     }
+//     let vote_info = read_vote_info_default(deps.storage)?;
+//     let total_supply = _check_points_lookup(vote_info.total_supply_checkpoints, block_number);
+//     Ok(GetPastTotalSupplyResponse { total_supply })
+// }
 
 /**
  * @dev Lookup a value in a list of (sorted) checkpoints.
@@ -123,20 +126,31 @@ fn _check_points_lookup(check_points: Vec<Checkpoint>, block_number: u64) -> u12
     check_points[high.sub(1usize)].votes
 }
 
-
 #[cfg(test)]
 mod tests {
-    use std::ops::Sub;
     use super::*;
+    use std::ops::Sub;
 
     #[test]
     fn test_check_points_lookup() {
         // Positive test case
         let check_points = vec![
-            Checkpoint { from_block: 0, votes: 100 },
-            Checkpoint { from_block: 100, votes: 200 },
-            Checkpoint { from_block: 200, votes: 300 },
-            Checkpoint { from_block: 300, votes: 400 },
+            Checkpoint {
+                from_block: 0,
+                votes: 100,
+            },
+            Checkpoint {
+                from_block: 100,
+                votes: 200,
+            },
+            Checkpoint {
+                from_block: 200,
+                votes: 300,
+            },
+            Checkpoint {
+                from_block: 300,
+                votes: 400,
+            },
         ];
         let pos = check_points.len();
         let s: usize = 1usize;
