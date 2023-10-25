@@ -19,7 +19,6 @@ pub enum ExecuteMsg {
     UpdateConfig {
         max_minted: Option<Uint128>,
         fund: Option<Addr>,
-        gov: Option<Addr>,
     },
     SetMinters {
         contracts: Vec<Addr>,
@@ -48,6 +47,10 @@ pub enum ExecuteMsg {
     },
     /// If set as the "marketing" role on the contract, upload a new URL, SVG, or PNG for the token
     UploadLogo(Logo),
+    SetGov {
+        gov: Addr,
+    },
+    AcceptGov {},
 }
 
 #[cw_serde]

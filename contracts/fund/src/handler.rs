@@ -35,11 +35,6 @@ pub fn update_fund_config(
         attr("action", "update_fund_config"),
         attr("sender", info.sender.to_string()),
     ];
-    if let Some(gov) = msg.gov {
-        deps.api.addr_validate(gov.clone().as_str())?;
-        config.gov = gov.clone();
-        attrs.push(attr("gov", gov.to_string()));
-    }
     if let Some(ve_seilor_addr) = msg.ve_seilor_addr {
         deps.api.addr_validate(ve_seilor_addr.clone().as_str())?;
         config.ve_seilor_addr = ve_seilor_addr.clone();
@@ -371,4 +366,37 @@ pub fn receive_cw20(
         }
         Err(_) => Err(StdError::generic_err("data should be given")),
     }
+}
+
+pub fn set_gov(deps: DepsMut, info: MessageInfo, gov: Addr) -> StdResult<Response> {
+    let mut config = read_fund_config(deps.storage)?;
+    if config.gov != info.sender {
+        return Err(StdError::generic_err("unauthorized"));
+    }
+    deps.api.addr_validate(gov.clone().as_str())?;
+
+    config.new_gov = Some(gov.clone());
+    store_fund_config(deps.storage, &config)?;
+    Ok(Response::new().add_attributes(vec![
+        attr("action", "set_gov"),
+        attr("gov", gov.to_string()),
+    ]))
+}
+
+pub fn accept_gov(deps: DepsMut, info: MessageInfo) -> StdResult<Response> {
+    let mut config = read_fund_config(deps.storage)?;
+    if config.new_gov.is_none() {
+        return Err(StdError::generic_err("no new gov"));
+    }
+    if info.sender != config.new_gov.unwrap() {
+        return Err(StdError::generic_err("unauthorized"));
+    }
+    config.gov = info.sender.clone();
+    config.new_gov = None;
+    store_fund_config(deps.storage, &config)?;
+    Ok(Response::new().add_attributes(vec![
+        attr("action", "accept_gov"),
+        attr("gov", config.gov.to_string()),
+        attr("new_gov", ""),
+    ]))
 }

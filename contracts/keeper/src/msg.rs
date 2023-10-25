@@ -1,11 +1,11 @@
 use cosmwasm_schema::{cw_serde, QueryResponses};
-use cosmwasm_std::Uint128;
+use cosmwasm_std::{Addr, Uint128};
 
 #[cw_serde]
 pub struct InstantiateMsg {
     pub owner: String,
     pub threshold: Uint128,
-    /// contract address of seilor fund 
+    /// contract address of seilor fund
     pub rewards_contract: String,
     pub rewards_denom: String,
 }
@@ -13,12 +13,15 @@ pub struct InstantiateMsg {
 #[cw_serde]
 pub enum ExecuteMsg {
     UpdateConfig {
-        owner: Option<String>,
         threshold: Option<Uint128>,
         rewards_contract: Option<String>,
         rewards_denom: Option<String>,
     },
     Distribute {},
+    SetOwner {
+        owner: Addr,
+    },
+    AcceptOwnership {},
 }
 
 #[cw_serde]
@@ -36,6 +39,7 @@ pub struct ConfigResponse {
     pub threshold: Uint128,
     pub rewards_contract: String,
     pub rewards_denom: String,
+    pub new_owner: Option<String>,
 }
 
 #[cw_serde]

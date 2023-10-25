@@ -59,7 +59,6 @@ pub enum ExecuteMsg {
         msg: Option<Binary>,
     },
     UpdateConfig {
-        gov: Option<Addr>,
         distribute_token: Option<Addr>,
     },
     UpdateRuleConfig {
@@ -69,6 +68,10 @@ pub enum ExecuteMsg {
         rule_type: String,
         rule_msg: RuleConfigMsg,
     },
+    SetGov {
+        gov: Addr,
+    },
+    AcceptGov {},
 }
 
 #[cw_serde]

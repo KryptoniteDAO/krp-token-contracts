@@ -1,6 +1,7 @@
+use crate::testing::mock_fn::CREATOR;
 use cosmwasm_std::Uint128;
 use cw20::Cw20Coin;
-use crate::testing::mock_fn::CREATOR;
+use cw20_base::msg::InstantiateMarketingInfo;
 
 pub fn mock_seilor_instantiate_msg() -> seilor::msg::InstantiateMsg {
     let max_supply = 1000000000000000u128;
@@ -8,14 +9,17 @@ pub fn mock_seilor_instantiate_msg() -> seilor::msg::InstantiateMsg {
         name: "seilor dev".to_string(),
         symbol: "seilor".to_string(),
         decimals: 6,
-        initial_balances: vec![
-            Cw20Coin {
-                address: CREATOR.to_string(),
-                amount: Uint128::from(200000000000000u128),
-            },
-        ],
+        initial_balances: vec![Cw20Coin {
+            address: CREATOR.to_string(),
+            amount: Uint128::from(200000000000000u128),
+        }],
         mint: None,
-        marketing: None,
+        marketing: Some(InstantiateMarketingInfo {
+            project: None,
+            description: None,
+            marketing: Some("aass".to_string()),
+            logo: None,
+        }),
     };
     let msg = seilor::msg::InstantiateMsg {
         cw20_init_msg,
@@ -32,7 +36,12 @@ pub fn mock_ve_seilor_instantiate_msg() -> ve_seilor::msg::InstantiateMsg {
         decimals: 6u8,
         initial_balances: vec![],
         mint: None,
-        marketing: None,
+        marketing: Some(InstantiateMarketingInfo {
+            project: None,
+            description: None,
+            marketing: Some("aass".to_string()),
+            logo: None,
+        }),
     };
     let msg = ve_seilor::msg::InstantiateMsg {
         max_supply: 60500000000000u128,

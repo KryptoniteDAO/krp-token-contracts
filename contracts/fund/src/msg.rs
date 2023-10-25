@@ -4,7 +4,6 @@ use cw20::Cw20ReceiveMsg;
 
 #[cw_serde]
 pub struct UpdateConfigMsg {
-    pub gov: Option<Addr>,
     pub ve_seilor_addr: Option<Addr>,
     pub seilor_addr: Option<Addr>,
     pub kusd_denom: Option<String>,
@@ -42,6 +41,10 @@ pub enum ExecuteMsg {
     ReStake {},
     GetReward {},
     NotifyRewardAmount {},
+    SetGov {
+        gov: Addr,
+    },
+    AcceptGov {},
 }
 
 #[cw_serde]
@@ -129,6 +132,7 @@ pub struct FundConfigResponse {
     pub exit_cycle: Uint64,
     // uint256 public claimAbleTime;
     pub claim_able_time: Uint64,
+    pub new_gov: Option<Addr>,
 }
 
 #[cw_serde]

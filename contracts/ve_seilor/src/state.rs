@@ -23,6 +23,7 @@ pub struct VoteConfig {
     pub gov: Addr,
     pub max_minted: Uint128,
     pub total_minted: Uint128,
+    pub new_gov: Option<Addr>,
 }
 
 // const DELEGATES: Map<Addr, Addr> = Map::new("delegates");

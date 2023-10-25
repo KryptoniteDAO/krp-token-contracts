@@ -32,6 +32,7 @@ mod tests {
                 threshold: Uint128::from(threshold),
                 rewards_contract: "seilor_fund".to_string(),
                 rewards_denom: "kUSD".to_string(),
+                new_owner: None,
             }
         );
     }
@@ -79,6 +80,7 @@ mod tests {
                 threshold: Uint128::from(threshold2),
                 rewards_contract: "new_fund".to_string(),
                 rewards_denom: "new_kUSD".to_string(),
+                new_owner: None,
             }
         );
 

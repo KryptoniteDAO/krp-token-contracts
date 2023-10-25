@@ -8,8 +8,8 @@ use crate::msg::{
 };
 use crate::testing::mock_fn::{mock_instantiate_msg, CREATOR, REWARD_CONTROLLER_ADDR};
 use crate::testing::mock_third_fn::{
-    mock_fund_instance_msg, mock_seilor_instance_msg, mock_staking_token_instance_msg,
-    mock_boost_instance_msg, mock_ve_seilor_instance_msg,
+    mock_boost_instance_msg, mock_fund_instance_msg, mock_seilor_instance_msg,
+    mock_staking_token_instance_msg, mock_ve_seilor_instance_msg,
 };
 use cosmwasm_std::testing::mock_env;
 use cosmwasm_std::{to_binary, Addr, Coin, Timestamp, Uint128};
@@ -493,7 +493,12 @@ fn set_ve_seilor_miners(
         contracts,
         is_minter,
     };
-    let res = app.execute_contract(creator.clone(), ve_seilor.clone(), &ve_seilor_miner_msg, &[]);
+    let res = app.execute_contract(
+        creator.clone(),
+        ve_seilor.clone(),
+        &ve_seilor_miner_msg,
+        &[],
+    );
     assert!(res.is_ok());
 }
 
@@ -510,10 +515,14 @@ fn set_ve_seilor_to_fund(creator: &Addr, app: &mut App, ve_seilor: &Addr, fund: 
 fn set_seilor_to_fund(creator: &Addr, app: &mut App, seilor: &Addr, fund: &Addr) {
     let update_seilor_fund_msg = seilor::msg::ExecuteMsg::UpdateConfig {
         fund: Some(fund.clone()),
-        gov: None,
         distribute: None,
     };
-    let res = app.execute_contract(creator.clone(), seilor.clone(), &update_seilor_fund_msg, &[]);
+    let res = app.execute_contract(
+        creator.clone(),
+        seilor.clone(),
+        &update_seilor_fund_msg,
+        &[],
+    );
     assert!(res.is_ok());
 }
 

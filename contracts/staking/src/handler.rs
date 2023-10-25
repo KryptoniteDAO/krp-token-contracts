@@ -28,12 +28,6 @@ pub fn update_staking_config(
     let mut attrs = vec![];
     attrs.push(attr("action", "update_staking_config"));
 
-    if let Some(gov) = update_struct.gov {
-        deps.api.addr_validate(gov.clone().as_str())?; // validate gov address
-        staking_config.gov = gov.clone();
-        attrs.push(attr("gov", gov.to_string()));
-    }
-
     if let Some(staking_token) = update_struct.staking_token {
         deps.api.addr_validate(staking_token.clone().as_str())?; // validate staking token address
         staking_config.staking_token = staking_token.clone();
@@ -346,5 +340,39 @@ pub fn notify_reward_amount(
         attr("action", "notify_reward_amount"),
         attr("sender", info.sender),
         attr("amount", amount.to_string()),
+    ]))
+}
+
+pub fn set_gov(deps: DepsMut, info: MessageInfo, gov: Addr) -> Result<Response, ContractError> {
+    let mut staking_config = read_staking_config(deps.storage)?;
+    if staking_config.gov != info.sender {
+        return Err(ContractError::Unauthorized {});
+    }
+    deps.api.addr_validate(gov.clone().as_str())?;
+
+    staking_config.new_gov = Some(gov.clone());
+    store_staking_config(deps.storage, &staking_config)?;
+    Ok(Response::new().add_attributes(vec![
+        attr("action", "set_gov"),
+        attr("gov", gov.to_string()),
+    ]))
+}
+
+pub fn accept_gov(deps: DepsMut, info: MessageInfo) -> Result<Response, ContractError> {
+    let mut staking_config = read_staking_config(deps.storage)?;
+    if staking_config.new_gov.is_none() {
+        return Err(ContractError::NoNewGov {});
+    }
+    if info.sender != staking_config.new_gov.unwrap() {
+        return Err(ContractError::Unauthorized {});
+    }
+
+    staking_config.gov = info.sender.clone();
+    staking_config.new_gov = None;
+    store_staking_config(deps.storage, &staking_config)?;
+    Ok(Response::new().add_attributes(vec![
+        attr("action", "accept_gov"),
+        attr("gov", staking_config.gov.clone().to_string()),
+        attr("new_gov", ""),
     ]))
 }

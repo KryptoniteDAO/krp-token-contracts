@@ -1,4 +1,4 @@
-use crate::handler::{add_lock_setting, change_gov, set_lock_status};
+use crate::handler::{accept_gov, add_lock_setting, set_gov, set_lock_status};
 use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 use crate::querier::{get_boost_config, get_unlock_time, get_user_boost, get_user_lock_status};
 use crate::state::{store_boost_config, BoostConfig};
@@ -25,6 +25,7 @@ pub fn instantiate(
     let config = BoostConfig {
         gov: gov,
         ve_seilor_lock_settings: msg.ve_seilor_lock_settings,
+        new_gov: None,
     };
 
     store_boost_config(deps.storage, &config)?;
@@ -41,7 +42,8 @@ pub fn execute(deps: DepsMut, env: Env, info: MessageInfo, msg: ExecuteMsg) -> S
             duration,
             mining_boost,
         } => add_lock_setting(deps, info, duration, mining_boost),
-        ExecuteMsg::ChangeGov { gov } => change_gov(deps, info, gov),
+        ExecuteMsg::SetGov { gov } => set_gov(deps, info, gov),
+        ExecuteMsg::AcceptGov {} => accept_gov(deps, info),
         ExecuteMsg::SetLockStatus { index } => {
             let _index = index as usize;
             set_lock_status(deps, env, info, _index)

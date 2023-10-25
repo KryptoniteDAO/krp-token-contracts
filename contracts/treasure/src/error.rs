@@ -45,4 +45,6 @@ pub enum ContractError {
     PreMintTimeEnd {},
     #[error("LockTimeNotEnd")]
     LockTimeNotEnd {},
+    #[error("No New Gov")]
+    NoNewGov {},
 }

@@ -123,7 +123,6 @@ mod tests {
         let _msg = ExecuteMsg::UpdateConfig {
             max_minted: Some(Uint128::from(max_minted)),
             fund: Some(Addr::unchecked("new_fund")),
-            gov: Some(Addr::unchecked("new_gov")),
         };
         let _info = mock_info("random_user", &[]);
         let _res = execute(deps.as_mut(), mock_env(), _info, _msg);
@@ -148,7 +147,6 @@ mod tests {
         let _msg = ExecuteMsg::UpdateConfig {
             max_minted: Some(Uint128::from(max_minted)),
             fund: Some(Addr::unchecked("new_fund")),
-            gov: Some(Addr::unchecked("new_gov")),
         };
         let _info = mock_info("creator", &[]);
         let _res = execute(deps.as_mut(), mock_env(), _info, _msg).unwrap();
@@ -159,7 +157,7 @@ mod tests {
             query_vote_config(deps.as_ref()).unwrap(),
             VoteConfigResponse {
                 max_supply,
-                gov: Addr::unchecked("new_gov"),
+                gov: Addr::unchecked("creator"),
                 fund: Addr::unchecked("new_fund"),
                 max_minted: Uint128::from(max_minted),
                 total_minted: Uint128::zero(),
@@ -170,9 +168,8 @@ mod tests {
         let _msg = ExecuteMsg::UpdateConfig {
             max_minted: Some(Uint128::from(max_minted)),
             fund: Some(Addr::unchecked("new_fund")),
-            gov: Some(Addr::unchecked("new_gov")),
         };
-        let _info = mock_info("creator", &[]);
+        let _info = mock_info("creator1", &[]);
         let _res = execute(deps.as_mut(), mock_env(), _info, _msg);
         match _res {
             Err(ContractError::Unauthorized {}) => {}
@@ -253,7 +250,6 @@ mod tests {
         let _msg = ExecuteMsg::UpdateConfig {
             max_minted: Some(Uint128::from(max_minted)),
             fund: Some(Addr::unchecked("new_fund".to_string())),
-            gov: None,
         };
         let _info = mock_info("creator", &[]);
         let _res = execute(deps.as_mut(), mock_env(), _info, _msg).unwrap();
@@ -312,7 +308,6 @@ mod tests {
         let _msg = ExecuteMsg::UpdateConfig {
             max_minted: Some(Uint128::from(max_minted)),
             fund: Some(Addr::unchecked("new_fund".to_string())),
-            gov: None,
         };
         let _info = mock_info("creator", &[]);
         let _res = execute(deps.as_mut(), mock_env(), _info, _msg).unwrap();
@@ -392,7 +387,6 @@ mod tests {
         let _msg = ExecuteMsg::UpdateConfig {
             max_minted: Some(Uint128::from(max_minted)),
             fund: Some(Addr::unchecked("new_fund".to_string())),
-            gov: Some(Addr::unchecked("creator".to_string())),
         };
         let _info = mock_info("creator", &[]);
         let _res = execute(deps.as_mut(), mock_env(), _info, _msg).unwrap();

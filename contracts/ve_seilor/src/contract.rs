@@ -1,5 +1,5 @@
 use crate::error::ContractError;
-use crate::handler::{burn, mint, set_minters, update_config};
+use crate::handler::{accept_gov, burn, mint, set_gov, set_minters, update_config};
 use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 use crate::querier::{query_is_minter, query_vote_config};
 use crate::state::{store_vote_config, VoteConfig};
@@ -72,6 +72,7 @@ pub fn instantiate(
         gov,
         max_minted: Uint128::from(msg.max_minted),
         total_minted: Uint128::from(0u128),
+        new_gov: None,
     };
 
     store_vote_config(deps.storage, &vote_config)?;
@@ -87,11 +88,9 @@ pub fn execute(
     msg: ExecuteMsg,
 ) -> Result<Response, ContractError> {
     match msg {
-        ExecuteMsg::UpdateConfig {
-            max_minted,
-            fund,
-            gov,
-        } => update_config(deps, info, max_minted, fund, gov),
+        ExecuteMsg::UpdateConfig { max_minted, fund } => {
+            update_config(deps, info, max_minted, fund)
+        }
         ExecuteMsg::SetMinters {
             contracts,
             is_minter,
@@ -128,6 +127,8 @@ pub fn execute(
             }
             Ok(res.unwrap())
         }
+        ExecuteMsg::SetGov { gov } => set_gov(deps, info, gov),
+        ExecuteMsg::AcceptGov {} => accept_gov(deps, info),
     }
 }
 

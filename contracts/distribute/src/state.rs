@@ -9,6 +9,7 @@ pub struct DistributeConfig {
     pub total_amount: u128,
     pub distribute_token: Addr,
     pub rules_total_amount: u128,
+    pub new_gov: Option<Addr>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]

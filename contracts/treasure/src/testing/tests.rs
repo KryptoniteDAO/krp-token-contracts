@@ -21,7 +21,6 @@ fn test_update_config() {
         deps.as_mut(),
         info.clone(),
         TreasureConfigMsg {
-            gov: Option::from(Addr::unchecked("new_gov".to_string())),
             lock_token: Option::from(Addr::unchecked("new_lock_token".to_string())),
             start_lock_time: Option::from(11111),
             end_lock_time: Option::from(11112),
@@ -42,7 +41,7 @@ fn test_update_config() {
     let new_config = crate::querier::query_config_infos(deps.as_ref()).unwrap();
     assert_eq!(
         new_config.config.gov,
-        Addr::unchecked("new_gov".to_string())
+        Addr::unchecked("creator".to_string())
     );
     assert_eq!(
         new_config.config.lock_token,

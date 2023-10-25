@@ -3,7 +3,6 @@ use cw_storage_plus::{Item, Map};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
-
 // Define a struct for the lock settings
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct VeSeilorLockSetting {
@@ -23,6 +22,7 @@ pub struct LockStatus {
 pub struct BoostConfig {
     pub gov: Addr,
     pub ve_seilor_lock_settings: Vec<VeSeilorLockSetting>,
+    pub new_gov: Option<Addr>,
 }
 
 const BOOST_CONFIG: Item<BoostConfig> = Item::new("boost_config");
@@ -38,7 +38,11 @@ pub fn read_boost_config(storage: &dyn Storage) -> StdResult<BoostConfig> {
     BOOST_CONFIG.load(storage)
 }
 
-pub fn store_user_lock_status(storage: &mut dyn Storage, user: Addr, lock_status: &LockStatus) -> StdResult<()> {
+pub fn store_user_lock_status(
+    storage: &mut dyn Storage,
+    user: Addr,
+    lock_status: &LockStatus,
+) -> StdResult<()> {
     USER_LOCK_STATUS.save(storage, user, lock_status)?;
     Ok(())
 }
@@ -50,6 +54,3 @@ pub fn read_user_lock_status(storage: &dyn Storage, user: Addr) -> StdResult<Loc
         mining_boost: Uint128::zero(),
     }))
 }
-
-
-

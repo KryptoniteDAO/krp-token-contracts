@@ -12,11 +12,11 @@ pub enum ContractError {
     #[error("Distribute contract unauthorized calling function:{0}, params:{1}")]
     Unauthorized(String, String),
 
-    
     #[error("Distribute rewards less than threshold: {0}")]
     DistributeRewardsLessThanThreshold(Uint128),
 
     #[error("Invalid input")]
     InvalidInput {},
-
+    #[error("No new owner")]
+    NoNewOwner {},
 }

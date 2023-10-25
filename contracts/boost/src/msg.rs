@@ -1,6 +1,6 @@
+use crate::state::VeSeilorLockSetting;
 use cosmwasm_schema::{cw_serde, QueryResponses};
 use cosmwasm_std::{Addr, Uint128};
-use crate::state::VeSeilorLockSetting;
 
 #[cw_serde]
 pub struct LockStatusResponse {
@@ -21,9 +21,10 @@ pub enum ExecuteMsg {
         duration: Uint128,
         mining_boost: Uint128,
     },
-    ChangeGov {
+    SetGov {
         gov: Addr,
     },
+    AcceptGov {},
     SetLockStatus {
         index: u32,
     },
@@ -33,13 +34,9 @@ pub enum ExecuteMsg {
 #[derive(QueryResponses)]
 pub enum QueryMsg {
     #[returns(GetUnlockTimeResponse)]
-    GetUnlockTime {
-        user: Addr,
-    },
+    GetUnlockTime { user: Addr },
     #[returns(LockStatusResponse)]
-    GetUserLockStatus {
-        user: Addr,
-    },
+    GetUserLockStatus { user: Addr },
     #[returns(GetUserBoostResponse)]
     GetUserBoost {
         user: Addr,

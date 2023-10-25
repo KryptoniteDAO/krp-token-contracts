@@ -1,5 +1,5 @@
 use crate::error::ContractError;
-use crate::handler::{add_users, update_config, user_claim};
+use crate::handler::{accept_gov, add_users, set_gov, update_config, user_claim};
 use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 use crate::querier::{query_global_infos, query_user_info, query_user_infos};
 use crate::state::{store_global_config, store_global_state, GlobalConfig, GlobalState};
@@ -46,6 +46,7 @@ pub fn instantiate(
         start_lock_period_time: msg.start_lock_period_time,
         duration_per_period: msg.duration_per_period,
         periods: msg.periods,
+        new_gov: None,
     };
 
     let global_state = GlobalState {
@@ -71,6 +72,8 @@ pub fn execute(
         ExecuteMsg::UpdateConfig(msg) => update_config(deps, env, info, msg),
         ExecuteMsg::AddUser(msg) => add_users(deps, info, msg),
         ExecuteMsg::UserClaim {} => user_claim(deps, env, info),
+        ExecuteMsg::SetGov { gov } => set_gov(deps, info, gov),
+        ExecuteMsg::AcceptGov {} => accept_gov(deps, info),
     }
 }
 

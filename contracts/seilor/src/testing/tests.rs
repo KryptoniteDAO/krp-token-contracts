@@ -83,7 +83,6 @@ mod tests {
         let _msg = ExecuteMsg::UpdateConfig {
             fund: Some(Addr::unchecked("new_fund")),
             distribute: Some(Addr::unchecked("new_distribute")),
-            gov: Some(Addr::unchecked("new_gov")),
         };
         let _info = mock_info("random_user", &[]);
         let _res = execute(deps.as_mut(), mock_env(), _info, _msg);
@@ -107,7 +106,6 @@ mod tests {
         let _msg = ExecuteMsg::UpdateConfig {
             fund: Some(Addr::unchecked("new_fund")),
             distribute: Some(Addr::unchecked("new_distribute")),
-            gov: Some(Addr::unchecked("new_gov")),
         };
         let _info = mock_info("creator", &[]);
         let _res = execute(deps.as_mut(), mock_env(), _info, _msg).unwrap();
@@ -118,7 +116,7 @@ mod tests {
             query_seilor_config(deps.as_ref()).unwrap(),
             SeilorConfigResponse {
                 max_supply,
-                gov: Addr::unchecked("new_gov"),
+                gov: Addr::unchecked("creator"),
                 fund: Addr::unchecked("new_fund"),
                 distribute: Addr::unchecked("new_distribute"),
             }
@@ -128,9 +126,8 @@ mod tests {
         let _msg = ExecuteMsg::UpdateConfig {
             fund: Some(Addr::unchecked("new_fund")),
             distribute: Some(Addr::unchecked("new_distribute")),
-            gov: Some(Addr::unchecked("new_gov")),
         };
-        let _info = mock_info("creator", &[]);
+        let _info = mock_info("creator1", &[]);
         let _res = execute(deps.as_mut(), mock_env(), _info, _msg);
         match _res {
             Err(ContractError::Unauthorized {}) => {}
@@ -190,7 +187,6 @@ mod tests {
         let _msg = ExecuteMsg::UpdateConfig {
             fund: Some(Addr::unchecked("new_fund".to_string())),
             distribute: Some(Addr::unchecked("new_distribute".to_string())),
-            gov: Some(Addr::unchecked("new_gov".to_string())),
         };
         let _info = mock_info("creator", &[]);
         let _res = execute(deps.as_mut(), mock_env(), _info, _msg).unwrap();
@@ -265,7 +261,6 @@ mod tests {
         let _msg = ExecuteMsg::UpdateConfig {
             fund: Some(Addr::unchecked("new_fund".to_string())),
             distribute: Some(Addr::unchecked("new_distribute".to_string())),
-            gov: Some(Addr::unchecked("creator".to_string())),
         };
         let _info = mock_info("creator", &[]);
         let _res = execute(deps.as_mut(), mock_env(), _info, _msg).unwrap();

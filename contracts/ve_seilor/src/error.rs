@@ -20,4 +20,6 @@ pub enum ContractError {
 
     #[error("Missing marketing info")]
     MissingMarketingInfo {},
+    #[error("No new gov")]
+    NoNewGov {},
 }

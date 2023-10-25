@@ -18,6 +18,7 @@ pub struct FundConfig {
     pub exit_cycle: Uint64,
     // uint256 public claimAbleTime;
     pub claim_able_time: Uint64,
+    pub new_gov: Option<Addr>,
 }
 
 const FUND_CONFIG: Item<FundConfig> = Item::new("fund_config");
@@ -35,10 +36,7 @@ const UNSTAKE_RATE: Map<Addr, Uint256> = Map::new("unstake_rate");
 // mapping(address => uint) public lastWithdrawTime;
 const LAST_WITHDRAW_TIME: Map<Addr, Uint64> = Map::new("last_withdraw_time");
 
-pub fn store_fund_config(
-    storage: &mut dyn Storage,
-    fund_config: &FundConfig,
-) -> StdResult<()> {
+pub fn store_fund_config(storage: &mut dyn Storage, fund_config: &FundConfig) -> StdResult<()> {
     FUND_CONFIG.save(storage, fund_config)?;
     Ok(())
 }

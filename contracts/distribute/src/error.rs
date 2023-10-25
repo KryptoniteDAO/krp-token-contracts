@@ -20,4 +20,7 @@ pub enum ContractError {
 
     #[error("AmountClaimOverTotal,claimed_amount:{0},rule_total_amount:{1}")]
     AmountClaimOverTotal(u128, u128),
+
+    #[error("No New Gov")]
+    NoNewGov {},
 }

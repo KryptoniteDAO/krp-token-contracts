@@ -29,24 +29,19 @@ fn test_update_config() {
     let (mut deps, _, info, res) = mock_instantiate(msg.clone());
     assert!(res.is_ok());
 
-    let new_gov = Some(Addr::unchecked("new_gov"));
+    // let new_gov = Some(Addr::unchecked("new_gov"));
     let new_distribute_token = Some(Addr::unchecked("new_distribute_token"));
-    let res = update_config(
-        deps.as_mut(),
-        info,
-        new_gov.clone(),
-        new_distribute_token.clone(),
-    );
+    let res = update_config(deps.as_mut(), info, new_distribute_token.clone());
     assert!(res.is_ok());
     let config = query_config(deps.as_ref()).unwrap();
-    assert_eq!(config.gov, Addr::unchecked("new_gov"));
+    // assert_eq!(config.gov, Addr::unchecked("new_gov"));
     assert_eq!(
         config.distribute_token,
         Addr::unchecked("new_distribute_token")
     );
 
     let other_info = mock_info("other", &[]);
-    let res = update_config(deps.as_mut(), other_info, new_gov, new_distribute_token);
+    let res = update_config(deps.as_mut(), other_info, new_distribute_token);
     assert!(res.is_err());
     assert_eq!(res.err().unwrap(), ContractError::Unauthorized {});
 }

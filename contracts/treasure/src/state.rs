@@ -28,6 +28,7 @@ pub struct TreasureConfig {
     pub mint_nft_cost_dust: Uint128,
     pub winning_num: HashSet<u64>,
     pub mod_num: u64,
+    pub new_gov: Option<Addr>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
