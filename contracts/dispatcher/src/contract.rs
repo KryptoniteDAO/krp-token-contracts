@@ -35,6 +35,10 @@ pub fn instantiate(
             "duration_per_period must be greater than 0",
         ));
     }
+    // verify that periods is greater than 0
+    if msg.periods <= 0 {
+        return Err(StdError::generic_err("periods must be greater than 0"));
+    }
     let global_config = GlobalConfig {
         gov,
         claim_token: msg.claim_token,
