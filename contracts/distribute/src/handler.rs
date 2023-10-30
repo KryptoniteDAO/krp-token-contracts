@@ -186,7 +186,7 @@ pub fn add_rule_config(
         rule_total_amount: rule_msg.rule_total_amount,
         start_release_amount: rule_msg.start_release_amount,
         lock_start_time: rule_msg.lock_start_time,
-        lock_end_time: rule_msg.lock_end_time,
+        // lock_end_time: rule_msg.lock_end_time,
         start_linear_release_time: rule_msg.start_linear_release_time,
         end_linear_release_time,
         unlock_linear_release_amount: rule_msg.unlock_linear_release_amount,

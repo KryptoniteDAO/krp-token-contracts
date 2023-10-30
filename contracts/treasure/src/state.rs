@@ -1,4 +1,4 @@
-use cosmwasm_std::{Addr, StdResult, Storage, Uint128, Uint64};
+use cosmwasm_std::{Addr, StdResult, Storage, Uint128};
 use cw_storage_plus::{Item, Map};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -35,7 +35,7 @@ pub struct TreasureState {
     pub current_locked_amount: Uint128,
 
     pub total_locked_amount: Uint128,
-    pub total_unlock_amount: Uint128,
+    // pub total_unlock_amount: Uint128,
     pub total_withdraw_amount: Uint128,
     pub total_punish_amount: Uint128,
     // pub total_cost_dust_amount: Uint128,
@@ -67,7 +67,7 @@ const TREASURE_STATE: Item<TreasureState> = Item::new("treasure_state");
 
 const TREASURE_USER_STATE: Map<Addr, TreasureUserState> = Map::new("treasure_user_state");
 
-const GLOBAL_INDEX: Item<Uint64> = Item::new("global_index");
+// const GLOBAL_INDEX: Item<Uint64> = Item::new("global_index");
 
 pub fn store_treasure_config(storage: &mut dyn Storage, data: &TreasureConfig) -> StdResult<()> {
     TREASURE_CONFIG.save(storage, data)
@@ -120,9 +120,9 @@ pub fn read_treasure_user_state(
         )
 }
 
-pub fn generate_next_global_id(storage: &mut dyn Storage) -> StdResult<u64> {
-    let mut record_index = GLOBAL_INDEX.load(storage).unwrap_or(Uint64::zero());
-    record_index += Uint64::one();
-    GLOBAL_INDEX.save(storage, &record_index)?;
-    Ok(record_index.u64())
-}
+// pub fn generate_next_global_id(storage: &mut dyn Storage) -> StdResult<u64> {
+//     let mut record_index = GLOBAL_INDEX.load(storage).unwrap_or(Uint64::zero());
+//     record_index += Uint64::one();
+//     GLOBAL_INDEX.save(storage, &record_index)?;
+//     Ok(record_index.u64())
+// }

@@ -4,7 +4,8 @@ use crate::msg::{
     ExecuteMsg, InstantiateMsg, QueryClaimableInfoResponse, QueryMsg, QueryRuleInfoResponse,
 };
 use crate::testing::mock_fn::{
-    mock_instantiate_msg, CREATOR, DAO_OWNER, COMMUNITY_OFFERING_OWNER, RESERVE_OWNER, TEAM_OWNER, MINING_OWNER,
+    mock_instantiate_msg, COMMUNITY_OFFERING_OWNER, CREATOR, DAO_OWNER, MINING_OWNER,
+    RESERVE_OWNER, TEAM_OWNER,
 };
 use crate::testing::mock_third_fn::mock_seilor_instantiate_msg;
 use cosmwasm_std::testing::mock_env;
@@ -263,7 +264,11 @@ fn get_seilor_token_info(app: &mut App, seilor_token: &Addr) -> TokenInfoRespons
     res
 }
 
-fn get_seilor_balance(app: &mut App, seilor_token: &Addr, loot_box_owner: &Addr) -> BalanceResponse {
+fn get_seilor_balance(
+    app: &mut App,
+    seilor_token: &Addr,
+    loot_box_owner: &Addr,
+) -> BalanceResponse {
     let query_msg = seilor::msg::QueryMsg::Balance {
         address: loot_box_owner.clone().to_string(),
     };
@@ -332,7 +337,6 @@ fn update_distribute_contract_to_seilor(
 ) {
     let update_seilor_config_msg = seilor::msg::ExecuteMsg::UpdateConfig {
         fund: None,
-        gov: None,
         distribute: Some(distribute.clone()),
     };
     let res = app.execute_contract(

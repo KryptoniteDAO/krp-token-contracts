@@ -70,7 +70,7 @@ pub fn instantiate(
         current_unlock_amount: Uint128::zero(),
         current_locked_amount: Uint128::zero(),
         total_locked_amount: Uint128::zero(),
-        total_unlock_amount: Uint128::zero(),
+        // total_unlock_amount: Uint128::zero(),
         total_withdraw_amount: Uint128::zero(),
         total_punish_amount: Uint128::zero(),
         // total_cost_dust_amount: Uint128::zero(),

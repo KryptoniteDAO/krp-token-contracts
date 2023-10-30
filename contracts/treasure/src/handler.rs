@@ -303,6 +303,7 @@ pub fn user_withdraw(
 
     // global data
     global_state.current_unlock_amount -= amount;
+    global_state.total_withdraw_amount += amount;
 
     // save user data
     store_treasure_user_state(deps.storage, &info.sender, &user_state)?;
