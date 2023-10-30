@@ -19,12 +19,35 @@ const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(
     deps: DepsMut,
-    _env: Env,
+    env: Env,
     info: MessageInfo,
     msg: InstantiateMsg,
-) -> StdResult<Response> {
+) -> Result<Response, ContractError> {
     let sender = info.clone().sender;
     let gov = msg.gov.unwrap_or(sender.clone());
+    // verify the following parameters:
+    //
+    //     start_lock_time >= current block time
+    // end_lock_time > start_lock_time
+    // nft_start_pre_mint_time >= current block time
+    // nft_start_pre_mint_time > end_lock_time
+    // nft_end_pre_mint_time > nft_start_pre_mint_time
+    let current_block_time = env.block.time.seconds();
+    if msg.start_lock_time < current_block_time {
+        return Err(ContractError::InvalidStartLockTime {});
+    }
+    if msg.end_lock_time <= msg.start_lock_time {
+        return Err(ContractError::InvalidEndLockTime {});
+    }
+    if msg.nft_start_pre_mint_time < current_block_time {
+        return Err(ContractError::InvalidNftStartPreMintTime {});
+    }
+    if msg.nft_start_pre_mint_time <= msg.end_lock_time {
+        return Err(ContractError::InvalidNftStartPreMintTimeAndEndLockTime {});
+    }
+    if msg.nft_end_pre_mint_time <= msg.nft_start_pre_mint_time {
+        return Err(ContractError::InvalidNftEndPreMintTime {});
+    }
 
     let config = TreasureConfig {
         gov: gov.clone(),
@@ -72,7 +95,7 @@ pub fn execute(
 ) -> Result<Response, ContractError> {
     match msg {
         ExecuteMsg::Receive(msg) => receive_cw20(deps, env, info, msg),
-        ExecuteMsg::UpdateConfig(msg) => update_config(deps, info, msg),
+        ExecuteMsg::UpdateConfig(msg) => update_config(deps, env, info, msg),
         ExecuteMsg::UserWithdraw { amount } => user_withdraw(deps, env, info, amount),
         ExecuteMsg::UserUnlock { amount } => user_unlock(deps, env, info, amount),
         ExecuteMsg::PreMintNft { mint_num } => pre_mint_nft(deps, env, info, mint_num),

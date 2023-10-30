@@ -15,6 +15,7 @@ use cw20::{Cw20ExecuteMsg, Cw20ReceiveMsg};
 
 pub fn update_config(
     deps: DepsMut,
+    env: Env,
     info: MessageInfo,
     config_msg: TreasureConfigMsg,
 ) -> Result<Response, ContractError> {
@@ -22,6 +23,7 @@ pub fn update_config(
     if config.gov != info.sender {
         return Err(ContractError::Unauthorized {});
     }
+    let current_block_time = env.block.time.seconds();
     let mut attrs = vec![];
     attrs.push(attr("action", "update_config"));
 
@@ -31,10 +33,16 @@ pub fn update_config(
         attrs.push(attr("lock_token", lock_token.to_string()));
     }
     if let Some(start_lock_time) = config_msg.start_lock_time {
+        if start_lock_time < current_block_time {
+            return Err(ContractError::InvalidStartLockTime {});
+        }
         config.start_lock_time = start_lock_time.clone();
         attrs.push(attr("start_lock_time", start_lock_time.to_string()));
     }
     if let Some(end_lock_time) = config_msg.end_lock_time {
+        if end_lock_time <= config.start_lock_time {
+            return Err(ContractError::InvalidEndLockTime {});
+        }
         config.end_lock_time = end_lock_time.clone();
         attrs.push(attr("end_lock_time", end_lock_time.to_string()));
     }
@@ -66,6 +74,15 @@ pub fn update_config(
     }
 
     if let Some(nft_start_pre_mint_time) = config_msg.nft_start_pre_mint_time {
+        // nft_start_pre_mint_time >= current block time
+        if nft_start_pre_mint_time < current_block_time {
+            return Err(ContractError::InvalidNftStartPreMintTime {});
+        }
+        // nft_start_pre_mint_time > end_lock_time
+        if nft_start_pre_mint_time <= config.end_lock_time {
+            return Err(ContractError::InvalidNftStartPreMintTimeAndEndLockTime {});
+        }
+
         config.nft_start_pre_mint_time = nft_start_pre_mint_time.clone();
         attrs.push(attr(
             "nft_start_pre_mint_time",
@@ -73,6 +90,10 @@ pub fn update_config(
         ));
     }
     if let Some(nft_end_pre_mint_time) = config_msg.nft_end_pre_mint_time {
+        // nft_end_pre_mint_time > nft_start_pre_mint_time
+        if nft_end_pre_mint_time <= config.nft_start_pre_mint_time {
+            return Err(ContractError::InvalidNftEndPreMintTime {});
+        }
         config.nft_end_pre_mint_time = nft_end_pre_mint_time.clone();
         attrs.push(attr(
             "nft_end_pre_mint_time",
