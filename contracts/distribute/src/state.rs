@@ -19,7 +19,7 @@ pub struct RuleConfig {
     pub rule_total_amount: u128,
     pub start_release_amount: u128,
     pub lock_start_time: u64,
-    pub lock_end_time: u64,
+    // pub lock_end_time: u64,
     pub start_linear_release_time: u64,
     pub end_linear_release_time: u64,
     pub unlock_linear_release_amount: u128,
