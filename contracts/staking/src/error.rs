@@ -16,4 +16,6 @@ pub enum ContractError {
     InvalidInput {},
     #[error("No new gov")]
     NoNewGov {},
+    #[error("Invalid Duration")]
+    InvalidDuration {},
 }

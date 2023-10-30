@@ -30,7 +30,10 @@ pub fn instantiate(
     let gov = msg.gov.unwrap_or_else(|| info.sender.clone());
 
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
-
+    // validate that the duration is greater than 0.
+    if msg.duration <= Uint128::zero() {
+        return Err(ContractError::InvalidDuration {});
+    }
     let staking_config = StakingConfig {
         gov,
         staking_token: msg.staking_token,
