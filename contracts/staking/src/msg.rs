@@ -4,8 +4,8 @@ use cw20::Cw20ReceiveMsg;
 
 #[cw_serde]
 pub struct UpdateStakingConfigStruct {
-    pub staking_token: Option<Addr>,
-    pub rewards_token: Option<Addr>,
+    // pub staking_token: Option<Addr>,
+    // pub rewards_token: Option<Addr>,
     pub boost: Option<Addr>,
     pub fund: Option<Addr>,
     pub reward_controller_addr: Option<Addr>,
