@@ -30,8 +30,8 @@ fn test_update_staking_config() {
     let msg = mock_instantiate_msg(staking_token, rewards_token, boost, fund);
     let (mut deps, _, info, _) = mock_instantiate(msg.clone());
     let update_config_msg = UpdateStakingConfigStruct {
-        staking_token: Some(Addr::unchecked("new_staking_token".to_string())),
-        rewards_token: Some(Addr::unchecked("new_rewards_token".to_string())),
+        // staking_token: Some(Addr::unchecked("new_staking_token".to_string())),
+        // rewards_token: Some(Addr::unchecked("new_rewards_token".to_string())),
         boost: Some(Addr::unchecked("new_boost".to_string())),
         fund: Some(Addr::unchecked("new_fund".to_string())),
         reward_controller_addr: Some(Addr::unchecked("new_reward_controller_addr".to_string())),
@@ -40,14 +40,14 @@ fn test_update_staking_config() {
     assert!(res.is_ok());
     let staking_config = read_staking_config(&deps.storage).unwrap();
     assert_eq!(staking_config.gov, Addr::unchecked("creator".to_string()));
-    assert_eq!(
-        staking_config.staking_token,
-        Addr::unchecked("new_staking_token".to_string())
-    );
-    assert_eq!(
-        staking_config.rewards_token,
-        Addr::unchecked("new_rewards_token".to_string())
-    );
+    // assert_eq!(
+    //     staking_config.staking_token,
+    //     Addr::unchecked("new_staking_token".to_string())
+    // );
+    // assert_eq!(
+    //     staking_config.rewards_token,
+    //     Addr::unchecked("new_rewards_token".to_string())
+    // );
     assert_eq!(
         staking_config.boost,
         Addr::unchecked("new_boost".to_string())

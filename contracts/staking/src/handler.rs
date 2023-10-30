@@ -28,17 +28,17 @@ pub fn update_staking_config(
     let mut attrs = vec![];
     attrs.push(attr("action", "update_staking_config"));
 
-    if let Some(staking_token) = update_struct.staking_token {
-        deps.api.addr_validate(staking_token.clone().as_str())?; // validate staking token address
-        staking_config.staking_token = staking_token.clone();
-        attrs.push(attr("staking_token", staking_token.to_string()));
-    }
-
-    if let Some(rewards_token) = update_struct.rewards_token {
-        deps.api.addr_validate(rewards_token.clone().as_str())?; // validate rewards token address
-        staking_config.rewards_token = rewards_token.clone();
-        attrs.push(attr("rewards_token", rewards_token.to_string()));
-    }
+    // if let Some(staking_token) = update_struct.staking_token {
+    //     deps.api.addr_validate(staking_token.clone().as_str())?; // validate staking token address
+    //     staking_config.staking_token = staking_token.clone();
+    //     attrs.push(attr("staking_token", staking_token.to_string()));
+    // }
+    //
+    // if let Some(rewards_token) = update_struct.rewards_token {
+    //     deps.api.addr_validate(rewards_token.clone().as_str())?; // validate rewards token address
+    //     staking_config.rewards_token = rewards_token.clone();
+    //     attrs.push(attr("rewards_token", rewards_token.to_string()));
+    // }
 
     if let Some(boost) = update_struct.boost {
         deps.api.addr_validate(boost.clone().as_str())?; // validate boost address
