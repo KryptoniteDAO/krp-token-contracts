@@ -17,14 +17,14 @@ pub fn mock_instantiate_msg(lock_token: Addr) -> InstantiateMsg {
         gov: None,
         lock_token,
         start_lock_time: 1688128677,
-        end_lock_time: 1690720710,
+        end_lock_time: 1689720710,
         dust_reward_per_second: Uint128::from(16534391u128), // 7days reward 10 dust
         withdraw_delay_duration: 86400 * 14,
         winning_num,
         mod_num: 100,
         punish_receiver: Addr::unchecked(PUNISH_RECEIVER.to_string()),
-        nft_start_pre_mint_time: 1690720710,
-        nft_end_pre_mint_time: 1690820710,
+        nft_start_pre_mint_time: 1690520710,
+        nft_end_pre_mint_time: 1699620710,
         no_delay_punish_coefficient: Uint128::from(300000u128),
         mint_nft_cost_dust: Uint128::from(1_000_000u128 * 10_000u128),
     }

@@ -47,4 +47,14 @@ pub enum ContractError {
     LockTimeNotEnd {},
     #[error("No New Gov")]
     NoNewGov {},
+    #[error("Invalid Start Lock Time")]
+    InvalidStartLockTime {},
+    #[error("Invalid End Lock Time")]
+    InvalidEndLockTime {},
+    #[error("Invalid Nft Start Pre Mint Time")]
+    InvalidNftStartPreMintTime {},
+    #[error("Invalid Nft End Pre Mint Time And end Lock Time")]
+    InvalidNftStartPreMintTimeAndEndLockTime {},
+    #[error("Invalid Nft End Pre Mint Time")]
+    InvalidNftEndPreMintTime {},
 }

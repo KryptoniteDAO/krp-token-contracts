@@ -15,10 +15,11 @@ fn test_instantiate() {
 #[test]
 fn test_update_config() {
     let msg = mock_instantiate_msg(Addr::unchecked(LOCK_TOKEN.clone()));
-    let (mut deps, _env, info, _) = mock_instantiate(msg.clone());
+    let (mut deps, env, info, _) = mock_instantiate(msg.clone());
     let new_winning_num: HashSet<u64> = (75..100).collect();
     let res = update_config(
         deps.as_mut(),
+        env.clone(),
         info.clone(),
         TreasureConfigMsg {
             lock_token: Option::from(Addr::unchecked("new_lock_token".to_string())),
