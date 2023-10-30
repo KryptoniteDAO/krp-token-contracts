@@ -506,7 +506,6 @@ fn set_ve_seilor_to_fund(creator: &Addr, app: &mut App, ve_seilor: &Addr, fund: 
     let ve_seilor_config = ve_seilor::msg::ExecuteMsg::UpdateConfig {
         max_minted: None,
         fund: Some(fund.clone()),
-        gov: None,
     };
     let res = app.execute_contract(creator.clone(), ve_seilor.clone(), &ve_seilor_config, &[]);
     assert!(res.is_ok());

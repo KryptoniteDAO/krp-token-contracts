@@ -77,6 +77,10 @@ pub fn update_staking_duration(
     if info.sender.ne(&staking_config.gov) {
         return Err(ContractError::Unauthorized {});
     }
+    // validate that the duration is greater than 0.
+    if duration <= Uint128::zero() {
+        return Err(ContractError::InvalidDuration {});
+    }
 
     let current_time = Uint128::from(env.block.time.seconds());
     if staking_state.finish_at > current_time {
