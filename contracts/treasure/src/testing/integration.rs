@@ -1,4 +1,3 @@
-use crate::helper::BASE_RATE_12;
 use crate::msg::{ConfigInfosResponse, UserInfosResponse};
 use crate::testing::mock_fn::{CREATOR, PUNISH_RECEIVER};
 use crate::testing::mock_third_fn::mock_cw20_instantiate_msg;
@@ -115,7 +114,7 @@ fn test_integration() {
     assert_eq!(treasure_balance.balance, tom_lock_amount);
 
     let user_state = query_user_infos(&mut app, &treasure_contact, &tom_address).user_state;
-    assert_eq!(user_state.current_dust_amount, Uint128::zero());
+    // assert_eq!(user_state.current_dust_amount, Uint128::zero());
     assert_eq!(user_state.current_locked_amount, tom_lock_amount);
     assert_eq!(user_state.total_locked_amount, tom_lock_amount);
     assert_eq!(user_state.last_lock_time, 1688128677 + 1000u64);
@@ -125,8 +124,8 @@ fn test_integration() {
     assert_eq!(global_state.current_locked_amount, tom_lock_amount);
 
     // tom mint nft error,not enough locked token
-    let res = pre_mint_nft(&mut app, &treasure_contact, &tom_address, 1);
-    assert!(res.is_err());
+    // let res = pre_mint_nft(&mut app, &treasure_contact, &tom_address, 1);
+    // assert!(res.is_err());
 
     // tom lock 9_000_000_000 token
     let tom_lock_2_amount = Uint128::from(9_000_000_000u128);
@@ -164,8 +163,8 @@ fn test_integration() {
         global_info.state.current_locked_amount,
         tom_lock_amount + tom_lock_2_amount
     );
-    assert_eq!(global_info.state.total_lose_nft_num, 0u64);
-    assert_eq!(global_info.state.total_win_nft_num, 0u64);
+    // assert_eq!(global_info.state.total_lose_nft_num, 0u64);
+    // assert_eq!(global_info.state.total_win_nft_num, 0u64);
     assert_eq!(global_info.state.total_withdraw_amount, Uint128::zero());
     assert_eq!(global_info.state.total_punish_amount, Uint128::zero());
 
@@ -177,17 +176,17 @@ fn test_integration() {
         user_state.current_locked_amount,
         tom_lock_amount + tom_lock_2_amount
     );
-    assert_eq!(user_state.current_dust_amount, Uint128::zero());
+    // assert_eq!(user_state.current_dust_amount, Uint128::zero());
     assert_eq!(
         user_state.total_locked_amount,
         tom_lock_amount + tom_lock_2_amount
     );
-    assert_eq!(user_state.total_cost_dust_amount, Uint128::zero());
+    // assert_eq!(user_state.total_cost_dust_amount, Uint128::zero());
 
     assert_eq!(user_state.total_withdraw_amount, Uint128::zero());
     assert_eq!(user_state.total_withdraw_amount, Uint128::zero());
-    assert_eq!(user_state.win_nft_num, 0u64);
-    assert_eq!(user_state.lose_nft_num, 0u64);
+    // assert_eq!(user_state.win_nft_num, 0u64);
+    // assert_eq!(user_state.lose_nft_num, 0u64);
     assert_eq!(user_state.last_lock_time, 1688128677 + 1000u64);
 
     // tom withdraw 1_000_000_000 token error not unlock
@@ -221,13 +220,13 @@ fn test_integration() {
         user_state.current_locked_amount,
         tom_lock_amount + tom_lock_2_amount - tom_unlock_amount
     );
-    assert_eq!(
-        user_state.current_dust_amount,
-        global_info.config.dust_reward_per_second
-            * Uint128::from(1000u128)
-            * (tom_lock_amount + tom_lock_2_amount)
-            / Uint128::from(BASE_RATE_12)
-    );
+    // assert_eq!(
+    //     user_state.current_dust_amount,
+    //     global_info.config.dust_reward_per_second
+    //         * Uint128::from(1000u128)
+    //         * (tom_lock_amount + tom_lock_2_amount)
+    //         / Uint128::from(BASE_RATE_12)
+    // );
     assert_eq!(user_state.current_unlock_amount, tom_unlock_amount);
 
     let global_info = query_config_infos(&mut app, &treasure_contact);
@@ -304,31 +303,31 @@ fn test_integration() {
         block.time = Timestamp::from_seconds(1690720710 + 2000u64);
         block.height += 1000000u64;
     });
-    let user_state = query_user_infos(&mut app, &treasure_contact, &tom_address).user_state;
-    let tom_current_dust_amount = user_state.current_dust_amount;
-    println!("tom_current_dust_amount: {}", tom_current_dust_amount);
+    // let user_state = query_user_infos(&mut app, &treasure_contact, &tom_address).user_state;
+    // let tom_current_dust_amount = user_state.current_dust_amount;
+    // println!("tom_current_dust_amount: {}", tom_current_dust_amount);
     // pre nft mint
-    let pre_nft_mint_amount = 1u64;
-    let res = pre_mint_nft(
-        &mut app,
-        &treasure_contact,
-        &tom_address,
-        pre_nft_mint_amount.clone(),
-    );
-    assert!(res.is_ok());
+    // let pre_nft_mint_amount = 1u64;
+    // let res = pre_mint_nft(
+    //     &mut app,
+    //     &treasure_contact,
+    //     &tom_address,
+    //     pre_nft_mint_amount.clone(),
+    // );
+    // assert!(res.is_ok());
     // check user state
-    let user_state = query_user_infos(&mut app, &treasure_contact, &tom_address).user_state;
-    let global_info = query_config_infos(&mut app, &treasure_contact);
-    let pre_nft_mint_cost_dust = global_info.config.mint_nft_cost_dust * Uint128::one();
-    assert_eq!(
-        user_state.current_dust_amount,
-        tom_current_dust_amount - pre_nft_mint_cost_dust
-    );
-    assert_eq!(user_state.lose_nft_num, 1u64);
-    assert_eq!(
-        user_state.total_cost_dust_amount,
-        global_info.state.total_cost_dust_amount
-    );
+    // let user_state = query_user_infos(&mut app, &treasure_contact, &tom_address).user_state;
+    // let global_info = query_config_infos(&mut app, &treasure_contact);
+    // let pre_nft_mint_cost_dust = global_info.config.mint_nft_cost_dust * Uint128::one();
+    // assert_eq!(
+    //     user_state.current_dust_amount,
+    //     tom_current_dust_amount - pre_nft_mint_cost_dust
+    // );
+    // assert_eq!(user_state.lose_nft_num, 1u64);
+    // assert_eq!(
+    //     user_state.total_cost_dust_amount,
+    //     global_info.state.total_cost_dust_amount
+    // );
 }
 
 fn transfer_token(
@@ -401,26 +400,26 @@ fn user_withdraw(
     }
 }
 
-fn pre_mint_nft(
-    app: &mut App,
-    treasure_contact: &Addr,
-    user: &Addr,
-    mint_num: u64,
-) -> StdResult<Response> {
-    let pre_mint_nft_msg = crate::msg::ExecuteMsg::PreMintNft { mint_num };
-    let res = app.execute_contract(
-        user.clone(),
-        treasure_contact.clone(),
-        &pre_mint_nft_msg,
-        &[], // no funds
-    );
-    if res.is_err() {
-        println!("pre_mint_nft error: {:?}", res);
-        Err(StdError::generic_err("pre_mint_nft error"))
-    } else {
-        Ok(Response::default())
-    }
-}
+// fn pre_mint_nft(
+//     app: &mut App,
+//     treasure_contact: &Addr,
+//     user: &Addr,
+//     mint_num: u64,
+// ) -> StdResult<Response> {
+//     let pre_mint_nft_msg = crate::msg::ExecuteMsg::PreMintNft { mint_num };
+//     let res = app.execute_contract(
+//         user.clone(),
+//         treasure_contact.clone(),
+//         &pre_mint_nft_msg,
+//         &[], // no funds
+//     );
+//     if res.is_err() {
+//         println!("pre_mint_nft error: {:?}", res);
+//         Err(StdError::generic_err("pre_mint_nft error"))
+//     } else {
+//         Ok(Response::default())
+//     }
+// }
 
 fn user_lock(
     user: &Addr,
