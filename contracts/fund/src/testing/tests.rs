@@ -34,7 +34,7 @@ fn test_instantiate() {
     assert_eq!(config.kusd_reward_total_paid_amount, Uint128::zero());
     assert_eq!(config.reward_per_token_stored, Uint128::zero());
     assert_eq!(config.exit_cycle, Uint64::from(2592000u64));
-    assert_eq!(config.claim_able_time, Uint64::from(1687190400u64));
+    assert_eq!(config.claim_able_time, Uint64::from(1689190400u64));
 }
 
 #[test]
@@ -42,10 +42,10 @@ fn test_update_fund_config() {
     let seilor_addr = Addr::unchecked("seilor".to_string());
     let ve_seilor_addr = Addr::unchecked("ve_seilor".to_string());
     let msg = mock_instantiate_msg(seilor_addr.clone(), ve_seilor_addr.clone());
-    let (mut deps, _env, _info, _res) = mock_instantiate(msg);
+    let (mut deps, env, _info, _res) = mock_instantiate(msg);
 
     // Update the config
-    let update_msg = UpdateConfigMsg {
+    let mut update_msg = UpdateConfigMsg {
         ve_seilor_addr: Option::from(Addr::unchecked("new_ve_seilor")),
         seilor_addr: Option::from(Addr::unchecked("new_seilor")),
         kusd_denom: Option::from("new_kusd".to_string()),
@@ -53,10 +53,11 @@ fn test_update_fund_config() {
         claim_able_time: Option::from(Uint64::from(20u64)),
     };
     let info = mock_info("owner2", &[]);
-    let res = update_fund_config(deps.as_mut(), info.clone(), update_msg.clone());
+    let res = update_fund_config(deps.as_mut(), env.clone(), info.clone(), update_msg.clone());
     assert!(res.is_err());
     let info = mock_info(CREATOR, &[]);
-    let res = update_fund_config(deps.as_mut(), info.clone(), update_msg.clone());
+    update_msg.claim_able_time = Option::from(Uint64::from(1689190401u64));
+    let res = update_fund_config(deps.as_mut(), env.clone(), info.clone(), update_msg.clone());
     assert!(res.is_ok());
     let config: FundConfigResponse = fund_config(deps.as_ref()).unwrap();
     assert_eq!(

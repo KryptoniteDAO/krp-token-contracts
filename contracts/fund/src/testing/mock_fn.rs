@@ -1,7 +1,9 @@
-use cosmwasm_std::{Addr, Env, MessageInfo, OwnedDeps, Response, Uint64};
-use cosmwasm_std::testing::{mock_dependencies, mock_env, mock_info, MockApi, MockQuerier, MockStorage};
 use crate::contract::instantiate;
 use crate::msg::InstantiateMsg;
+use cosmwasm_std::testing::{
+    mock_dependencies, mock_env, mock_info, MockApi, MockQuerier, MockStorage,
+};
+use cosmwasm_std::{Addr, Env, MessageInfo, OwnedDeps, Response, Uint64};
 
 pub const CREATOR: &str = "creator";
 pub const KUSD_DENOM: &str = "factory/token";
@@ -15,13 +17,19 @@ pub fn mock_instantiate_msg(seilor_addr: Addr, ve_seilor_addr: Addr) -> Instanti
         kusd_denom: KUSD_DENOM.to_string(),
         kusd_reward_addr: Addr::unchecked(KUSD_REWARD_ADDR),
         exit_cycle: Uint64::from(2592000u64),
-        claim_able_time: Uint64::from(1687190400u64),
+        claim_able_time: Uint64::from(1689190400u64),
     };
     msg
 }
 
-pub fn mock_instantiate(msg: InstantiateMsg) -> (OwnedDeps<MockStorage, MockApi, MockQuerier>,
-                                                 Env, MessageInfo, Response) {
+pub fn mock_instantiate(
+    msg: InstantiateMsg,
+) -> (
+    OwnedDeps<MockStorage, MockApi, MockQuerier>,
+    Env,
+    MessageInfo,
+    Response,
+) {
     let mut deps = mock_dependencies();
     let env = mock_env();
     let info = mock_info(CREATOR, &[]);

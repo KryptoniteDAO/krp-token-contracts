@@ -132,6 +132,12 @@ fn test_integration() {
 
     // unstake
     let unstake_amount = 2592000u128;
+
+    app.update_block(|block| {
+        block.time = block.time.plus_seconds(300000000u64);
+        block.height += 300000000u64;
+    });
+
     unstake(
         &creator,
         &mut app,
@@ -282,6 +288,7 @@ fn unstake(creator: &Addr, app: &mut App, test_contract_addr: &Addr, unstake_amo
         &unstake_msg,
         &[],
     );
+
     assert!(res.is_ok());
 }
 
@@ -329,7 +336,6 @@ fn add_seilor_and_ve_seilor_role_to_fund(
 ) {
     let update_config = seilor::msg::ExecuteMsg::UpdateConfig {
         fund: Some(fund.clone()),
-        gov: None,
         distribute: None,
     };
 
@@ -339,7 +345,6 @@ fn add_seilor_and_ve_seilor_role_to_fund(
     let update_config = ve_seilor::msg::ExecuteMsg::UpdateConfig {
         max_minted: None,
         fund: Some(fund.clone()),
-        gov: None,
     };
 
     let res = app.execute_contract(

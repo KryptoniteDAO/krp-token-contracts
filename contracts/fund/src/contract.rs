@@ -12,7 +12,7 @@ use crate::state::{store_fund_config, FundConfig};
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
-    to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult, Uint128,
+    to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdError, StdResult, Uint128,
 };
 use cw2::set_contract_version;
 
@@ -23,7 +23,7 @@ const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn instantiate(
     deps: DepsMut,
-    _env: Env,
+    env: Env,
     info: MessageInfo,
     msg: InstantiateMsg,
 ) -> StdResult<Response> {
@@ -31,6 +31,12 @@ pub fn instantiate(
 
     let gov = msg.gov.unwrap_or_else(|| info.sender.clone());
 
+    // validate that the claim_able_time is greater than current block time.
+    if msg.claim_able_time.u64() <= env.block.time.seconds() {
+        return Err(StdError::generic_err(
+            "claim_able_time must be greater than current time",
+        ));
+    }
     let config = FundConfig {
         gov,
         ve_seilor_addr: msg.ve_seilor_addr,
@@ -58,7 +64,7 @@ pub fn execute(deps: DepsMut, env: Env, info: MessageInfo, msg: ExecuteMsg) -> S
     match msg {
         ExecuteMsg::Receive(msg) => receive_cw20(deps, env, info, msg),
         ExecuteMsg::UpdateFundConfig { update_config_msg } => {
-            update_fund_config(deps, info, update_config_msg)
+            update_fund_config(deps, env, info, update_config_msg)
         }
         ExecuteMsg::RefreshReward { account } => refresh_reward(deps, account),
         ExecuteMsg::Unstake { amount } => unstake(deps, env, info, amount),
