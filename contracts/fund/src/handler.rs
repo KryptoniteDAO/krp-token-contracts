@@ -24,6 +24,7 @@ use cw20::Cw20ReceiveMsg;
  */
 pub fn update_fund_config(
     deps: DepsMut,
+    env: Env,
     info: MessageInfo,
     msg: UpdateConfigMsg,
 ) -> StdResult<Response> {
@@ -55,6 +56,11 @@ pub fn update_fund_config(
         attrs.push(attr("kusd_reward_addr", kusd_reward_addr.to_string()));
     }
     if let Some(claim_able_time) = msg.claim_able_time {
+        if claim_able_time.u64() <= env.block.time.seconds() {
+            return Err(StdError::generic_err(
+                "claim_able_time must be greater than current time",
+            ));
+        }
         config.claim_able_time = claim_able_time.clone();
         attrs.push(attr("claim_able_time", claim_able_time.to_string()));
     }
