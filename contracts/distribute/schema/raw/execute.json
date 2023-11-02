@@ -51,16 +51,6 @@
                   "type": "null"
                 }
               ]
-            },
-            "gov": {
-              "anyOf": [
-                {
-                  "$ref": "#/definitions/Addr"
-                },
-                {
-                  "type": "null"
-                }
-              ]
             }
           },
           "additionalProperties": false
@@ -113,6 +103,40 @@
         }
       },
       "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "set_gov"
+      ],
+      "properties": {
+        "set_gov": {
+          "type": "object",
+          "required": [
+            "gov"
+          ],
+          "properties": {
+            "gov": {
+              "$ref": "#/definitions/Addr"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "accept_gov"
+      ],
+      "properties": {
+        "accept_gov": {
+          "type": "object",
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
     }
   ],
   "definitions": {
@@ -127,7 +151,6 @@
     "RuleConfigMsg": {
       "type": "object",
       "required": [
-        "lock_end_time",
         "lock_start_time",
         "rule_name",
         "rule_owner",
@@ -138,11 +161,6 @@
         "unlock_linear_release_time"
       ],
       "properties": {
-        "lock_end_time": {
-          "type": "integer",
-          "format": "uint64",
-          "minimum": 0.0
-        },
         "lock_start_time": {
           "type": "integer",
           "format": "uint64",

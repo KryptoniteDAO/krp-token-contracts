@@ -25,7 +25,6 @@
       "required": [
         "end_linear_release_time",
         "linear_release_per_second",
-        "lock_end_time",
         "lock_start_time",
         "rule_name",
         "rule_owner",
@@ -44,11 +43,6 @@
         "linear_release_per_second": {
           "type": "integer",
           "format": "uint128",
-          "minimum": 0.0
-        },
-        "lock_end_time": {
-          "type": "integer",
-          "format": "uint64",
           "minimum": 0.0
         },
         "lock_start_time": {

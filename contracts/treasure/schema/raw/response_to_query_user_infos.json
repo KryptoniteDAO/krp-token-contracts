@@ -15,23 +15,16 @@
     "TreasureUserState": {
       "type": "object",
       "required": [
-        "current_dust_amount",
         "current_locked_amount",
         "current_unlock_amount",
         "last_lock_time",
         "last_unlock_time",
-        "lose_nft_num",
-        "total_cost_dust_amount",
         "total_locked_amount",
         "total_punish_amount",
         "total_unlock_amount",
-        "total_withdraw_amount",
-        "win_nft_num"
+        "total_withdraw_amount"
       ],
       "properties": {
-        "current_dust_amount": {
-          "$ref": "#/definitions/Uint128"
-        },
         "current_locked_amount": {
           "$ref": "#/definitions/Uint128"
         },
@@ -48,14 +41,6 @@
           "format": "uint64",
           "minimum": 0.0
         },
-        "lose_nft_num": {
-          "type": "integer",
-          "format": "uint64",
-          "minimum": 0.0
-        },
-        "total_cost_dust_amount": {
-          "$ref": "#/definitions/Uint128"
-        },
         "total_locked_amount": {
           "$ref": "#/definitions/Uint128"
         },
@@ -67,11 +52,6 @@
         },
         "total_withdraw_amount": {
           "$ref": "#/definitions/Uint128"
-        },
-        "win_nft_num": {
-          "type": "integer",
-          "format": "uint64",
-          "minimum": 0.0
         }
       }
     },

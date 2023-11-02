@@ -42,6 +42,16 @@
         "gov": {
           "$ref": "#/definitions/Addr"
         },
+        "new_gov": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Addr"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "periods": {
           "type": "integer",
           "format": "uint64",

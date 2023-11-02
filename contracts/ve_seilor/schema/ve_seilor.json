@@ -259,16 +259,6 @@
                   }
                 ]
               },
-              "gov": {
-                "anyOf": [
-                  {
-                    "$ref": "#/definitions/Addr"
-                  },
-                  {
-                    "type": "null"
-                  }
-                ]
-              },
               "max_minted": {
                 "anyOf": [
                   {
@@ -413,6 +403,40 @@
         "properties": {
           "upload_logo": {
             "$ref": "#/definitions/Logo"
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "set_gov"
+        ],
+        "properties": {
+          "set_gov": {
+            "type": "object",
+            "required": [
+              "gov"
+            ],
+            "properties": {
+              "gov": {
+                "$ref": "#/definitions/Addr"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "accept_gov"
+        ],
+        "properties": {
+          "accept_gov": {
+            "type": "object",
+            "additionalProperties": false
           }
         },
         "additionalProperties": false
@@ -630,29 +654,6 @@
         "additionalProperties": false
       },
       {
-        "type": "object",
-        "required": [
-          "get_past_total_supply"
-        ],
-        "properties": {
-          "get_past_total_supply": {
-            "type": "object",
-            "required": [
-              "block_number"
-            ],
-            "properties": {
-              "block_number": {
-                "type": "integer",
-                "format": "uint64",
-                "minimum": 0.0
-              }
-            },
-            "additionalProperties": false
-          }
-        },
-        "additionalProperties": false
-      },
-      {
         "description": "Implements CW20. Returns the current balance of the given address, 0 if unset.",
         "type": "object",
         "required": [
@@ -853,22 +854,6 @@
           "type": "string"
         }
       }
-    },
-    "get_past_total_supply": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "GetPastTotalSupplyResponse",
-      "type": "object",
-      "required": [
-        "total_supply"
-      ],
-      "properties": {
-        "total_supply": {
-          "type": "integer",
-          "format": "uint128",
-          "minimum": 0.0
-        }
-      },
-      "additionalProperties": false
     },
     "get_past_votes": {
       "$schema": "http://json-schema.org/draft-07/schema#",

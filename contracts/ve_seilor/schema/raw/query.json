@@ -133,29 +133,6 @@
       "additionalProperties": false
     },
     {
-      "type": "object",
-      "required": [
-        "get_past_total_supply"
-      ],
-      "properties": {
-        "get_past_total_supply": {
-          "type": "object",
-          "required": [
-            "block_number"
-          ],
-          "properties": {
-            "block_number": {
-              "type": "integer",
-              "format": "uint64",
-              "minimum": 0.0
-            }
-          },
-          "additionalProperties": false
-        }
-      },
-      "additionalProperties": false
-    },
-    {
       "description": "Implements CW20. Returns the current balance of the given address, 0 if unset.",
       "type": "object",
       "required": [

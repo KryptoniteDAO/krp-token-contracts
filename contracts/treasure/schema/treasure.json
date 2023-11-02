@@ -7,23 +7,14 @@
     "title": "InstantiateMsg",
     "type": "object",
     "required": [
-      "dust_reward_per_second",
       "end_lock_time",
       "lock_token",
-      "mint_nft_cost_dust",
-      "mod_num",
-      "nft_end_pre_mint_time",
-      "nft_start_pre_mint_time",
       "no_delay_punish_coefficient",
       "punish_receiver",
       "start_lock_time",
-      "winning_num",
       "withdraw_delay_duration"
     ],
     "properties": {
-      "dust_reward_per_second": {
-        "$ref": "#/definitions/Uint128"
-      },
       "end_lock_time": {
         "type": "integer",
         "format": "uint64",
@@ -42,24 +33,6 @@
       "lock_token": {
         "$ref": "#/definitions/Addr"
       },
-      "mint_nft_cost_dust": {
-        "$ref": "#/definitions/Uint128"
-      },
-      "mod_num": {
-        "type": "integer",
-        "format": "uint64",
-        "minimum": 0.0
-      },
-      "nft_end_pre_mint_time": {
-        "type": "integer",
-        "format": "uint64",
-        "minimum": 0.0
-      },
-      "nft_start_pre_mint_time": {
-        "type": "integer",
-        "format": "uint64",
-        "minimum": 0.0
-      },
       "no_delay_punish_coefficient": {
         "$ref": "#/definitions/Uint128"
       },
@@ -70,15 +43,6 @@
         "type": "integer",
         "format": "uint64",
         "minimum": 0.0
-      },
-      "winning_num": {
-        "type": "array",
-        "items": {
-          "type": "integer",
-          "format": "uint64",
-          "minimum": 0.0
-        },
-        "uniqueItems": true
       },
       "withdraw_delay_duration": {
         "type": "integer",
@@ -171,21 +135,32 @@
       {
         "type": "object",
         "required": [
-          "pre_mint_nft"
+          "set_gov"
         ],
         "properties": {
-          "pre_mint_nft": {
+          "set_gov": {
             "type": "object",
             "required": [
-              "mint_num"
+              "gov"
             ],
             "properties": {
-              "mint_num": {
-                "type": "integer",
-                "format": "uint64",
-                "minimum": 0.0
+              "gov": {
+                "$ref": "#/definitions/Addr"
               }
             },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "accept_gov"
+        ],
+        "properties": {
+          "accept_gov": {
+            "type": "object",
             "additionalProperties": false
           }
         },
@@ -225,16 +200,6 @@
       "TreasureConfigMsg": {
         "type": "object",
         "properties": {
-          "dust_reward_per_second": {
-            "anyOf": [
-              {
-                "$ref": "#/definitions/Uint128"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
           "end_lock_time": {
             "type": [
               "integer",
@@ -242,16 +207,6 @@
             ],
             "format": "uint64",
             "minimum": 0.0
-          },
-          "gov": {
-            "anyOf": [
-              {
-                "$ref": "#/definitions/Addr"
-              },
-              {
-                "type": "null"
-              }
-            ]
           },
           "lock_token": {
             "anyOf": [
@@ -262,40 +217,6 @@
                 "type": "null"
               }
             ]
-          },
-          "mint_nft_cost_dust": {
-            "anyOf": [
-              {
-                "$ref": "#/definitions/Uint128"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "mod_num": {
-            "type": [
-              "integer",
-              "null"
-            ],
-            "format": "uint64",
-            "minimum": 0.0
-          },
-          "nft_end_pre_mint_time": {
-            "type": [
-              "integer",
-              "null"
-            ],
-            "format": "uint64",
-            "minimum": 0.0
-          },
-          "nft_start_pre_mint_time": {
-            "type": [
-              "integer",
-              "null"
-            ],
-            "format": "uint64",
-            "minimum": 0.0
           },
           "no_delay_punish_coefficient": {
             "anyOf": [
@@ -324,18 +245,6 @@
             ],
             "format": "uint64",
             "minimum": 0.0
-          },
-          "winning_num": {
-            "type": [
-              "array",
-              "null"
-            ],
-            "items": {
-              "type": "integer",
-              "format": "uint64",
-              "minimum": 0.0
-            },
-            "uniqueItems": true
           },
           "withdraw_delay_duration": {
             "type": [
@@ -428,24 +337,15 @@
         "TreasureConfig": {
           "type": "object",
           "required": [
-            "dust_reward_per_second",
             "end_lock_time",
             "gov",
             "lock_token",
-            "mint_nft_cost_dust",
-            "mod_num",
-            "nft_end_pre_mint_time",
-            "nft_start_pre_mint_time",
             "no_delay_punish_coefficient",
             "punish_receiver",
             "start_lock_time",
-            "winning_num",
             "withdraw_delay_duration"
           ],
           "properties": {
-            "dust_reward_per_second": {
-              "$ref": "#/definitions/Uint128"
-            },
             "end_lock_time": {
               "type": "integer",
               "format": "uint64",
@@ -457,23 +357,15 @@
             "lock_token": {
               "$ref": "#/definitions/Addr"
             },
-            "mint_nft_cost_dust": {
-              "$ref": "#/definitions/Uint128"
-            },
-            "mod_num": {
-              "type": "integer",
-              "format": "uint64",
-              "minimum": 0.0
-            },
-            "nft_end_pre_mint_time": {
-              "type": "integer",
-              "format": "uint64",
-              "minimum": 0.0
-            },
-            "nft_start_pre_mint_time": {
-              "type": "integer",
-              "format": "uint64",
-              "minimum": 0.0
+            "new_gov": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Addr"
+                },
+                {
+                  "type": "null"
+                }
+              ]
             },
             "no_delay_punish_coefficient": {
               "$ref": "#/definitions/Uint128"
@@ -485,15 +377,6 @@
               "type": "integer",
               "format": "uint64",
               "minimum": 0.0
-            },
-            "winning_num": {
-              "type": "array",
-              "items": {
-                "type": "integer",
-                "format": "uint64",
-                "minimum": 0.0
-              },
-              "uniqueItems": true
             },
             "withdraw_delay_duration": {
               "type": "integer",
@@ -507,12 +390,8 @@
           "required": [
             "current_locked_amount",
             "current_unlock_amount",
-            "total_cost_dust_amount",
             "total_locked_amount",
-            "total_lose_nft_num",
             "total_punish_amount",
-            "total_unlock_amount",
-            "total_win_nft_num",
             "total_withdraw_amount"
           ],
           "properties": {
@@ -522,27 +401,11 @@
             "current_unlock_amount": {
               "$ref": "#/definitions/Uint128"
             },
-            "total_cost_dust_amount": {
-              "$ref": "#/definitions/Uint128"
-            },
             "total_locked_amount": {
               "$ref": "#/definitions/Uint128"
             },
-            "total_lose_nft_num": {
-              "type": "integer",
-              "format": "uint64",
-              "minimum": 0.0
-            },
             "total_punish_amount": {
               "$ref": "#/definitions/Uint128"
-            },
-            "total_unlock_amount": {
-              "$ref": "#/definitions/Uint128"
-            },
-            "total_win_nft_num": {
-              "type": "integer",
-              "format": "uint64",
-              "minimum": 0.0
             },
             "total_withdraw_amount": {
               "$ref": "#/definitions/Uint128"
@@ -572,23 +435,16 @@
         "TreasureUserState": {
           "type": "object",
           "required": [
-            "current_dust_amount",
             "current_locked_amount",
             "current_unlock_amount",
             "last_lock_time",
             "last_unlock_time",
-            "lose_nft_num",
-            "total_cost_dust_amount",
             "total_locked_amount",
             "total_punish_amount",
             "total_unlock_amount",
-            "total_withdraw_amount",
-            "win_nft_num"
+            "total_withdraw_amount"
           ],
           "properties": {
-            "current_dust_amount": {
-              "$ref": "#/definitions/Uint128"
-            },
             "current_locked_amount": {
               "$ref": "#/definitions/Uint128"
             },
@@ -605,14 +461,6 @@
               "format": "uint64",
               "minimum": 0.0
             },
-            "lose_nft_num": {
-              "type": "integer",
-              "format": "uint64",
-              "minimum": 0.0
-            },
-            "total_cost_dust_amount": {
-              "$ref": "#/definitions/Uint128"
-            },
             "total_locked_amount": {
               "$ref": "#/definitions/Uint128"
             },
@@ -624,11 +472,6 @@
             },
             "total_withdraw_amount": {
               "$ref": "#/definitions/Uint128"
-            },
-            "win_nft_num": {
-              "type": "integer",
-              "format": "uint64",
-              "minimum": 0.0
             }
           }
         },

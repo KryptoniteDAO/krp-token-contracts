@@ -101,6 +101,40 @@
           }
         },
         "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "set_gov"
+        ],
+        "properties": {
+          "set_gov": {
+            "type": "object",
+            "required": [
+              "gov"
+            ],
+            "properties": {
+              "gov": {
+                "$ref": "#/definitions/Addr"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
+          "accept_gov"
+        ],
+        "properties": {
+          "accept_gov": {
+            "type": "object",
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
       }
     ],
     "definitions": {
@@ -136,16 +170,6 @@
         "type": "object",
         "properties": {
           "claim_token": {
-            "anyOf": [
-              {
-                "$ref": "#/definitions/Addr"
-              },
-              {
-                "type": "null"
-              }
-            ]
-          },
-          "gov": {
             "anyOf": [
               {
                 "$ref": "#/definitions/Addr"
@@ -303,6 +327,16 @@
             },
             "gov": {
               "$ref": "#/definitions/Addr"
+            },
+            "new_gov": {
+              "anyOf": [
+                {
+                  "$ref": "#/definitions/Addr"
+                },
+                {
+                  "type": "null"
+                }
+              ]
             },
             "periods": {
               "type": "integer",

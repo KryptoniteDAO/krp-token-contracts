@@ -36,6 +36,16 @@
     "kusd_reward_total_paid_amount": {
       "$ref": "#/definitions/Uint128"
     },
+    "new_gov": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/Addr"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
     "reward_per_token_stored": {
       "$ref": "#/definitions/Uint128"
     },
