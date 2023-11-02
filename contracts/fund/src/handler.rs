@@ -403,6 +403,5 @@ pub fn accept_gov(deps: DepsMut, info: MessageInfo) -> StdResult<Response> {
     Ok(Response::new().add_attributes(vec![
         attr("action", "accept_gov"),
         attr("gov", config.gov.to_string()),
-        attr("new_gov", ""),
     ]))
 }

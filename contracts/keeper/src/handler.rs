@@ -137,6 +137,5 @@ pub fn accept_ownership(
     Ok(Response::new().add_attributes(vec![
         ("action", "accept_ownership"),
         ("owner", config.owner.clone().to_string().as_str()),
-        ("new_owner", ""),
     ]))
 }

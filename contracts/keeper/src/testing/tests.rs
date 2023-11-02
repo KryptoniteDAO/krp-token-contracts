@@ -55,7 +55,6 @@ mod tests {
 
         // Negative test case with insufficient permissions
         let _msg = ExecuteMsg::UpdateConfig {
-            owner: Some("new_creator".to_string()),
             threshold: Some(Uint128::from(threshold2)),
             rewards_contract: Some("new_fund".to_string()),
             rewards_denom: Some("new_kUSD".to_string()),
@@ -76,7 +75,7 @@ mod tests {
         assert_eq!(
             query_config(deps.as_ref()).unwrap(),
             ConfigResponse {
-                owner: "new_creator".to_string(),
+                owner: "creator".to_string(),
                 threshold: Uint128::from(threshold2),
                 rewards_contract: "new_fund".to_string(),
                 rewards_denom: "new_kUSD".to_string(),
@@ -85,7 +84,7 @@ mod tests {
         );
 
         // Verify old gov with insufficient permissions
-        let _info = mock_info("creator", &[]);
+        let _info = mock_info("new_creator", &[]);
         let _res = execute(deps.as_mut(), mock_env(), _info, _msg);
         match _res {
             Err(ContractError::Unauthorized { .. }) => {}

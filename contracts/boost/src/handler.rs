@@ -64,7 +64,6 @@ pub fn accept_gov(deps: DepsMut, info: MessageInfo) -> StdResult<Response> {
     Ok(Response::new().add_attributes(vec![
         ("action", "accept_gov"),
         ("gov", config.gov.to_string().as_str()),
-        ("new_gov", ""),
     ]))
 }
 // Function to set the user's lock status
