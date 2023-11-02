@@ -239,6 +239,5 @@ pub fn accept_gov(deps: DepsMut, info: MessageInfo) -> Result<Response, Contract
     Ok(Response::new().add_attributes(vec![
         attr("action", "accept_gov"),
         attr("gov", distribute_config.gov.to_string()),
-        attr("new_gov", ""),
     ]))
 }

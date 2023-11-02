@@ -377,6 +377,5 @@ pub fn accept_gov(deps: DepsMut, info: MessageInfo) -> Result<Response, Contract
     Ok(Response::new().add_attributes(vec![
         attr("action", "accept_gov"),
         attr("gov", staking_config.gov.clone().to_string()),
-        attr("new_gov", ""),
     ]))
 }
