@@ -305,6 +305,70 @@ pub enum ExecuteMsg {
 }
 ```
 
+### SetVeFundMinter {.tabset}
+
+Set veSEILOR minter.(access control)
+
+#### Rust
+
+```rust
+#[cw_serde]
+pub enum ExecuteMsg {
+    SetVeFundMinter {
+        minter: Addr,
+        is_ve_minter: bool,
+    },
+}
+```
+
+#### JSON
+
+```json
+{
+  "set_ve_fund_minter": {
+    "minter": "sei1...",
+    "is_ve_minter": true
+  }
+}
+```
+
+| Key            | Type | Description  |
+|----------------|------|--------------|
+| `minter`       | Addr | minter       |
+| `is_ve_minter` | bool | is ve minter |
+
+### VeFundMint {.tabset}
+
+VeSEILOR mint.(access control)
+
+#### Rust
+
+```rust
+#[cw_serde]
+pub enum ExecuteMsg {
+    VeFundMint {
+        user: Addr,
+        amount: Uint128,
+    },
+}
+```
+
+#### JSON
+
+```json
+{
+  "ve_fund_mint": {
+    "user": "sei1...",
+    "amount": "1000000000000000000"
+  }
+}
+```
+
+| Key      | Type    | Description |
+|----------|---------|-------------|
+| `user`   | Addr    | user        |
+| `amount` | Uint128 | amount      |
+
 ## QueryMsg
 
 ### FundConfig {.tabset}
@@ -850,3 +914,32 @@ pub struct UserLastWithdrawTimeResponse {
 | Key                       | Type   | Description |
 |---------------------------|--------|-------------|
 | `user_last_withdraw_time` | Uint64 | amount      |
+
+### IsVeFundMinter {.tabset}
+
+Query is veSEILOR minter. True/false if the given address is a minter.
+
+#### Rust
+
+```rust
+#[cw_serde]
+#[derive(QueryResponses)]
+pub enum QueryMsg {
+    #[returns(bool)]
+    IsVeFundMinter { minter: Addr },
+}
+```
+
+#### JSON
+
+```json
+{
+  "is_ve_fund_minter": {
+    "minter": "sei1..."
+  }
+}
+```
+
+| Key      | Type | Description |
+|----------|------|-------------|
+| `minter` | Addr | minter      |
