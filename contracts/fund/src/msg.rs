@@ -45,6 +45,14 @@ pub enum ExecuteMsg {
         gov: Addr,
     },
     AcceptGov {},
+    SetVeFundMinter {
+        minter: Addr,
+        is_ve_minter: bool,
+    },
+    VeFundMint {
+        user: Addr,
+        amount: Uint128,
+    },
 }
 
 #[cw_serde]
@@ -71,6 +79,8 @@ pub enum QueryMsg {
     GetUserUnstakeRate { account: Addr },
     #[returns(UserLastWithdrawTimeResponse)]
     GetUserLastWithdrawTime { account: Addr },
+    #[returns(bool)]
+    IsVeFundMinter { minter: Addr },
 }
 
 #[cw_serde]

@@ -1,12 +1,12 @@
 use crate::helper::{BASE_RATE_12, BASE_RATE_6};
 use crate::msg::{Cw20HookMsg, UpdateConfigMsg};
 use crate::querier::{
-    earned, get_claim_able_seilor, get_reserved_seilor_for_vesting, total_staked,
+    earned, get_claim_able_seilor, get_reserved_seilor_for_vesting, is_ve_fund_minter, total_staked,
 };
 use crate::state::{
     read_fund_config, read_rewards, read_time2full_redemption, read_unstake_rate,
     store_fund_config, store_last_withdraw_time, store_rewards, store_time2full_redemption,
-    store_unstake_rate, store_user_reward_per_token_paid, FundConfig,
+    store_unstake_rate, store_user_reward_per_token_paid, store_ve_minters, FundConfig,
 };
 use cosmwasm_std::{
     attr, coin, from_binary, to_binary, Addr, BankMsg, CosmosMsg, DepsMut, Env, MessageInfo,
@@ -404,4 +404,62 @@ pub fn accept_gov(deps: DepsMut, info: MessageInfo) -> StdResult<Response> {
         attr("action", "accept_gov"),
         attr("gov", config.gov.to_string()),
     ]))
+}
+
+pub fn set_ve_fund_minter(
+    deps: DepsMut,
+    info: MessageInfo,
+    minter: Addr,
+    is_ve_minter: bool,
+) -> StdResult<Response> {
+    let config: FundConfig = read_fund_config(deps.storage)?;
+    if info.sender != config.gov {
+        return Err(StdError::generic_err("unauthorized"));
+    }
+    deps.api.addr_validate(minter.clone().as_str())?;
+    store_ve_minters(deps.storage, minter.clone(), &is_ve_minter)?;
+    Ok(Response::new().add_attributes(vec![
+        attr("action", "set_ve_fund_minter"),
+        attr("sender", info.sender.to_string()),
+        attr("minter", minter.to_string()),
+        attr("is_ve_minter", is_ve_minter.to_string()),
+    ]))
+}
+
+pub fn ve_fund_mint(
+    mut deps: DepsMut,
+    info: MessageInfo,
+    user: Addr,
+    amount: Uint128,
+) -> StdResult<Response> {
+    let sender = info.sender;
+    if !is_ve_fund_minter(deps.as_ref(), sender.clone())? {
+        return Err(StdError::generic_err("unauthorized minter"));
+    }
+    deps.api.addr_validate(user.clone().as_str())?;
+    _update_reward(deps.branch(), user.clone())?;
+
+    let mut sub_msgs = vec![];
+    let config = read_fund_config(deps.storage)?;
+    if amount.gt(&Uint128::zero()) {
+        let ve_seilor_mint_msg = ve_seilor::msg::ExecuteMsg::Mint {
+            recipient: user.clone().to_string(),
+            amount: amount.clone(),
+        };
+        let sub_mint_msg = SubMsg::new(CosmosMsg::Wasm(WasmMsg::Execute {
+            contract_addr: config.ve_seilor_addr.to_string(),
+            msg: to_binary(&ve_seilor_mint_msg)?,
+            funds: vec![],
+        }));
+        sub_msgs.push(sub_mint_msg);
+    }
+
+    Ok(Response::new()
+        .add_submessages(sub_msgs)
+        .add_attributes(vec![
+            attr("action", "ve_fund_mint"),
+            attr("sender", sender.to_string()),
+            attr("user", user.to_string()),
+            attr("amount", amount.to_string()),
+        ]))
 }

@@ -1,12 +1,12 @@
 use crate::handler::{
     accept_gov, get_reward, notify_reward_amount, re_stake, receive_cw20, refresh_reward, set_gov,
-    unstake, update_fund_config, withdraw,
+    set_ve_fund_minter, unstake, update_fund_config, ve_fund_mint, withdraw,
 };
 use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 use crate::querier::{
     earned, fund_config, get_claim_able_kusd, get_claim_able_seilor,
     get_reserved_seilor_for_vesting, get_user_last_withdraw_time, get_user_reward_per_token_paid,
-    get_user_rewards, get_user_time2full_redemption, get_user_unstake_rate,
+    get_user_rewards, get_user_time2full_redemption, get_user_unstake_rate, is_ve_fund_minter,
 };
 use crate::state::{store_fund_config, FundConfig};
 #[cfg(not(feature = "library"))]
@@ -74,6 +74,11 @@ pub fn execute(deps: DepsMut, env: Env, info: MessageInfo, msg: ExecuteMsg) -> S
         ExecuteMsg::NotifyRewardAmount { .. } => notify_reward_amount(deps, info),
         ExecuteMsg::SetGov { gov } => set_gov(deps, info, gov),
         ExecuteMsg::AcceptGov {} => accept_gov(deps, info),
+        ExecuteMsg::SetVeFundMinter {
+            minter,
+            is_ve_minter,
+        } => set_ve_fund_minter(deps, info, minter, is_ve_minter),
+        ExecuteMsg::VeFundMint { user, amount } => ve_fund_mint(deps, info, user, amount),
     }
 }
 
@@ -102,6 +107,7 @@ pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
         QueryMsg::GetUserLastWithdrawTime { account } => {
             to_binary(&get_user_last_withdraw_time(deps, account)?)
         }
+        QueryMsg::IsVeFundMinter { minter } => to_binary(&is_ve_fund_minter(deps, minter)?),
     }
 }
 

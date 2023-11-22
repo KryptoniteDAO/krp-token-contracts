@@ -6,8 +6,8 @@ use crate::msg::{
     UserUnstakeRateResponse,
 };
 use crate::state::{
-    read_fund_config, read_last_withdraw_time, read_rewards, read_time2full_redemption,
-    read_unstake_rate, read_user_reward_per_token_paid,
+    is_ve_minter, read_fund_config, read_last_withdraw_time, read_rewards,
+    read_time2full_redemption, read_unstake_rate, read_user_reward_per_token_paid,
 };
 use cosmwasm_std::{
     to_binary, Addr, Deps, Env, QueryRequest, StdResult, Uint128, Uint256, Uint64, WasmQuery,
@@ -172,4 +172,8 @@ pub fn get_user_last_withdraw_time(
     Ok(UserLastWithdrawTimeResponse {
         user_last_withdraw_time,
     })
+}
+
+pub fn is_ve_fund_minter(deps: Deps, minter: Addr) -> StdResult<bool> {
+    is_ve_minter(deps.storage, minter)
 }

@@ -1,6 +1,6 @@
-use crate::handler::update_fund_config;
+use crate::handler::{set_ve_fund_minter, update_fund_config};
 use crate::msg::{FundConfigResponse, UpdateConfigMsg};
-use crate::querier::fund_config;
+use crate::querier::{fund_config, is_ve_fund_minter};
 use crate::state::read_fund_config;
 use crate::testing::mock_fn::{
     mock_instantiate, mock_instantiate_msg, CREATOR, KUSD_DENOM, KUSD_REWARD_ADDR,
@@ -76,4 +76,35 @@ fn test_update_fund_config() {
             new_gov: None,
         }
     );
+}
+
+#[test]
+fn test_ve_fund_mint() {
+    let seilor_addr = Addr::unchecked("seilor".to_string());
+    let ve_seilor_addr = Addr::unchecked("ve_seilor".to_string());
+    let msg = mock_instantiate_msg(seilor_addr.clone(), ve_seilor_addr.clone());
+    let (mut deps, _env, info, _res) = mock_instantiate(msg);
+
+    let new_minter = Addr::unchecked("new_minter");
+    // update owner2 as minter, error.
+    let info_no_auth = mock_info("owner2", &[]);
+    let res = set_ve_fund_minter(
+        deps.as_mut(),
+        info_no_auth.clone(),
+        new_minter.clone(),
+        true,
+    );
+    assert!(res.is_err());
+    let is_minter = is_ve_fund_minter(deps.as_ref(), new_minter.clone()).unwrap();
+    assert_eq!(is_minter, false);
+
+    let res = set_ve_fund_minter(deps.as_mut(), info.clone(), new_minter.clone(), true);
+    assert!(res.is_ok());
+    let is_minter = is_ve_fund_minter(deps.as_ref(), new_minter.clone()).unwrap();
+    assert_eq!(is_minter, true);
+
+    let res = set_ve_fund_minter(deps.as_mut(), info.clone(), new_minter.clone(), false);
+    assert!(res.is_ok());
+    let is_minter = is_ve_fund_minter(deps.as_ref(), new_minter.clone()).unwrap();
+    assert_eq!(is_minter, false);
 }

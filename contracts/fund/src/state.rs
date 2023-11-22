@@ -36,6 +36,8 @@ const UNSTAKE_RATE: Map<Addr, Uint256> = Map::new("unstake_rate");
 // mapping(address => uint) public lastWithdrawTime;
 const LAST_WITHDRAW_TIME: Map<Addr, Uint64> = Map::new("last_withdraw_time");
 
+const VE_MINTERS: Map<Addr, bool> = Map::new("ve_minters");
+
 pub fn store_fund_config(storage: &mut dyn Storage, fund_config: &FundConfig) -> StdResult<()> {
     FUND_CONFIG.save(storage, fund_config)?;
     Ok(())
@@ -110,4 +112,17 @@ pub fn read_last_withdraw_time(storage: &dyn Storage, user: Addr) -> Uint64 {
     LAST_WITHDRAW_TIME
         .load(storage, user)
         .unwrap_or(Uint64::zero())
+}
+
+pub fn store_ve_minters(
+    storage: &mut dyn Storage,
+    ve_minter: Addr,
+    is_ve_minter: &bool,
+) -> StdResult<()> {
+    VE_MINTERS.save(storage, ve_minter, is_ve_minter)?;
+    Ok(())
+}
+
+pub fn is_ve_minter(storage: &dyn Storage, ve_minter: Addr) -> StdResult<bool> {
+    Ok(VE_MINTERS.may_load(storage, ve_minter)?.unwrap_or(false))
 }

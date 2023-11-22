@@ -207,6 +207,52 @@ fn test_integration() {
     // query seilor balance
     let query_res = get_seilor_balance(&creator, &mut app, &seilor_token);
     assert_eq!(query_res.balance, Uint128::from(199999901000000u128));
+
+    // ve fund minter mint
+
+    test_ve_fund_mint(creator, &mut app, &ve_seilor_token, test_contract_addr);
+}
+
+fn test_ve_fund_mint(
+    creator: Addr,
+    mut app: &mut App,
+    ve_seilor_token: &Addr,
+    test_contract_addr: Addr,
+) {
+    let ve_fund_mint_amount = 100000000u128;
+    let ve_fund_minter = Addr::unchecked("ve_fund_minter");
+
+    let query_ve_balance_res = get_ve_seilor_balance(&ve_fund_minter, &mut app, &ve_seilor_token);
+    assert_eq!(query_ve_balance_res.balance, Uint128::from(0u128));
+    //set ve fund minter
+    let set_ve_fund_minter_msg = ExecuteMsg::SetVeFundMinter {
+        minter: ve_fund_minter.clone(),
+        is_ve_minter: true,
+    };
+
+    let res = app.execute_contract(
+        creator.clone(),
+        test_contract_addr.clone(),
+        &set_ve_fund_minter_msg,
+        &[],
+    );
+    assert!(res.is_ok());
+    let ve_fund_mint_msg = ExecuteMsg::VeFundMint {
+        user: ve_fund_minter.clone(),
+        amount: Uint128::from(ve_fund_mint_amount.clone()),
+    };
+    let res = app.execute_contract(
+        ve_fund_minter.clone(),
+        test_contract_addr.clone(),
+        &ve_fund_mint_msg,
+        &[],
+    );
+    assert!(res.is_ok());
+    let query_ve_balance_res = get_ve_seilor_balance(&ve_fund_minter, &mut app, &ve_seilor_token);
+    assert_eq!(
+        query_ve_balance_res.balance,
+        Uint128::from(ve_fund_mint_amount.clone())
+    );
 }
 
 fn get_kusd_reward(creator: &Addr, app: &mut App, test_contract_addr: &Addr) {
