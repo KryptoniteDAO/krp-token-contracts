@@ -171,6 +171,56 @@
         }
       },
       "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "set_ve_fund_minter"
+      ],
+      "properties": {
+        "set_ve_fund_minter": {
+          "type": "object",
+          "required": [
+            "is_ve_minter",
+            "minter"
+          ],
+          "properties": {
+            "is_ve_minter": {
+              "type": "boolean"
+            },
+            "minter": {
+              "$ref": "#/definitions/Addr"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "ve_fund_mint"
+      ],
+      "properties": {
+        "ve_fund_mint": {
+          "type": "object",
+          "required": [
+            "amount",
+            "user"
+          ],
+          "properties": {
+            "amount": {
+              "$ref": "#/definitions/Uint128"
+            },
+            "user": {
+              "$ref": "#/definitions/Addr"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
     }
   ],
   "definitions": {
