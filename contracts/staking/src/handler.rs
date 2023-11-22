@@ -264,26 +264,40 @@ pub fn get_reward(
     let mut sub_msgs = vec![];
     if reward > Uint128::zero() {
         store_rewards(deps.storage, sender.clone(), &Uint128::zero())?;
-        let refresh_reward_msg = fund::msg::ExecuteMsg::RefreshReward {
-            account: sender.clone(),
-        };
-        let refresh_reward_sub_msg = SubMsg::new(WasmMsg::Execute {
-            contract_addr: staking_config.fund.clone().to_string(),
-            msg: to_binary(&refresh_reward_msg)?,
-            funds: vec![],
-        });
-        sub_msgs.push(refresh_reward_sub_msg);
 
-        let mint_msg = ve_seilor::msg::ExecuteMsg::Mint {
-            recipient: sender.clone().to_string(),
+        //Unified mint function for ve token, including reward updates
+        let ve_mint_msg = fund::msg::ExecuteMsg::VeFundMint {
+            user: sender.clone(),
             amount: reward.clone(),
         };
-        let mint_sub_msg = SubMsg::new(WasmMsg::Execute {
-            contract_addr: staking_config.rewards_token.clone().to_string(),
-            msg: to_binary(&mint_msg)?,
+
+        let mint_and_refresh_reward_sub_msg = SubMsg::new(WasmMsg::Execute {
+            contract_addr: staking_config.fund.clone().to_string(),
+            msg: to_binary(&ve_mint_msg)?,
             funds: vec![],
         });
-        sub_msgs.push(mint_sub_msg);
+        sub_msgs.push(mint_and_refresh_reward_sub_msg);
+
+        // let refresh_reward_msg = fund::msg::ExecuteMsg::RefreshReward {
+        //     account: sender.clone(),
+        // };
+        // let refresh_reward_sub_msg = SubMsg::new(WasmMsg::Execute {
+        //     contract_addr: staking_config.fund.clone().to_string(),
+        //     msg: to_binary(&refresh_reward_msg)?,
+        //     funds: vec![],
+        // });
+        // sub_msgs.push(refresh_reward_sub_msg);
+        //
+        // let mint_msg = ve_seilor::msg::ExecuteMsg::Mint {
+        //     recipient: sender.clone().to_string(),
+        //     amount: reward.clone(),
+        // };
+        // let mint_sub_msg = SubMsg::new(WasmMsg::Execute {
+        //     contract_addr: staking_config.rewards_token.clone().to_string(),
+        //     msg: to_binary(&mint_msg)?,
+        //     funds: vec![],
+        // });
+        // sub_msgs.push(mint_sub_msg);
     }
 
     Ok(Response::new()

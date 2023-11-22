@@ -228,14 +228,17 @@ fn test_integration() {
 
     set_ve_seilor_to_fund(&creator, &mut app, &ve_seilor, &fund);
 
-    // set ve_seilor miner
-    set_ve_seilor_miners(
-        &creator,
-        &mut app,
-        &ve_seilor,
-        vec![staking_reward.clone()],
-        vec![true],
-    );
+    // // set ve_seilor miner
+    // set_ve_seilor_miners(
+    //     &creator,
+    //     &mut app,
+    //     &ve_seilor,
+    //     vec![staking_reward.clone()],
+    //     vec![true],
+    // );
+
+    // set fund ve_token miner
+    set_fund_ve_token_miners(&creator, &mut app, &fund, staking_reward.clone(), true);
 
     // send reward
     let reward_amount = Uint128::from(1000000u128);
@@ -482,25 +485,25 @@ fn balance_of(app: &mut App, staking_reward: &Addr, user: &Addr) -> Uint128 {
     res.balance_of
 }
 
-fn set_ve_seilor_miners(
-    creator: &Addr,
-    app: &mut App,
-    ve_seilor: &Addr,
-    contracts: Vec<Addr>,
-    is_minter: Vec<bool>,
-) {
-    let ve_seilor_miner_msg = ve_seilor::msg::ExecuteMsg::SetMinters {
-        contracts,
-        is_minter,
-    };
-    let res = app.execute_contract(
-        creator.clone(),
-        ve_seilor.clone(),
-        &ve_seilor_miner_msg,
-        &[],
-    );
-    assert!(res.is_ok());
-}
+// fn set_ve_seilor_miners(
+//     creator: &Addr,
+//     app: &mut App,
+//     ve_seilor: &Addr,
+//     contracts: Vec<Addr>,
+//     is_minter: Vec<bool>,
+// ) {
+//     let ve_seilor_miner_msg = ve_seilor::msg::ExecuteMsg::SetMinters {
+//         contracts,
+//         is_minter,
+//     };
+//     let res = app.execute_contract(
+//         creator.clone(),
+//         ve_seilor.clone(),
+//         &ve_seilor_miner_msg,
+//         &[],
+//     );
+//     assert!(res.is_ok());
+// }
 
 fn set_ve_seilor_to_fund(creator: &Addr, app: &mut App, ve_seilor: &Addr, fund: &Addr) {
     let ve_seilor_config = ve_seilor::msg::ExecuteMsg::UpdateConfig {
@@ -618,4 +621,19 @@ fn stake(
         println!("stake success");
         assert!(res.is_ok());
     }
+}
+
+fn set_fund_ve_token_miners(
+    creator: &Addr,
+    app: &mut App,
+    fund: &Addr,
+    contract: Addr,
+    is_minter: bool,
+) {
+    let ve_fund_miner_msg = fund::msg::ExecuteMsg::SetVeFundMinter {
+        minter: contract,
+        is_ve_minter: is_minter,
+    };
+    let res = app.execute_contract(creator.clone(), fund.clone(), &ve_fund_miner_msg, &[]);
+    assert!(res.is_ok());
 }
