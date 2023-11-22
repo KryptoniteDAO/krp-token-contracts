@@ -1,7 +1,8 @@
 use crate::helper::{BASE_RATE_12, BASE_RATE_6};
 use crate::msg::{Cw20HookMsg, UpdateConfigMsg};
 use crate::querier::{
-    earned, get_claim_able_seilor, get_reserved_seilor_for_vesting, is_ve_fund_minter, total_staked,
+    check_total_supply, earned, get_claim_able_seilor, get_reserved_seilor_for_vesting,
+    is_ve_fund_minter, total_staked,
 };
 use crate::state::{
     read_fund_config, read_rewards, read_time2full_redemption, read_unstake_rate,
@@ -439,8 +440,18 @@ pub fn ve_fund_mint(
     deps.api.addr_validate(user.clone().as_str())?;
     _update_reward(deps.branch(), user.clone())?;
 
-    let mut sub_msgs = vec![];
     let config = read_fund_config(deps.storage)?;
+    //check token total supply
+    check_total_supply(
+        deps.as_ref(),
+        config.seilor_addr.clone(),
+        config.ve_seilor_addr.clone(),
+        config.token_cap.clone(),
+        amount.clone(),
+    )?;
+
+    let mut sub_msgs = vec![];
+
     if amount.gt(&Uint128::zero()) {
         let ve_seilor_mint_msg = ve_seilor::msg::ExecuteMsg::Mint {
             recipient: user.clone().to_string(),

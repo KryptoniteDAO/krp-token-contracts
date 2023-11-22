@@ -74,6 +74,7 @@ fn test_update_fund_config() {
             exit_cycle: Uint64::from(2592000u64),
             claim_able_time: Option::from(update_msg.claim_able_time.unwrap()).unwrap(),
             new_gov: None,
+            token_cap: None,
         }
     );
 }

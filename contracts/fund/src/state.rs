@@ -19,6 +19,7 @@ pub struct FundConfig {
     // uint256 public claimAbleTime;
     pub claim_able_time: Uint64,
     pub new_gov: Option<Addr>,
+    pub token_cap: Option<Uint128>,
 }
 
 const FUND_CONFIG: Item<FundConfig> = Item::new("fund_config");

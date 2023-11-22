@@ -44,8 +44,8 @@ pub fn mock_ve_seilor_instantiate_msg() -> ve_seilor::msg::InstantiateMsg {
         }),
     };
     let msg = ve_seilor::msg::InstantiateMsg {
-        max_supply: 60500000000000u128,
-        max_minted: 60500000000000u128,
+        max_supply: 1000000000000000u128,
+        max_minted: 1000000000000000u128,
         gov: None,
         cw20_init_msg: cw20_instantiate_msg,
     };

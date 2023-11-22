@@ -7,7 +7,7 @@ use crate::testing::mock_fn::{
     mock_instantiate_msg, COMMUNITY_OFFERING_OWNER, CREATOR, DAO_OWNER, MINING_OWNER,
     RESERVE_OWNER, TEAM_OWNER,
 };
-use crate::testing::mock_third_fn::mock_seilor_instantiate_msg;
+use crate::testing::mock_third_fn::{mock_seilor_instantiate_msg, mock_ve_seilor_instantiate_msg};
 use cosmwasm_std::testing::mock_env;
 use cosmwasm_std::{Addr, Coin, Timestamp, Uint128};
 use cw20::{BalanceResponse, TokenInfoResponse};
@@ -45,8 +45,11 @@ fn test_integration_claim_all() {
     //deploy seilor contract
     let seilor_token = seilor_contract_instance(&creator, &mut app);
 
+    let ve_seilor_token = ve_seilor_contract_instance(&creator, &mut app);
+
     // deploy seilor distribute contract
-    let seilor_distribute = distribute_contract_instance(&creator, &seilor_token, &mut app);
+    let seilor_distribute =
+        distribute_contract_instance(&creator, &seilor_token, &ve_seilor_token, &mut app);
 
     // update seilor token mint role
     update_distribute_contract_to_seilor(&creator, &mut app, &seilor_token, &seilor_distribute);
@@ -164,8 +167,11 @@ fn test_integration() {
     //deploy seilor contract
     let seilor_token = seilor_contract_instance(&creator, &mut app);
 
+    let ve_seilor_token = ve_seilor_contract_instance(&creator, &mut app);
+
     // deploy seilor_distribute contract
-    let seilor_distribute = distribute_contract_instance(&creator, &seilor_token, &mut app);
+    let seilor_distribute =
+        distribute_contract_instance(&creator, &seilor_token, &ve_seilor_token, &mut app);
 
     // update seilor token mint role
     update_distribute_contract_to_seilor(&creator, &mut app, &seilor_token, &seilor_distribute);
@@ -348,9 +354,15 @@ fn update_distribute_contract_to_seilor(
     assert!(res.is_ok());
 }
 
-fn distribute_contract_instance(creator: &Addr, seilor_token: &Addr, mut app: &mut App) -> Addr {
+fn distribute_contract_instance(
+    creator: &Addr,
+    seilor_token: &Addr,
+    ve_seilor_token: &Addr,
+    mut app: &mut App,
+) -> Addr {
     let seilor_distribute_code_id = store_seilor_distribute_contract(&mut app);
-    let seilor_distribute_instance_msg: InstantiateMsg = mock_instantiate_msg(seilor_token.clone());
+    let seilor_distribute_instance_msg: InstantiateMsg =
+        mock_instantiate_msg(seilor_token.clone(), ve_seilor_token.clone());
     let seilor_distribute_token = app
         .instantiate_contract(
             seilor_distribute_code_id,
@@ -378,4 +390,29 @@ fn seilor_contract_instance(creator: &Addr, mut app: &mut App) -> Addr {
         )
         .unwrap();
     seilor_token
+}
+
+fn store_ve_seilor_contract(app: &mut App) -> u64 {
+    let ve_seilor_contract = Box::new(ContractWrapper::new_with_empty(
+        ve_seilor::contract::execute,
+        ve_seilor::contract::instantiate,
+        ve_seilor::contract::query,
+    ));
+    app.store_code(ve_seilor_contract)
+}
+
+fn ve_seilor_contract_instance(creator: &Addr, mut app: &mut App) -> Addr {
+    let ve_seilor_code_id = store_ve_seilor_contract(&mut app);
+    let ve_seilor_instance_msg: ve_seilor::msg::InstantiateMsg = mock_ve_seilor_instantiate_msg();
+    let ve_seilor_token = app
+        .instantiate_contract(
+            ve_seilor_code_id,
+            creator.clone(),
+            &ve_seilor_instance_msg,
+            &[], // no funds
+            String::from("VE_SEILOR"),
+            None,
+        )
+        .unwrap();
+    ve_seilor_token
 }

@@ -1,6 +1,6 @@
 use crate::state::{RuleConfig, RuleConfigState};
 use cosmwasm_schema::{cw_serde, QueryResponses};
-use cosmwasm_std::{Addr, Binary};
+use cosmwasm_std::{Addr, Binary, Uint128};
 use std::collections::HashMap;
 
 #[cw_serde]
@@ -21,7 +21,9 @@ pub struct QueryConfigResponse {
     pub gov: Addr,
     pub total_amount: u128,
     pub distribute_token: Addr,
+    pub distribute_ve_token: Addr,
     pub rules_total_amount: u128,
+    pub token_cap: Option<Uint128>,
 }
 
 #[cw_serde]
@@ -49,6 +51,7 @@ pub struct InstantiateMsg {
     pub gov: Option<Addr>,
     pub total_amount: u128,
     pub distribute_token: Addr,
+    pub distribute_ve_token: Addr,
     pub rule_configs_map: HashMap<String, RuleConfigMsg>,
 }
 

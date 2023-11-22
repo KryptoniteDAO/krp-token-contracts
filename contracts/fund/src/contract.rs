@@ -7,6 +7,7 @@ use crate::querier::{
     earned, fund_config, get_claim_able_kusd, get_claim_able_seilor,
     get_reserved_seilor_for_vesting, get_user_last_withdraw_time, get_user_reward_per_token_paid,
     get_user_rewards, get_user_time2full_redemption, get_user_unstake_rate, is_ve_fund_minter,
+    query_token_minter_cap,
 };
 use crate::state::{store_fund_config, FundConfig};
 #[cfg(not(feature = "library"))]
@@ -37,6 +38,7 @@ pub fn instantiate(
             "claim_able_time must be greater than current time",
         ));
     }
+    let token_cap = query_token_minter_cap(deps.as_ref(), msg.seilor_addr.clone())?;
     let config = FundConfig {
         gov,
         ve_seilor_addr: msg.ve_seilor_addr,
@@ -49,6 +51,7 @@ pub fn instantiate(
         exit_cycle: msg.exit_cycle,
         claim_able_time: msg.claim_able_time,
         new_gov: None,
+        token_cap,
     };
 
     store_fund_config(deps.storage, &config)?;

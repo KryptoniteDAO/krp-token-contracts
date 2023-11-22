@@ -10,9 +10,10 @@ use crate::state::{
     read_time2full_redemption, read_unstake_rate, read_user_reward_per_token_paid,
 };
 use cosmwasm_std::{
-    to_binary, Addr, Deps, Env, QueryRequest, StdResult, Uint128, Uint256, Uint64, WasmQuery,
+    to_binary, Addr, Deps, Env, QueryRequest, StdError, StdResult, Uint128, Uint256, Uint64,
+    WasmQuery,
 };
-use cw20::{BalanceResponse, TokenInfoResponse};
+use cw20::{BalanceResponse, MinterResponse, TokenInfoResponse};
 use cw20_base::msg::QueryMsg::{Balance, TokenInfo};
 use std::str::FromStr;
 
@@ -30,6 +31,7 @@ pub fn fund_config(deps: Deps) -> StdResult<FundConfigResponse> {
         exit_cycle: config.exit_cycle,
         claim_able_time: config.claim_able_time,
         new_gov: config.new_gov,
+        token_cap: config.token_cap,
     })
 }
 
@@ -176,4 +178,48 @@ pub fn get_user_last_withdraw_time(
 
 pub fn is_ve_fund_minter(deps: Deps, minter: Addr) -> StdResult<bool> {
     is_ve_minter(deps.storage, minter)
+}
+
+pub fn query_token_minter_cap(deps: Deps, token_addr: Addr) -> StdResult<Option<Uint128>> {
+    let minter: MinterResponse = deps
+        .querier
+        .query(&QueryRequest::Wasm(WasmQuery::Smart {
+            contract_addr: token_addr.to_string(),
+            msg: to_binary(&cw20_base::msg::QueryMsg::Minter {})?,
+        }))
+        .unwrap_or_else(|_| MinterResponse {
+            minter: "".to_string(),
+            cap: None,
+        });
+    Ok(minter.cap)
+}
+
+pub fn query_token_total_supply(deps: Deps, token_addr: Addr) -> StdResult<Uint128> {
+    let res: TokenInfoResponse = deps.querier.query(&QueryRequest::Wasm(WasmQuery::Smart {
+        contract_addr: token_addr.to_string(),
+        msg: to_binary(&TokenInfo {})?,
+    }))?;
+    Ok(res.total_supply)
+}
+
+pub fn check_total_supply(
+    deps: Deps,
+    token_addr: Addr,
+    ve_token_addr: Addr,
+    token_cap: Option<Uint128>,
+    add_amount: Uint128,
+) -> StdResult<()> {
+    if token_cap.is_some() {
+        let token_total_supply = query_token_total_supply(deps, token_addr)?;
+        let ve_token_total_supply = query_token_total_supply(deps, ve_token_addr)?;
+        let total_supply = token_total_supply
+            .checked_add(ve_token_total_supply)?
+            .checked_add(add_amount)?;
+        if total_supply > token_cap.unwrap() {
+            return Err(StdError::generic_err(
+                "total supply of token and ve token is greater than token cap",
+            ));
+        }
+    }
+    Ok(())
 }

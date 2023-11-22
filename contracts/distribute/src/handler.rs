@@ -1,7 +1,7 @@
 use crate::error::ContractError;
 use crate::helper::BASE_RATE_12;
 use crate::msg::{RuleConfigMsg, UpdateRuleConfigMsg};
-use crate::querier::query_claimable_info;
+use crate::querier::{check_total_supply, query_claimable_info};
 use crate::state::{
     check_rule_config_exist, read_distribute_config, read_rule_config, read_rule_config_state,
     store_distribute_config, store_rule_config, store_rule_config_state, RuleConfig,
@@ -149,6 +149,16 @@ pub fn add_rule_config(
     if distribute_config.gov != info.sender {
         return Err(ContractError::Unauthorized {});
     }
+
+    //check token total supply
+    check_total_supply(
+        deps.as_ref(),
+        distribute_config.distribute_token.clone(),
+        distribute_config.distribute_ve_token.clone(),
+        distribute_config.token_cap.clone(),
+        Uint128::from(rule_msg.rule_total_amount.clone()),
+    )?;
+
     let exist_rule_config = check_rule_config_exist(deps.storage, &rule_type)?;
 
     if exist_rule_config {

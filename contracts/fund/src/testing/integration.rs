@@ -5,7 +5,7 @@ use crate::testing::mock_fn::{mock_instantiate_msg, CREATOR, KUSD_DENOM, KUSD_RE
 use crate::testing::mock_third_fn::{mock_seilor_instantiate_msg, mock_ve_seilor_instantiate_msg};
 use cosmwasm_std::testing::mock_env;
 use cosmwasm_std::{coin, to_binary, Addr, Coin, Timestamp, Uint128};
-use cw20::BalanceResponse;
+use cw20::{BalanceResponse, TokenInfoResponse};
 use cw_multi_test::{App, AppBuilder, ContractWrapper, Executor};
 
 fn mock_app(owner: Addr, coins: Vec<Coin>, block_time: Option<u64>) -> App {
@@ -67,7 +67,13 @@ fn test_integration() {
     //deploy seilor && ve seilor
     let seilor_token = seilor_contract_instance(&creator, &mut app);
 
+    let token_info = get_token_info(&mut app, &seilor_token);
+    assert_eq!(token_info.total_supply, Uint128::from(200000000000000u128));
+
     let ve_seilor_token = ve_seilor_contract_instance(&creator, &mut app);
+
+    let ve_token_info = get_token_info(&mut app, &ve_seilor_token);
+    assert_eq!(ve_token_info.total_supply, Uint128::from(0u128));
 
     //deploy fund
     let test_contract_addr =
@@ -211,6 +217,19 @@ fn test_integration() {
     // ve fund minter mint
 
     test_ve_fund_mint(creator, &mut app, &ve_seilor_token, test_contract_addr);
+
+    let token_info = get_token_info(&mut app, &seilor_token);
+    assert_eq!(token_info.total_supply, Uint128::from(199999901000000u128));
+    let ve_token_info = get_token_info(&mut app, &ve_seilor_token);
+    assert_eq!(ve_token_info.total_supply, Uint128::from(197408000u128));
+
+    let token_minter = get_minter(&mut app, &seilor_token);
+    assert_eq!(token_minter.cap, Some(Uint128::from(1000000000000000u128)));
+    let ve_token_minter = get_minter(&mut app, &ve_seilor_token);
+    assert_eq!(
+        ve_token_minter.cap,
+        Some(Uint128::from(1000000000000000u128))
+    );
 }
 
 fn test_ve_fund_mint(
@@ -491,4 +510,22 @@ fn get_claimable_seilor(
         .query_wasm_smart(test_contract_addr.clone(), &query_claimable_seilor_msg)
         .unwrap();
     query_msg
+}
+
+fn get_token_info(app: &mut App, token_addr: &Addr) -> TokenInfoResponse {
+    let query_token_info_msg = cw20_base::msg::QueryMsg::TokenInfo {};
+    let query_res: cw20::TokenInfoResponse = app
+        .wrap()
+        .query_wasm_smart(token_addr.clone(), &query_token_info_msg)
+        .unwrap();
+    query_res
+}
+
+fn get_minter(app: &mut App, token_addr: &Addr) -> cw20::MinterResponse {
+    let query_minter_msg = cw20_base::msg::QueryMsg::Minter {};
+    let query_res: cw20::MinterResponse = app
+        .wrap()
+        .query_wasm_smart(token_addr.clone(), &query_minter_msg)
+        .unwrap();
+    query_res
 }

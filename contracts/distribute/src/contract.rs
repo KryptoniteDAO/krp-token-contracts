@@ -4,7 +4,7 @@ use crate::handler::{
 };
 use crate::helper::BASE_RATE_12;
 use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
-use crate::querier::{query_claimable_info, query_config, query_rule_info};
+use crate::querier::{query_claimable_info, query_config, query_rule_info, query_token_minter_cap};
 use crate::state::{
     store_distribute_config, store_rule_config, store_rule_config_state, DistributeConfig,
     RuleConfig, RuleConfigState,
@@ -60,6 +60,7 @@ pub fn instantiate(
         };
         store_rule_config_state(deps.storage, &rule_type, &rule_config_state)?;
     }
+    let token_cap = query_token_minter_cap(deps.as_ref(), msg.distribute_token.clone())?;
     // init distribute config
     let distribute_config = DistributeConfig {
         gov: gov.clone(),
@@ -67,6 +68,8 @@ pub fn instantiate(
         distribute_token: msg.distribute_token,
         rules_total_amount: rule_total_amount,
         new_gov: None,
+        distribute_ve_token: msg.distribute_ve_token,
+        token_cap,
     };
 
     if distribute_config.total_amount < rule_total_amount {
@@ -74,6 +77,8 @@ pub fn instantiate(
             "total_amount must be greater than rule_total_amount",
         ));
     }
+
+    // do not check total supply
 
     set_contract_version(deps.storage, CONTRACT_NAME, CONTRACT_VERSION)?;
     store_distribute_config(deps.storage, &distribute_config)?;

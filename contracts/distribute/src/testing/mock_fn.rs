@@ -16,7 +16,7 @@ pub const MINING_OWNER: &str = "mining_owner";
 pub const RESERVE_OWNER: &str = "reserve_owner";
 //pub const AIRDROP_OWNER: &str = "airdrop_owner";
 
-pub fn mock_instantiate_msg(distribute_token: Addr) -> InstantiateMsg {
+pub fn mock_instantiate_msg(distribute_token: Addr, distribute_ve_token: Addr) -> InstantiateMsg {
     let mut rule_configs_map = HashMap::new();
 
     rule_configs_map.insert(
@@ -96,6 +96,7 @@ pub fn mock_instantiate_msg(distribute_token: Addr) -> InstantiateMsg {
         gov: None,
         total_amount: 1_000_000_000_000_000,
         distribute_token,
+        distribute_ve_token,
         rule_configs_map,
     }
 }

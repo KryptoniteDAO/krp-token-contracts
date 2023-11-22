@@ -52,6 +52,16 @@
     "seilor_addr": {
       "$ref": "#/definitions/Addr"
     },
+    "token_cap": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/Uint128"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
     "ve_seilor_addr": {
       "$ref": "#/definitions/Addr"
     }

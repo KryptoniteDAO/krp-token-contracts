@@ -1,4 +1,4 @@
-use cosmwasm_std::{Addr, StdResult, Storage};
+use cosmwasm_std::{Addr, StdResult, Storage, Uint128};
 use cw_storage_plus::{Item, Map};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
@@ -10,6 +10,8 @@ pub struct DistributeConfig {
     pub distribute_token: Addr,
     pub rules_total_amount: u128,
     pub new_gov: Option<Addr>,
+    pub distribute_ve_token: Addr,
+    pub token_cap: Option<Uint128>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]

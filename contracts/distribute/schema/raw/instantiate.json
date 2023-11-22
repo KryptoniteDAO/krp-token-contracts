@@ -4,11 +4,15 @@
   "type": "object",
   "required": [
     "distribute_token",
+    "distribute_ve_token",
     "rule_configs_map",
     "total_amount"
   ],
   "properties": {
     "distribute_token": {
+      "$ref": "#/definitions/Addr"
+    },
+    "distribute_ve_token": {
       "$ref": "#/definitions/Addr"
     },
     "gov": {
