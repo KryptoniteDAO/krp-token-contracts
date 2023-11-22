@@ -1,6 +1,6 @@
-use cosmwasm_std::{Addr, Deps, StdResult};
-use crate::msg::{IsMinterResponse, VoteConfigResponse};
-use crate::state::{is_minter, read_vote_config, VoteConfig};
+use crate::msg::VoteConfigResponse;
+use crate::state::{read_vote_config, VoteConfig};
+use cosmwasm_std::{Deps, StdResult};
 
 pub fn query_vote_config(deps: Deps) -> StdResult<VoteConfigResponse> {
     let config: VoteConfig = read_vote_config(deps.storage)?;
@@ -13,8 +13,8 @@ pub fn query_vote_config(deps: Deps) -> StdResult<VoteConfigResponse> {
     })
 }
 
-pub fn query_is_minter(deps: Deps, minter: Addr) -> StdResult<IsMinterResponse> {
-    Ok(IsMinterResponse {
-        is_minter: is_minter(deps.storage, minter)?,
-    })
-}
+// pub fn query_is_minter(deps: Deps, minter: Addr) -> StdResult<IsMinterResponse> {
+//     Ok(IsMinterResponse {
+//         is_minter: is_minter(deps.storage, minter)?,
+//     })
+// }

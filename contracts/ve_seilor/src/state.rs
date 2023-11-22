@@ -30,7 +30,7 @@ pub struct VoteConfig {
 const CHECK_POINTS: Map<Addr, Vec<Checkpoint>> = Map::new("checkpoints");
 // const VOTE_INFO: Item<VoteInfo> = Item::new("vote_info");
 const VOTE_CONFIG: Item<VoteConfig> = Item::new("vote_config");
-const MINTERS: Map<Addr, bool> = Map::new("minters");
+// const MINTERS: Map<Addr, bool> = Map::new("minters");
 
 // pub fn store_delegates(storage: &mut dyn Storage, delegator: Addr, delegate: &Addr) -> StdResult<()> {
 //     DELEGATES.save(storage, delegator, delegate)?;
@@ -107,15 +107,15 @@ pub fn read_vote_config(storage: &dyn Storage) -> StdResult<VoteConfig> {
         .ok_or_else(|| StdError::generic_err("Vote config not found"))
 }
 
-pub fn store_minters(storage: &mut dyn Storage, minter: Addr, is_minter: &bool) -> StdResult<()> {
-    MINTERS.save(storage, minter, is_minter)?;
-    Ok(())
-}
-
-// pub fn read_minters(storage: &dyn Storage, minter: Addr) -> StdResult<bool> {
-//     MINTERS.may_load(storage, minter)?.ok_or_else(|| StdError::generic_err("Minter not found"))
+// pub fn store_minters(storage: &mut dyn Storage, minter: Addr, is_minter: &bool) -> StdResult<()> {
+//     MINTERS.save(storage, minter, is_minter)?;
+//     Ok(())
 // }
-
-pub fn is_minter(storage: &dyn Storage, minter: Addr) -> StdResult<bool> {
-    Ok(MINTERS.may_load(storage, minter)?.unwrap_or(false))
-}
+//
+// // pub fn read_minters(storage: &dyn Storage, minter: Addr) -> StdResult<bool> {
+// //     MINTERS.may_load(storage, minter)?.ok_or_else(|| StdError::generic_err("Minter not found"))
+// // }
+//
+// pub fn is_minter(storage: &dyn Storage, minter: Addr) -> StdResult<bool> {
+//     Ok(MINTERS.may_load(storage, minter)?.unwrap_or(false))
+// }

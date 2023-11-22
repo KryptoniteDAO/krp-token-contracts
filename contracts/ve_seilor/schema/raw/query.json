@@ -18,27 +18,6 @@
     {
       "type": "object",
       "required": [
-        "is_minter"
-      ],
-      "properties": {
-        "is_minter": {
-          "type": "object",
-          "required": [
-            "address"
-          ],
-          "properties": {
-            "address": {
-              "type": "string"
-            }
-          },
-          "additionalProperties": false
-        }
-      },
-      "additionalProperties": false
-    },
-    {
-      "type": "object",
-      "required": [
         "checkpoints"
       ],
       "properties": {

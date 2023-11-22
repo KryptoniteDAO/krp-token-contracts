@@ -1,7 +1,7 @@
 use crate::error::ContractError;
-use crate::handler::{accept_gov, burn, mint, set_gov, set_minters, update_config};
+use crate::handler::{accept_gov, burn, mint, set_gov, update_config};
 use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
-use crate::querier::{query_is_minter, query_vote_config};
+use crate::querier::query_vote_config;
 use crate::state::{store_vote_config, VoteConfig};
 use crate::ve_querier::{checkpoints, get_past_votes, get_votes, num_checkpoints};
 #[cfg(not(feature = "library"))]
@@ -91,10 +91,10 @@ pub fn execute(
         ExecuteMsg::UpdateConfig { max_minted, fund } => {
             update_config(deps, info, max_minted, fund)
         }
-        ExecuteMsg::SetMinters {
-            contracts,
-            is_minter,
-        } => set_minters(deps, info, contracts, is_minter),
+        // ExecuteMsg::SetMinters {
+        //     contracts,
+        //     is_minter,
+        // } => set_minters(deps, info, contracts, is_minter),
         ExecuteMsg::Mint { recipient, amount } => {
             let recipient = deps.api.addr_validate(&recipient)?;
             mint(deps, env, info, recipient, amount.u128())
@@ -137,9 +137,9 @@ pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
         // custom queries
         QueryMsg::VoteConfig {} => to_binary(&query_vote_config(deps)?),
-        QueryMsg::IsMinter { address } => {
-            to_binary(&query_is_minter(deps, deps.api.addr_validate(&address)?)?)
-        }
+        // QueryMsg::IsMinter { address } => {
+        //     to_binary(&query_is_minter(deps, deps.api.addr_validate(&address)?)?)
+        // }
         QueryMsg::Checkpoints { account, pos } => to_binary(&checkpoints(deps, account, pos)?),
         QueryMsg::NumCheckpoints { account } => to_binary(&num_checkpoints(deps, account)?),
         // QueryMsg::Delegates { account } => to_binary(&delegates(deps, account)?),

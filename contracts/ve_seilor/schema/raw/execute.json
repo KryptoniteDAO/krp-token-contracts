@@ -40,37 +40,6 @@
     {
       "type": "object",
       "required": [
-        "set_minters"
-      ],
-      "properties": {
-        "set_minters": {
-          "type": "object",
-          "required": [
-            "contracts",
-            "is_minter"
-          ],
-          "properties": {
-            "contracts": {
-              "type": "array",
-              "items": {
-                "$ref": "#/definitions/Addr"
-              }
-            },
-            "is_minter": {
-              "type": "array",
-              "items": {
-                "type": "boolean"
-              }
-            }
-          },
-          "additionalProperties": false
-        }
-      },
-      "additionalProperties": false
-    },
-    {
-      "type": "object",
-      "required": [
         "mint"
       ],
       "properties": {

@@ -278,37 +278,6 @@
       {
         "type": "object",
         "required": [
-          "set_minters"
-        ],
-        "properties": {
-          "set_minters": {
-            "type": "object",
-            "required": [
-              "contracts",
-              "is_minter"
-            ],
-            "properties": {
-              "contracts": {
-                "type": "array",
-                "items": {
-                  "$ref": "#/definitions/Addr"
-                }
-              },
-              "is_minter": {
-                "type": "array",
-                "items": {
-                  "type": "boolean"
-                }
-              }
-            },
-            "additionalProperties": false
-          }
-        },
-        "additionalProperties": false
-      },
-      {
-        "type": "object",
-        "required": [
           "mint"
         ],
         "properties": {
@@ -531,27 +500,6 @@
         "properties": {
           "vote_config": {
             "type": "object",
-            "additionalProperties": false
-          }
-        },
-        "additionalProperties": false
-      },
-      {
-        "type": "object",
-        "required": [
-          "is_minter"
-        ],
-        "properties": {
-          "is_minter": {
-            "type": "object",
-            "required": [
-              "address"
-            ],
-            "properties": {
-              "address": {
-                "type": "string"
-              }
-            },
             "additionalProperties": false
           }
         },
@@ -883,20 +831,6 @@
           "type": "integer",
           "format": "uint128",
           "minimum": 0.0
-        }
-      },
-      "additionalProperties": false
-    },
-    "is_minter": {
-      "$schema": "http://json-schema.org/draft-07/schema#",
-      "title": "IsMinterResponse",
-      "type": "object",
-      "required": [
-        "is_minter"
-      ],
-      "properties": {
-        "is_minter": {
-          "type": "boolean"
         }
       },
       "additionalProperties": false

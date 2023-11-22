@@ -20,10 +20,10 @@ pub enum ExecuteMsg {
         max_minted: Option<Uint128>,
         fund: Option<Addr>,
     },
-    SetMinters {
-        contracts: Vec<Addr>,
-        is_minter: Vec<bool>,
-    },
+    // SetMinters {
+    //     contracts: Vec<Addr>,
+    //     is_minter: Vec<bool>,
+    // },
     Mint {
         recipient: String,
         amount: Uint128,
@@ -58,8 +58,8 @@ pub enum ExecuteMsg {
 pub enum QueryMsg {
     #[returns(VoteConfigResponse)]
     VoteConfig {},
-    #[returns(IsMinterResponse)]
-    IsMinter { address: String },
+    // #[returns(IsMinterResponse)]
+    // IsMinter { address: String },
     #[returns(CheckpointResponse)]
     Checkpoints { account: Addr, pos: u32 },
     #[returns(NumCheckpointsResponse)]
@@ -164,10 +164,10 @@ pub struct CheckpointResponse {
     pub votes: u128,
 }
 
-#[cw_serde]
-pub struct IsMinterResponse {
-    pub is_minter: bool,
-}
+// #[cw_serde]
+// pub struct IsMinterResponse {
+//     pub is_minter: bool,
+// }
 
 #[cw_serde]
 pub struct MigrateMsg {}

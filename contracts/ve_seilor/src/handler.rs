@@ -1,6 +1,6 @@
 use crate::error::ContractError;
 use crate::msg::FundMsg;
-use crate::state::{is_minter, read_vote_config, store_minters, store_vote_config};
+use crate::state::{read_vote_config, store_vote_config};
 use crate::ve_handler::{ve_burn, ve_mint};
 use cosmwasm_std::{
     attr, to_binary, Addr, CosmosMsg, DepsMut, Env, MessageInfo, Response, StdError, SubMsg,
@@ -44,28 +44,28 @@ pub fn update_config(
     Ok(Response::new().add_attributes(attrs))
 }
 
-pub fn set_minters(
-    deps: DepsMut,
-    info: MessageInfo,
-    contracts: Vec<Addr>,
-    is_minter: Vec<bool>,
-) -> Result<Response, ContractError> {
-    let vote_config = read_vote_config(deps.storage)?;
-
-    if info.sender != vote_config.gov {
-        return Err(ContractError::Unauthorized {});
-    }
-    if contracts.len() != is_minter.len() {
-        return Err(ContractError::InvalidInput {});
-    }
-    let mut attrs = vec![];
-    attrs.push(("action", "set_minters"));
-    for i in 0..contracts.len() {
-        let contract = contracts[i].clone();
-        let _ = store_minters(deps.storage, contract.clone(), &is_minter[i]);
-    }
-    Ok(Response::new().add_attributes(attrs))
-}
+// pub fn set_minters(
+//     deps: DepsMut,
+//     info: MessageInfo,
+//     contracts: Vec<Addr>,
+//     is_minter: Vec<bool>,
+// ) -> Result<Response, ContractError> {
+//     let vote_config = read_vote_config(deps.storage)?;
+//
+//     if info.sender != vote_config.gov {
+//         return Err(ContractError::Unauthorized {});
+//     }
+//     if contracts.len() != is_minter.len() {
+//         return Err(ContractError::InvalidInput {});
+//     }
+//     let mut attrs = vec![];
+//     attrs.push(("action", "set_minters"));
+//     for i in 0..contracts.len() {
+//         let contract = contracts[i].clone();
+//         let _ = store_minters(deps.storage, contract.clone(), &is_minter[i]);
+//     }
+//     Ok(Response::new().add_attributes(attrs))
+// }
 
 pub fn mint(
     deps: DepsMut,
@@ -78,7 +78,9 @@ pub fn mint(
     let msg_sender = info.sender.clone();
     let fund = vote_config.fund.clone();
 
-    if msg_sender.ne(&fund.clone()) && !is_minter(deps.storage, msg_sender.clone())? {
+    if msg_sender.ne(&fund.clone())
+    // && !is_minter(deps.storage, msg_sender.clone())?
+    {
         return Err(ContractError::Unauthorized {});
     }
 
@@ -132,7 +134,9 @@ pub fn burn(
     let msg_sender = info.sender;
     let fund = vote_config.fund;
 
-    if msg_sender != fund.clone() && !is_minter(deps.storage, msg_sender.clone())? {
+    if msg_sender != fund.clone()
+    // && !is_minter(deps.storage, msg_sender.clone())?
+    {
         return Err(ContractError::Unauthorized {});
     }
 
