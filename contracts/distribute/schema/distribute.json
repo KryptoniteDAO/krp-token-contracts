@@ -446,6 +446,16 @@
         "gov": {
           "$ref": "#/definitions/Addr"
         },
+        "new_gov": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Addr"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "rules_total_amount": {
           "type": "integer",
           "format": "uint128",

@@ -24,6 +24,7 @@ pub struct QueryConfigResponse {
     pub distribute_ve_token: Addr,
     pub rules_total_amount: u128,
     pub token_cap: Option<Uint128>,
+    pub new_gov: Option<Addr>,
 }
 
 #[cw_serde]

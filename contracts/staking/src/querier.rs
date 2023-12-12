@@ -110,6 +110,7 @@ pub fn query_staking_config(deps: Deps) -> StdResult<StakingConfigResponse> {
         boost: staking_config.boost,
         fund: staking_config.fund,
         reward_controller_addr: staking_config.reward_controller_addr,
+        new_gov: staking_config.new_gov,
     })
 }
 

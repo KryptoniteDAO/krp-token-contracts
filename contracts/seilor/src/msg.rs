@@ -168,6 +168,7 @@ pub struct SeilorConfigResponse {
     pub fund: Addr,
     pub distribute: Addr,
     pub gov: Addr,
+    pub new_gov: Option<Addr>,
 }
 
 #[cw_serde]

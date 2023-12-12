@@ -10,6 +10,7 @@ pub fn query_vote_config(deps: Deps) -> StdResult<VoteConfigResponse> {
         gov: config.gov,
         max_minted: config.max_minted,
         total_minted: config.total_minted,
+        new_gov: config.new_gov,
     })
 }
 

@@ -156,6 +156,7 @@ pub struct VoteConfigResponse {
     pub gov: Addr,
     pub max_minted: Uint128,
     pub total_minted: Uint128,
+    pub new_gov: Option<Addr>,
 }
 
 #[cw_serde]

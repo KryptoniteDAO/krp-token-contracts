@@ -108,6 +108,7 @@ pub fn query_config(deps: Deps) -> StdResult<crate::msg::QueryConfigResponse> {
         distribute_ve_token: config.distribute_ve_token,
         rules_total_amount: config.rules_total_amount,
         token_cap: config.token_cap,
+        new_gov: config.new_gov,
     })
 }
 

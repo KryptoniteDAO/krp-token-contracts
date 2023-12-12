@@ -9,5 +9,6 @@ pub fn query_seilor_config(deps: Deps) -> StdResult<SeilorConfigResponse> {
         fund: config.fund,
         distribute: config.distribute,
         gov: config.gov,
+        new_gov: config.new_gov,
     })
 }

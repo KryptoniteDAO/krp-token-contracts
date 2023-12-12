@@ -267,6 +267,16 @@
         "gov": {
           "$ref": "#/definitions/Addr"
         },
+        "new_gov": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Addr"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "ve_seilor_lock_settings": {
           "type": "array",
           "items": {

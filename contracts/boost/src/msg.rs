@@ -51,6 +51,7 @@ pub enum QueryMsg {
 pub struct GetBoostConfigResponse {
     pub gov: Addr,
     pub ve_seilor_lock_settings: Vec<VeSeilorLockSetting>,
+    pub new_gov: Option<Addr>,
 }
 
 #[cw_serde]

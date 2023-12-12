@@ -64,6 +64,7 @@ mod tests {
                 gov: Addr::unchecked("gov"),
                 fund: Addr::unchecked(""),
                 distribute: Addr::unchecked(""),
+                new_gov: None,
             }
         );
     }
@@ -99,6 +100,7 @@ mod tests {
                 gov: Addr::unchecked("creator"),
                 fund: Addr::unchecked(""),
                 distribute: Addr::unchecked(""),
+                new_gov: None,
             }
         );
 
@@ -119,6 +121,7 @@ mod tests {
                 gov: Addr::unchecked("creator"),
                 fund: Addr::unchecked("new_fund"),
                 distribute: Addr::unchecked("new_distribute"),
+                new_gov: None,
             }
         );
 

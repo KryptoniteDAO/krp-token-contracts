@@ -119,6 +119,7 @@ pub struct StakingConfigResponse {
     pub boost: Addr,
     pub fund: Addr,
     pub reward_controller_addr: Addr,
+    pub new_gov: Option<Addr>,
 }
 
 #[cw_serde]

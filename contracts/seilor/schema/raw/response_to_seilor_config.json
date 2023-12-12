@@ -22,6 +22,16 @@
       "type": "integer",
       "format": "uint128",
       "minimum": 0.0
+    },
+    "new_gov": {
+      "anyOf": [
+        {
+          "$ref": "#/definitions/Addr"
+        },
+        {
+          "type": "null"
+        }
+      ]
     }
   },
   "additionalProperties": false,

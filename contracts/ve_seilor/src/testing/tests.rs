@@ -72,6 +72,7 @@ mod tests {
                 fund: Addr::unchecked(""),
                 max_minted: Uint128::from(max_minted),
                 total_minted: Uint128::zero(),
+                new_gov: None,
             }
         );
     }
@@ -139,6 +140,7 @@ mod tests {
                 fund: Addr::unchecked(""),
                 max_minted: Uint128::from(max_minted),
                 total_minted: Uint128::zero(),
+                new_gov: None,
             }
         );
 
@@ -160,6 +162,7 @@ mod tests {
                 fund: Addr::unchecked("new_fund"),
                 max_minted: Uint128::from(max_minted),
                 total_minted: Uint128::zero(),
+                new_gov: None,
             }
         );
 
@@ -285,6 +288,7 @@ mod tests {
                 fund: Addr::unchecked("new_fund"),
                 max_minted: Uint128::from(max_minted),
                 total_minted: Uint128::zero(),
+                new_gov: None,
             }
         );
     }
@@ -340,6 +344,7 @@ mod tests {
                 fund: Addr::unchecked("new_fund"),
                 max_minted: Uint128::from(max_minted),
                 total_minted: Uint128::zero(),
+                new_gov: None,
             }
         );
 
@@ -360,6 +365,7 @@ mod tests {
                 fund: Addr::unchecked("new_fund"),
                 max_minted: Uint128::from(max_minted),
                 total_minted: Uint128::zero(),
+                new_gov: None,
             }
         );
     }

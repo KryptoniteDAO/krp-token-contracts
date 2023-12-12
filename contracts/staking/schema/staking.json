@@ -591,6 +591,16 @@
         "gov": {
           "$ref": "#/definitions/Addr"
         },
+        "new_gov": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Addr"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "reward_controller_addr": {
           "$ref": "#/definitions/Addr"
         },

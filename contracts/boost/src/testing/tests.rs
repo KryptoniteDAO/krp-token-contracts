@@ -47,6 +47,7 @@ mod tests {
             GetBoostConfigResponse {
                 gov: Addr::unchecked("gov"),
                 ve_seilor_lock_settings: ve_seilor_lock_settings(),
+                new_gov: None,
             }
         );
     }
@@ -69,6 +70,7 @@ mod tests {
             GetBoostConfigResponse {
                 gov: Addr::unchecked("gov"),
                 ve_seilor_lock_settings: ve_seilor_lock_settings(),
+                new_gov: None,
             }
         );
 
@@ -106,6 +108,7 @@ mod tests {
                         mining_boost: Uint128::from(300000000u128),
                     },
                 ],
+                new_gov: None,
             }
         );
     }
@@ -128,6 +131,7 @@ mod tests {
             GetBoostConfigResponse {
                 gov: Addr::unchecked("gov"),
                 ve_seilor_lock_settings: ve_seilor_lock_settings(),
+                new_gov: None,
             }
         );
 
