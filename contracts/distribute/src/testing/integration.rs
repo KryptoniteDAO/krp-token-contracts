@@ -344,6 +344,7 @@ fn update_distribute_contract_to_seilor(
     let update_seilor_config_msg = seilor::msg::ExecuteMsg::UpdateConfig {
         fund: None,
         distribute: Some(distribute.clone()),
+        cross_chain_swap_contract: None,
     };
     let res = app.execute_contract(
         creator.clone(),

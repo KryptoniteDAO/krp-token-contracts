@@ -10,6 +10,7 @@ pub fn update_config(
     info: MessageInfo,
     fund: Option<Addr>,
     distribute: Option<Addr>,
+    cross_chain_swap_contract: Option<Addr>,
 ) -> Result<Response, ContractError> {
     let mut seilor_config = read_seilor_config(deps.storage)?;
 
@@ -32,6 +33,15 @@ pub fn update_config(
         seilor_config.distribute = distribute.clone();
         attrs.push(attr("distribute", distribute.to_string()));
     }
+    if let Some(cross_chain_swap_contract) = cross_chain_swap_contract {
+        deps.api
+            .addr_validate(cross_chain_swap_contract.clone().as_str())?;
+        seilor_config.cross_chain_swap_contract = Some(cross_chain_swap_contract.clone());
+        attrs.push(attr(
+            "cross_chain_swap_contract",
+            cross_chain_swap_contract.to_string(),
+        ));
+    }
 
     store_seilor_config(deps.storage, &seilor_config)?;
 
@@ -51,6 +61,7 @@ pub fn mint(
     let seilor_config = read_seilor_config(deps.storage)?;
     let fund = seilor_config.fund;
     let distribute = seilor_config.distribute;
+    let cross_chain_swap_contract = seilor_config.cross_chain_swap_contract;
 
     if is_empty_str(fund.as_str()) && is_empty_str(distribute.as_str()) {
         return Err(ContractError::Std(StdError::generic_err(
@@ -58,8 +69,13 @@ pub fn mint(
         )));
     }
 
-    if msg_sender.ne(&fund.clone()) && msg_sender.ne(&distribute) {
-        return Err(ContractError::Unauthorized {});
+    if msg_sender.ne(&fund) && msg_sender.ne(&distribute) {
+        if (cross_chain_swap_contract.clone().is_some()
+            && msg_sender.ne(&cross_chain_swap_contract.clone().unwrap()))
+            || cross_chain_swap_contract.is_none()
+        {
+            return Err(ContractError::Unauthorized {});
+        }
     }
 
     let sub_info = MessageInfo {

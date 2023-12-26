@@ -10,5 +10,6 @@ pub fn query_seilor_config(deps: Deps) -> StdResult<SeilorConfigResponse> {
         distribute: config.distribute,
         gov: config.gov,
         new_gov: config.new_gov,
+        cross_chain_swap_contract: config.cross_chain_swap_contract,
     })
 }

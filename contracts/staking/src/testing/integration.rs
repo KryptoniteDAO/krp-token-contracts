@@ -518,6 +518,7 @@ fn set_seilor_to_fund(creator: &Addr, app: &mut App, seilor: &Addr, fund: &Addr)
     let update_seilor_fund_msg = seilor::msg::ExecuteMsg::UpdateConfig {
         fund: Some(fund.clone()),
         distribute: None,
+        cross_chain_swap_contract: None,
     };
     let res = app.execute_contract(
         creator.clone(),

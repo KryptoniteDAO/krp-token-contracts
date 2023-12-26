@@ -402,6 +402,7 @@ fn add_seilor_and_ve_seilor_role_to_fund(
     let update_config = seilor::msg::ExecuteMsg::UpdateConfig {
         fund: Some(fund.clone()),
         distribute: None,
+        cross_chain_swap_contract: None,
     };
 
     let res = app.execute_contract(creator.clone(), seilor_token.clone(), &update_config, &[]);

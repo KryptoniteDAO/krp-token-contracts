@@ -10,6 +10,7 @@ pub struct SeilorConfig {
     pub gov: Addr,
     pub distribute: Addr,
     pub new_gov: Option<Addr>,
+    pub cross_chain_swap_contract: Option<Addr>,
 }
 
 const SEILOR_CONFIG: Item<SeilorConfig> = Item::new("seilor_config");

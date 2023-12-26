@@ -243,6 +243,16 @@
           "update_config": {
             "type": "object",
             "properties": {
+              "cross_chain_swap_contract": {
+                "anyOf": [
+                  {
+                    "$ref": "#/definitions/Addr"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
               "distribute": {
                 "anyOf": [
                   {
@@ -1482,6 +1492,16 @@
         "max_supply"
       ],
       "properties": {
+        "cross_chain_swap_contract": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Addr"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "distribute": {
           "$ref": "#/definitions/Addr"
         },

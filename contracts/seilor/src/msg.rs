@@ -17,6 +17,7 @@ pub enum ExecuteMsg {
     UpdateConfig {
         fund: Option<Addr>,
         distribute: Option<Addr>,
+        cross_chain_swap_contract: Option<Addr>,
     },
     Mint {
         recipient: String,
@@ -169,6 +170,7 @@ pub struct SeilorConfigResponse {
     pub distribute: Addr,
     pub gov: Addr,
     pub new_gov: Option<Addr>,
+    pub cross_chain_swap_contract: Option<Addr>,
 }
 
 #[cw_serde]

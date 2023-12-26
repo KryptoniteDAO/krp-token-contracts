@@ -71,6 +71,7 @@ pub fn instantiate(
         gov,
         distribute: Addr::unchecked(""),
         new_gov: None,
+        cross_chain_swap_contract: None,
     };
 
     store_seilor_config(deps.storage, &seilor_config)?;
@@ -88,9 +89,11 @@ pub fn execute(
     msg: ExecuteMsg,
 ) -> Result<Response, ContractError> {
     match msg {
-        ExecuteMsg::UpdateConfig { fund, distribute } => {
-            update_config(deps, info, fund, distribute)
-        }
+        ExecuteMsg::UpdateConfig {
+            fund,
+            distribute,
+            cross_chain_swap_contract,
+        } => update_config(deps, info, fund, distribute, cross_chain_swap_contract),
         ExecuteMsg::Mint {
             recipient,
             amount,

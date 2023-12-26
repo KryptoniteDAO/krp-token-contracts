@@ -65,6 +65,7 @@ mod tests {
                 fund: Addr::unchecked(""),
                 distribute: Addr::unchecked(""),
                 new_gov: None,
+                cross_chain_swap_contract: None,
             }
         );
     }
@@ -84,6 +85,7 @@ mod tests {
         let _msg = ExecuteMsg::UpdateConfig {
             fund: Some(Addr::unchecked("new_fund")),
             distribute: Some(Addr::unchecked("new_distribute")),
+            cross_chain_swap_contract: Some(Addr::unchecked("new_cross_chain_swap_contract")),
         };
         let _info = mock_info("random_user", &[]);
         let _res = execute(deps.as_mut(), mock_env(), _info, _msg);
@@ -101,6 +103,7 @@ mod tests {
                 fund: Addr::unchecked(""),
                 distribute: Addr::unchecked(""),
                 new_gov: None,
+                cross_chain_swap_contract: None,
             }
         );
 
@@ -108,6 +111,7 @@ mod tests {
         let _msg = ExecuteMsg::UpdateConfig {
             fund: Some(Addr::unchecked("new_fund")),
             distribute: Some(Addr::unchecked("new_distribute")),
+            cross_chain_swap_contract: None,
         };
         let _info = mock_info("creator", &[]);
         let _res = execute(deps.as_mut(), mock_env(), _info, _msg).unwrap();
@@ -122,6 +126,7 @@ mod tests {
                 fund: Addr::unchecked("new_fund"),
                 distribute: Addr::unchecked("new_distribute"),
                 new_gov: None,
+                cross_chain_swap_contract: None,
             }
         );
 
@@ -129,6 +134,7 @@ mod tests {
         let _msg = ExecuteMsg::UpdateConfig {
             fund: Some(Addr::unchecked("new_fund")),
             distribute: Some(Addr::unchecked("new_distribute")),
+            cross_chain_swap_contract: Some(Addr::unchecked("new_cross_chain_swap_contract")),
         };
         let _info = mock_info("creator1", &[]);
         let _res = execute(deps.as_mut(), mock_env(), _info, _msg);
@@ -190,6 +196,7 @@ mod tests {
         let _msg = ExecuteMsg::UpdateConfig {
             fund: Some(Addr::unchecked("new_fund".to_string())),
             distribute: Some(Addr::unchecked("new_distribute".to_string())),
+            cross_chain_swap_contract: None,
         };
         let _info = mock_info("creator", &[]);
         let _res = execute(deps.as_mut(), mock_env(), _info, _msg).unwrap();
@@ -203,6 +210,12 @@ mod tests {
             msg: None,
         };
         let _info = mock_info("random_user", &[]);
+        let _res = execute(deps.as_mut(), mock_env(), _info, _msg.clone());
+        match _res {
+            Err(ContractError::Unauthorized {}) => {}
+            _ => panic!("Must return unauthorized error"),
+        }
+        let _info = mock_info("new_cross_chain_swap_contract", &[]);
         let _res = execute(deps.as_mut(), mock_env(), _info, _msg);
         match _res {
             Err(ContractError::Unauthorized {}) => {}
@@ -246,6 +259,41 @@ mod tests {
         assert_eq!(0, _res.messages.len());
 
         assert_eq!(get_balance(deps.as_ref(), "lucky"), Uint128::new(224466));
+
+        let _msg = ExecuteMsg::UpdateConfig {
+            fund: None,
+            distribute: None,
+            cross_chain_swap_contract: Some(Addr::unchecked(
+                "new_cross_chain_swap_contract".to_string(),
+            )),
+        };
+        let _info = mock_info("creator", &[]);
+        let _res = execute(deps.as_mut(), mock_env(), _info, _msg).unwrap();
+        assert_eq!(0, _res.messages.len());
+
+        let _msg = ExecuteMsg::Mint {
+            recipient: "lucky02".to_string(),
+            amount,
+            contract: None,
+            msg: None,
+        };
+        let _info = mock_info("new_fund", &[]);
+        let _res = execute(deps.as_mut(), mock_env(), _info, _msg).unwrap();
+        assert_eq!(0, _res.messages.len());
+
+        assert_eq!(get_balance(deps.as_ref(), "lucky02"), Uint128::new(112233));
+
+        let _msg = ExecuteMsg::Mint {
+            recipient: "lucky02".to_string(),
+            amount,
+            contract: None,
+            msg: None,
+        };
+        let _info = mock_info("new_cross_chain_swap_contract", &[]);
+        let _res = execute(deps.as_mut(), mock_env(), _info, _msg).unwrap();
+        assert_eq!(0, _res.messages.len());
+
+        assert_eq!(get_balance(deps.as_ref(), "lucky02"), Uint128::new(224466));
     }
 
     #[test]
@@ -264,6 +312,9 @@ mod tests {
         let _msg = ExecuteMsg::UpdateConfig {
             fund: Some(Addr::unchecked("new_fund".to_string())),
             distribute: Some(Addr::unchecked("new_distribute".to_string())),
+            cross_chain_swap_contract: Some(Addr::unchecked(
+                "new_cross_chain_swap_contract".to_string(),
+            )),
         };
         let _info = mock_info("creator", &[]);
         let _res = execute(deps.as_mut(), mock_env(), _info, _msg).unwrap();
