@@ -10,3 +10,4 @@ node_modules
 pnpm-lock.yaml
 */pnpm-lock.yaml
 **/*/deployed_seilor_*.json
+*code-workspace
