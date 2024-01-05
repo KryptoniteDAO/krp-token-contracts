@@ -157,7 +157,11 @@ pub fn unstake(
     }));
     sub_msgs.push(sub_burn_msg);
 
-    withdraw(deps.branch(), env.clone(), sender.clone())?;
+    let res_withdraw = withdraw(deps.branch(), env.clone(), sender.clone())?;
+
+    res_withdraw.messages.iter().for_each(|x| {
+        sub_msgs.push(x.clone());
+    });
 
     let mut total = Uint256::from(amount.clone());
     let time2full_redemption_user = read_time2full_redemption(deps.storage, sender.clone());
