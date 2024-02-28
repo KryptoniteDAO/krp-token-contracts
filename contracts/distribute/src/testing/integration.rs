@@ -205,6 +205,7 @@ fn test_integration() {
 
     assert_eq!(per_release_second, rule_config.linear_release_per_second);
     let res = query_claimable_info(&mut app, &seilor_distribute, &rule_type);
+    println!("res:{:?}", res);
     let cal_total_release_amount = per_release_second * 1000000u64 as u128 / BASE_RATE_12;
     assert_eq!(res.linear_release_amount, cal_total_release_amount);
     assert_eq!(

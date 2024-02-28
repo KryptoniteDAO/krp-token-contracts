@@ -6,8 +6,8 @@ use crate::helper::BASE_RATE_12;
 use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 use crate::querier::{query_claimable_info, query_config, query_rule_info, query_token_minter_cap};
 use crate::state::{
-    store_distribute_config, store_rule_config, store_rule_config_state, DistributeConfig,
-    RuleConfig, RuleConfigState,
+    read_rule_config, store_distribute_config, store_rule_config, store_rule_config_state,
+    DistributeConfig, RuleConfig, RuleConfigState,
 };
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
@@ -134,5 +134,46 @@ pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
 
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn migrate(_deps: DepsMut, _env: Env, _msg: MigrateMsg) -> StdResult<Response> {
+    // update co rule config
+    let mut co_config = read_rule_config(_deps.storage, "co".as_ref())?;
+    if co_config.linear_release_per_second < 2661192214111922141u128 {
+        co_config.linear_release_per_second = 2661192214111922141u128;
+        co_config.unlock_linear_release_time = 47347200;
+        co_config.end_linear_release_time =
+            co_config.start_linear_release_time + co_config.unlock_linear_release_time;
+        store_rule_config(_deps.storage, "co".as_ref(), &co_config)?;
+    }
+
+    // update mm rule config
+    let mut mm_config = read_rule_config(_deps.storage, "mm".as_ref())?;
+    if mm_config.linear_release_per_second < 4357501102292768959u128 {
+        mm_config.linear_release_per_second = 4357501102292768959u128;
+        mm_config.unlock_linear_release_time = 29030400;
+        mm_config.end_linear_release_time =
+            mm_config.start_linear_release_time + mm_config.unlock_linear_release_time;
+        store_rule_config(_deps.storage, "mm".as_ref(), &mm_config)?;
+    }
+
+    // update team rule config
+    let mut team_config = read_rule_config(_deps.storage, "team".as_ref())?;
+    if team_config.linear_release_per_second < 7614522417153996101u128 {
+        team_config.linear_release_per_second = 7614522417153996101u128;
+        team_config.unlock_linear_release_time = 26265600;
+        team_config.end_linear_release_time =
+            team_config.start_linear_release_time + team_config.unlock_linear_release_time;
+        store_rule_config(_deps.storage, "team".as_ref(), &team_config)?;
+    }
+
+    // update pa rule config
+
+    let mut pa_config = read_rule_config(_deps.storage, "pa".as_ref())?;
+    if pa_config.linear_release_per_second < 1713267543859649122u128 {
+        pa_config.linear_release_per_second = 1713267543859649122u128;
+        pa_config.unlock_linear_release_time = 26265600;
+        pa_config.end_linear_release_time =
+            pa_config.start_linear_release_time + pa_config.unlock_linear_release_time;
+        store_rule_config(_deps.storage, "pa".as_ref(), &pa_config)?;
+    }
+
     Ok(Response::default())
 }

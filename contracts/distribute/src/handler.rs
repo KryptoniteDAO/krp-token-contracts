@@ -57,6 +57,7 @@ pub fn claim(
         ));
     }
 
+    rule_config_state.last_claim_linear_release_time = block_time;
     store_rule_config_state(deps.storage, &rule_type, &rule_config_state)?;
 
     let mut cosmos_msgs = vec![];
