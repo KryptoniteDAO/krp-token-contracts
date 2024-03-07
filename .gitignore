@@ -1,6 +1,7 @@
 .idea
 target
 */target
+/deploy
 Cargo.lock
 */Cargo.lock
 node_modules

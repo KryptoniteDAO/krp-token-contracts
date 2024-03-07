@@ -5,10 +5,10 @@
     {
       "type": "object",
       "required": [
-        "query_global_config"
+        "vote_config"
       ],
       "properties": {
-        "query_global_config": {
+        "vote_config": {
           "type": "object",
           "additionalProperties": false
         }
@@ -18,16 +18,43 @@
     {
       "type": "object",
       "required": [
-        "query_user_info"
+        "checkpoints"
       ],
       "properties": {
-        "query_user_info": {
+        "checkpoints": {
           "type": "object",
           "required": [
-            "user"
+            "account",
+            "pos"
           ],
           "properties": {
-            "user": {
+            "account": {
+              "$ref": "#/definitions/Addr"
+            },
+            "pos": {
+              "type": "integer",
+              "format": "uint32",
+              "minimum": 0.0
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "num_checkpoints"
+      ],
+      "properties": {
+        "num_checkpoints": {
+          "type": "object",
+          "required": [
+            "account"
+          ],
+          "properties": {
+            "account": {
               "$ref": "#/definitions/Addr"
             }
           },
@@ -39,10 +66,109 @@
     {
       "type": "object",
       "required": [
-        "query_user_infos"
+        "get_votes"
       ],
       "properties": {
-        "query_user_infos": {
+        "get_votes": {
+          "type": "object",
+          "required": [
+            "account"
+          ],
+          "properties": {
+            "account": {
+              "$ref": "#/definitions/Addr"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "get_past_votes"
+      ],
+      "properties": {
+        "get_past_votes": {
+          "type": "object",
+          "required": [
+            "account",
+            "block_number"
+          ],
+          "properties": {
+            "account": {
+              "$ref": "#/definitions/Addr"
+            },
+            "block_number": {
+              "type": "integer",
+              "format": "uint64",
+              "minimum": 0.0
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "description": "Implements CW20. Returns the current balance of the given address, 0 if unset.",
+      "type": "object",
+      "required": [
+        "balance"
+      ],
+      "properties": {
+        "balance": {
+          "type": "object",
+          "required": [
+            "address"
+          ],
+          "properties": {
+            "address": {
+              "type": "string"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "description": "Implements CW20. Returns metadata on the contract - name, decimals, supply, etc.",
+      "type": "object",
+      "required": [
+        "token_info"
+      ],
+      "properties": {
+        "token_info": {
+          "type": "object",
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "description": "Only with \"mintable\" extension. Returns who can mint and the hard cap on maximum tokens after minting.",
+      "type": "object",
+      "required": [
+        "minter"
+      ],
+      "properties": {
+        "minter": {
+          "type": "object",
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "description": "Implements CW20 \"allowance\" extension. Returns how much spender can use from owner account, 0 if unset. Only with \"enumerable\" extension Returns all accounts that have balances. Supports pagination.",
+      "type": "object",
+      "required": [
+        "all_accounts"
+      ],
+      "properties": {
+        "all_accounts": {
           "type": "object",
           "properties": {
             "limit": {
@@ -54,16 +180,40 @@
               "minimum": 0.0
             },
             "start_after": {
-              "anyOf": [
-                {
-                  "$ref": "#/definitions/Addr"
-                },
-                {
-                  "type": "null"
-                }
+              "type": [
+                "string",
+                "null"
               ]
             }
           },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "description": "Only with \"marketing\" extension Returns more metadata on the contract to display in the client: - description, logo, project url, etc.",
+      "type": "object",
+      "required": [
+        "marketing_info"
+      ],
+      "properties": {
+        "marketing_info": {
+          "type": "object",
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "description": "Only with \"marketing\" extension Downloads the embedded logo data (if stored on chain). Errors if no logo data is stored for this contract.",
+      "type": "object",
+      "required": [
+        "download_logo"
+      ],
+      "properties": {
+        "download_logo": {
+          "type": "object",
           "additionalProperties": false
         }
       },

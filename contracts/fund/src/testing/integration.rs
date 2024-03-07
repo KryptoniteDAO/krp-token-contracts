@@ -90,12 +90,23 @@ fn test_integration() {
 
     // stake
     let stake_amount = 100000000u128;
+    // check seilor balance
+    let query_res = get_seilor_balance(&creator, &mut app, &seilor_token);
+    println!("=========== {:?}", query_res);
+    assert_eq!(query_res.balance, Uint128::from(200000000000000u128));
     stake(
         &creator,
         &mut app,
         &seilor_token,
         &test_contract_addr,
         &stake_amount,
+    );
+    // check seilor balance
+    let query_res = get_seilor_balance(&creator, &mut app, &seilor_token);
+    println!("=========== {:?}", query_res);
+    assert_eq!(
+        query_res.balance,
+        Uint128::from(200000000000000u128 - stake_amount.clone())
     );
 
     // Query kusd balance

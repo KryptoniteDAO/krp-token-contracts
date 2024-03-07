@@ -94,6 +94,27 @@
     {
       "type": "object",
       "required": [
+        "notify_reward_amount"
+      ],
+      "properties": {
+        "notify_reward_amount": {
+          "type": "object",
+          "required": [
+            "amount"
+          ],
+          "properties": {
+            "amount": {
+              "$ref": "#/definitions/Uint128"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
         "set_gov"
       ],
       "properties": {
@@ -163,6 +184,26 @@
     "UpdateStakingConfigStruct": {
       "type": "object",
       "properties": {
+        "boost": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Addr"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "fund": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/Addr"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
         "reward_controller_addr": {
           "anyOf": [
             {

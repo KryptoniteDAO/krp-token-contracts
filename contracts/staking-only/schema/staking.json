@@ -1,5 +1,5 @@
 {
-  "contract_name": "staking_only",
+  "contract_name": "staking",
   "contract_version": "0.1.0",
   "idl_version": "1.0.0",
   "instantiate": {
@@ -7,14 +7,22 @@
     "title": "InstantiateMsg",
     "type": "object",
     "required": [
+      "boost",
       "duration",
+      "fund",
       "reward_controller_addr",
       "rewards_token",
       "staking_token"
     ],
     "properties": {
+      "boost": {
+        "$ref": "#/definitions/Addr"
+      },
       "duration": {
         "$ref": "#/definitions/Uint128"
+      },
+      "fund": {
+        "$ref": "#/definitions/Addr"
       },
       "gov": {
         "anyOf": [
@@ -144,6 +152,27 @@
       {
         "type": "object",
         "required": [
+          "notify_reward_amount"
+        ],
+        "properties": {
+          "notify_reward_amount": {
+            "type": "object",
+            "required": [
+              "amount"
+            ],
+            "properties": {
+              "amount": {
+                "$ref": "#/definitions/Uint128"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      },
+      {
+        "type": "object",
+        "required": [
           "set_gov"
         ],
         "properties": {
@@ -213,6 +242,26 @@
       "UpdateStakingConfigStruct": {
         "type": "object",
         "properties": {
+          "boost": {
+            "anyOf": [
+              {
+                "$ref": "#/definitions/Addr"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "fund": {
+            "anyOf": [
+              {
+                "$ref": "#/definitions/Addr"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "reward_controller_addr": {
             "anyOf": [
               {
@@ -525,12 +574,20 @@
       "title": "StakingConfigResponse",
       "type": "object",
       "required": [
+        "boost",
+        "fund",
         "gov",
         "reward_controller_addr",
         "rewards_token",
         "staking_token"
       ],
       "properties": {
+        "boost": {
+          "$ref": "#/definitions/Addr"
+        },
+        "fund": {
+          "$ref": "#/definitions/Addr"
+        },
         "gov": {
           "$ref": "#/definitions/Addr"
         },

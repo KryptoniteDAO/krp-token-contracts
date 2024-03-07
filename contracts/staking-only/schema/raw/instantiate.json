@@ -3,14 +3,22 @@
   "title": "InstantiateMsg",
   "type": "object",
   "required": [
+    "boost",
     "duration",
+    "fund",
     "reward_controller_addr",
     "rewards_token",
     "staking_token"
   ],
   "properties": {
+    "boost": {
+      "$ref": "#/definitions/Addr"
+    },
     "duration": {
       "$ref": "#/definitions/Uint128"
+    },
+    "fund": {
+      "$ref": "#/definitions/Addr"
     },
     "gov": {
       "anyOf": [

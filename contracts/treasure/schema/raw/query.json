@@ -5,10 +5,10 @@
     {
       "type": "object",
       "required": [
-        "query_config_infos"
+        "reward_per_token"
       ],
       "properties": {
-        "query_config_infos": {
+        "reward_per_token": {
           "type": "object",
           "additionalProperties": false
         }
@@ -18,16 +18,139 @@
     {
       "type": "object",
       "required": [
-        "query_user_infos"
+        "last_time_reward_applicable"
       ],
       "properties": {
-        "query_user_infos": {
+        "last_time_reward_applicable": {
+          "type": "object",
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "get_boost"
+      ],
+      "properties": {
+        "get_boost": {
           "type": "object",
           "required": [
-            "user"
+            "account"
           ],
           "properties": {
-            "user": {
+            "account": {
+              "$ref": "#/definitions/Addr"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "earned"
+      ],
+      "properties": {
+        "earned": {
+          "type": "object",
+          "required": [
+            "account"
+          ],
+          "properties": {
+            "account": {
+              "$ref": "#/definitions/Addr"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "query_staking_config"
+      ],
+      "properties": {
+        "query_staking_config": {
+          "type": "object",
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "query_staking_state"
+      ],
+      "properties": {
+        "query_staking_state": {
+          "type": "object",
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "get_user_updated_at"
+      ],
+      "properties": {
+        "get_user_updated_at": {
+          "type": "object",
+          "required": [
+            "account"
+          ],
+          "properties": {
+            "account": {
+              "$ref": "#/definitions/Addr"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "get_user_reward_per_token_paid"
+      ],
+      "properties": {
+        "get_user_reward_per_token_paid": {
+          "type": "object",
+          "required": [
+            "account"
+          ],
+          "properties": {
+            "account": {
+              "$ref": "#/definitions/Addr"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "balance_of"
+      ],
+      "properties": {
+        "balance_of": {
+          "type": "object",
+          "required": [
+            "account"
+          ],
+          "properties": {
+            "account": {
               "$ref": "#/definitions/Addr"
             }
           },

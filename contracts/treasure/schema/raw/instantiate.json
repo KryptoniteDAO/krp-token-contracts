@@ -3,18 +3,22 @@
   "title": "InstantiateMsg",
   "type": "object",
   "required": [
-    "end_lock_time",
-    "lock_token",
-    "no_delay_punish_coefficient",
-    "punish_receiver",
-    "start_lock_time",
-    "withdraw_delay_duration"
+    "boost",
+    "duration",
+    "fund",
+    "reward_controller_addr",
+    "rewards_token",
+    "staking_token"
   ],
   "properties": {
-    "end_lock_time": {
-      "type": "integer",
-      "format": "uint64",
-      "minimum": 0.0
+    "boost": {
+      "$ref": "#/definitions/Addr"
+    },
+    "duration": {
+      "$ref": "#/definitions/Uint128"
+    },
+    "fund": {
+      "$ref": "#/definitions/Addr"
     },
     "gov": {
       "anyOf": [
@@ -26,24 +30,14 @@
         }
       ]
     },
-    "lock_token": {
+    "reward_controller_addr": {
       "$ref": "#/definitions/Addr"
     },
-    "no_delay_punish_coefficient": {
-      "$ref": "#/definitions/Uint128"
-    },
-    "punish_receiver": {
+    "rewards_token": {
       "$ref": "#/definitions/Addr"
     },
-    "start_lock_time": {
-      "type": "integer",
-      "format": "uint64",
-      "minimum": 0.0
-    },
-    "withdraw_delay_duration": {
-      "type": "integer",
-      "format": "uint64",
-      "minimum": 0.0
+    "staking_token": {
+      "$ref": "#/definitions/Addr"
     }
   },
   "additionalProperties": false,
