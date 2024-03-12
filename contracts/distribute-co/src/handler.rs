@@ -156,6 +156,8 @@ pub fn user_claim_periods(
     });
     msgs.push(transfer_token_msg);
 
+    store_user_period_config(deps.storage, &user_address, &user_period_config)?;
+
     Ok(Response::default().add_messages(msgs).add_attributes(vec![
         ("action", "user_claim_period"),
         ("user", user_address.as_str()),
