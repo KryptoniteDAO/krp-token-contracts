@@ -1,11 +1,12 @@
 use crate::msg::UserPeriodConfigMsg;
 use crate::state::{
     has_period_config, has_user_period_config, read_config, read_period_config,
-    read_user_period_config, store_period_config, store_user_period_config, PeriodConfig,
-    UserPeriodClaimedDetails, UserPeriodConfig,
+    read_user_period_config, read_user_status, store_config, store_period_config,
+    store_user_period_config, store_user_status, PeriodConfig, UserPeriodClaimedDetails,
+    UserPeriodConfig,
 };
 use cosmwasm_std::{
-    to_binary, CosmosMsg, DepsMut, Env, MessageInfo, Response, StdError, StdResult, Uint128,
+    to_binary, Addr, CosmosMsg, DepsMut, Env, MessageInfo, Response, StdError, StdResult, Uint128,
     WasmMsg,
 };
 
@@ -19,6 +20,8 @@ pub fn add_period_configs(
     if own_res.is_err() {
         return Err(StdError::generic_err(own_res.err().unwrap().to_string()));
     }
+    let mut config = read_config(deps.storage)?;
+    let mut period_total_amount = Uint128::zero();
     for period_config in period_configs {
         let period_id = period_config.period_id;
         let has_period = has_period_config(deps.storage, &period_id);
@@ -28,8 +31,11 @@ pub fn add_period_configs(
                 period_id
             )));
         }
+        period_total_amount += period_config.period_total_amount;
         store_period_config(deps.storage, &period_config)?;
     }
+    config.total_distribute_amount += period_total_amount;
+    store_config(deps.storage, &config)?;
 
     Ok(Response::default().add_attributes(vec![
         ("action", "add_period_configs"),
@@ -47,6 +53,7 @@ pub fn add_user_period_configs(
     if own_res.is_err() {
         return Err(StdError::generic_err(own_res.err().unwrap().to_string()));
     }
+    let mut config = read_config(deps.storage)?;
     for user_period_config_msg in user_period_configs_msg {
         let user_address = user_period_config_msg.user_address.clone();
         let has_user = has_user_period_config(deps.storage, &user_address);
@@ -62,10 +69,37 @@ pub fn add_user_period_configs(
             user_total_amount: user_period_config_msg.user_total_amount,
             user_claimed_periods: user_period_config_msg.user_claimed_periods,
         };
+        config.user_register_amount += user_period_config_msg.user_total_amount;
+        if config.user_register_amount > config.total_distribute_amount {
+            return Err(StdError::generic_err(format!(
+                "User {} total amount exceeds total distribute amount",
+                user_address
+            )));
+        }
         store_user_period_config(deps.storage, &user_address, &user_period_config)?;
+        store_user_status(deps.storage, &user_address, true)?;
     }
+    store_config(deps.storage, &config)?;
     Ok(Response::default().add_attributes(vec![
         ("action", "add_user_period_configs"),
+        ("owner", info.sender.as_str()),
+    ]))
+}
+
+pub fn update_user_status(
+    deps: DepsMut,
+    _env: Env,
+    info: MessageInfo,
+    user_address: Addr,
+    status: bool,
+) -> StdResult<Response> {
+    let own_res = cw_ownable::assert_owner(deps.storage, &info.sender);
+    if own_res.is_err() {
+        return Err(StdError::generic_err(own_res.err().unwrap().to_string()));
+    }
+    store_user_status(deps.storage, &user_address, status)?;
+    Ok(Response::default().add_attributes(vec![
+        ("action", "update_user_status"),
         ("owner", info.sender.as_str()),
     ]))
 }
@@ -78,8 +112,17 @@ pub fn user_claim_periods(
 ) -> StdResult<Response> {
     let config = read_config(deps.storage)?;
     let user_address = info.sender.clone();
+    let user_status = read_user_status(deps.storage, &user_address)?;
+    if !user_status {
+        return Err(StdError::generic_err(format!(
+            "User {} is not allowed to claim",
+            user_address
+        )));
+    };
+
     let mut user_period_config = read_user_period_config(deps.storage, &user_address)?;
     let user_per_period_amount = user_period_config.user_per_period_amount.clone();
+
     let current_time = env.block.time.seconds();
     let mut user_claimed_periods = user_period_config.user_claimed_periods.clone();
     let mut user_total_claimed_amount = Uint128::zero();
@@ -147,7 +190,7 @@ pub fn user_claim_periods(
     // transfer token to user
     let transfer_msg = cw20::Cw20ExecuteMsg::Transfer {
         recipient: user_address.clone().into(),
-        amount: user_per_period_amount,
+        amount: user_total_claimed_amount,
     };
     let transfer_token_msg = CosmosMsg::Wasm(WasmMsg::Execute {
         contract_addr: config.token_address.clone().to_string(),

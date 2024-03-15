@@ -87,6 +87,31 @@
         }
       },
       "additionalProperties": false
+    },
+    {
+      "type": "object",
+      "required": [
+        "update_user_status"
+      ],
+      "properties": {
+        "update_user_status": {
+          "type": "object",
+          "required": [
+            "status",
+            "user_address"
+          ],
+          "properties": {
+            "status": {
+              "type": "boolean"
+            },
+            "user_address": {
+              "$ref": "#/definitions/Addr"
+            }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
     }
   ],
   "definitions": {

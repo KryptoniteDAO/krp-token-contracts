@@ -7,6 +7,8 @@ use std::collections::HashMap;
 pub struct Config {
     pub token_address: Addr,
     pub token_distribute_address: Addr,
+    pub total_distribute_amount: Uint128,
+    pub user_register_amount: Uint128,
 }
 #[cw_serde]
 pub struct PeriodConfig {
@@ -35,6 +37,8 @@ const CONFIG: Item<Config> = Item::new("config");
 const PERIOD_CONFIGS: Map<&u64, PeriodConfig> = Map::new("period_configs");
 
 const USER_PERIOD_CONFIGS: Map<&Addr, UserPeriodConfig> = Map::new("user_period_configs");
+
+const USER_STATUS: Map<&Addr, bool> = Map::new("user_status");
 
 pub fn store_config(storage: &mut dyn Storage, config: &Config) -> StdResult<()> {
     CONFIG.save(storage, config)
@@ -86,4 +90,22 @@ pub fn read_user_period_config(
 
 pub fn has_user_period_config(storage: &dyn Storage, user_address: &Addr) -> bool {
     USER_PERIOD_CONFIGS.has(storage, user_address)
+}
+
+pub fn store_user_status(
+    storage: &mut dyn Storage,
+    user_address: &Addr,
+    status: bool,
+) -> StdResult<()> {
+    USER_STATUS.save(storage, user_address, &status)
+}
+
+pub fn read_user_status(storage: &dyn Storage, user_address: &Addr) -> StdResult<bool> {
+    USER_STATUS
+        .may_load(storage, user_address)
+        .map(|v| v.unwrap_or(false))
+}
+
+pub fn has_user_status(storage: &dyn Storage, user_address: &Addr) -> bool {
+    USER_STATUS.has(storage, user_address)
 }

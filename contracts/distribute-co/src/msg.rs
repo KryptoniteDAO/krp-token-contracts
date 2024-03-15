@@ -15,6 +15,7 @@ pub struct InstantiateMsg {
     pub gov: Option<Addr>,
     pub token_address: Addr,
     pub token_distribute_address: Addr,
+    pub total_distribute_amount: Uint128,
 }
 
 #[cw_serde]
@@ -29,6 +30,10 @@ pub enum ExecuteMsg {
         period_ids: Vec<u64>,
     },
     UpdateOwnership(cw_ownable::Action),
+    UpdateUserStatus {
+        user_address: Addr,
+        status: bool,
+    },
 }
 
 #[cw_serde]
@@ -44,6 +49,8 @@ pub enum QueryMsg {
     GetOwnership {},
     #[returns(Vec<crate::state::PeriodConfig>)]
     QueryAllPeriodConfigs {},
+    #[returns(bool)]
+    QueryUserStatus { user_address: Addr },
 }
 
 #[cw_serde]

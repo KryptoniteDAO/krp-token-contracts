@@ -1,13 +1,16 @@
-use crate::handler::{add_period_configs, add_user_period_configs, user_claim_periods};
+use crate::handler::{
+    add_period_configs, add_user_period_configs, update_user_status, user_claim_periods,
+};
 use crate::msg::{ExecuteMsg, InstantiateMsg, MigrateMsg, QueryMsg};
 use crate::querier::{
     query_all_period_configs, query_config, query_period_config, query_user_period_config,
+    query_user_status,
 };
 use crate::state::{store_config, Config};
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
-    to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdError, StdResult,
+    to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdError, StdResult, Uint128,
 };
 use cw2::set_contract_version;
 
@@ -29,6 +32,8 @@ pub fn instantiate(
     let config = Config {
         token_address: msg.token_address,
         token_distribute_address: msg.token_distribute_address,
+        total_distribute_amount: msg.total_distribute_amount,
+        user_register_amount: Uint128::zero(),
     };
     store_config(deps.storage, &config)?;
 
@@ -54,6 +59,10 @@ pub fn execute(deps: DepsMut, env: Env, info: MessageInfo, msg: ExecuteMsg) -> S
                 Err(err) => Err(StdError::generic_err(err.to_string())),
             }
         }
+        ExecuteMsg::UpdateUserStatus {
+            user_address,
+            status,
+        } => update_user_status(deps, env, info, user_address, status),
     }
 }
 
@@ -69,6 +78,9 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
         }
         QueryMsg::GetOwnership { .. } => to_binary(&cw_ownable::get_ownership(deps.storage)?),
         QueryMsg::QueryAllPeriodConfigs { .. } => to_binary(&query_all_period_configs(deps)?),
+        QueryMsg::QueryUserStatus { user_address } => {
+            to_binary(&query_user_status(deps, user_address)?)
+        }
     }
 }
 
