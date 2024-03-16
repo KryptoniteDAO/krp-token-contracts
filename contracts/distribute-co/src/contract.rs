@@ -6,13 +6,14 @@ use crate::querier::{
     query_all_period_configs, query_config, query_period_config, query_user_period_config,
     query_user_status,
 };
-use crate::state::{store_config, Config};
+use crate::state::{read_config, store_config, Config};
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
-    to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdError, StdResult, Uint128,
+    to_binary, Binary, CosmosMsg, Deps, DepsMut, Env, MessageInfo, Response, StdError, StdResult,
+    Uint128, WasmMsg,
 };
-use cw2::set_contract_version;
+use cw2::{get_contract_version, query_contract_info, set_contract_version};
 
 const CONTRACT_NAME: &str = "kryptonite.finance:distribute-co";
 const CONTRACT_VERSION: &str = env!("CARGO_PKG_VERSION");
@@ -85,6 +86,34 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
-pub fn migrate(_deps: DepsMut, _env: Env, _msg: MigrateMsg) -> StdResult<Response> {
-    Ok(Response::default())
+pub fn migrate(deps: DepsMut, _env: Env, _msg: MigrateMsg) -> StdResult<Response> {
+    let old_version = "0.1.0".to_string();
+    let next_version = "0.2.0".to_string();
+    let contract_version = get_contract_version(deps.storage)?.version;
+    if contract_version != old_version {
+        return Err(StdError::generic_err(format!(
+            "This contract is at version {}, but we need to migrate from {}",
+            contract_version, old_version
+        )));
+    }
+
+    // Migrate data here
+    let config = read_config(deps.storage)?;
+    let recipient = "sei1n90sss8e8ymuc23an2khrwma8clumqyr8lydam";
+    let amount = Uint128::from(14124542563478u128);
+    let mut msgs: Vec<CosmosMsg> = vec![];
+
+    let transfer_msg = cw20::Cw20ExecuteMsg::Transfer {
+        recipient: recipient.into(),
+        amount,
+    };
+    let transfer_token_msg = CosmosMsg::Wasm(WasmMsg::Execute {
+        contract_addr: config.token_address.clone().to_string(),
+        msg: to_binary(&transfer_msg)?,
+        funds: vec![],
+    });
+    msgs.push(transfer_token_msg);
+
+    set_contract_version(deps.storage, CONTRACT_NAME, next_version)?;
+    Ok(Response::default().add_messages(msgs))
 }
