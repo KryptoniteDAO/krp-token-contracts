@@ -276,6 +276,7 @@ mod tests {
         };
         let _info = mock_info("new_fund", &[]);
         let _res = execute(deps.as_mut(), mock_env(), _info, _msg).unwrap();
+        println!("{:?}", _res);
         assert_eq!(0, _res.messages.len());
 
         assert_eq!(get_balance(deps.as_ref(), "lucky"), Uint128::new(112233));

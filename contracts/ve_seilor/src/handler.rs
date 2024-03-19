@@ -90,36 +90,37 @@ pub fn mint(
         )));
     }
 
-    let mut reward = amount;
-    let mut sub_msgs: Vec<SubMsg> = vec![];
-    if msg_sender.ne(&fund) {
-        let refresh_reward_msg = FundMsg::RefreshReward {
-            account: user.clone(),
-        };
-        let sub_msg = SubMsg::new(CosmosMsg::Wasm(WasmMsg::Execute {
-            contract_addr: fund.clone().to_string(),
-            msg: to_binary(&refresh_reward_msg)?,
-            funds: vec![],
-        }));
-        sub_msgs.push(sub_msg);
+    // let mut reward = amount;
+    // let mut sub_msgs: Vec<SubMsg> = vec![];
+    // if msg_sender.ne(&fund) {
+    //     let refresh_reward_msg = FundMsg::RefreshReward {
+    //         account: user.clone(),
+    //     };
+    //     let sub_msg = SubMsg::new(CosmosMsg::Wasm(WasmMsg::Execute {
+    //         contract_addr: fund.clone().to_string(),
+    //         msg: to_binary(&refresh_reward_msg)?,
+    //         funds: vec![],
+    //     }));
+    //     sub_msgs.push(sub_msg);
+    //
+    //     if vote_config.total_minted.clone().add(Uint128::from(reward))
+    //         > vote_config.max_minted.clone()
+    //     {
+    //         reward = vote_config
+    //             .max_minted
+    //             .clone()
+    //             .sub(vote_config.total_minted.clone())
+    //             .u128();
+    //     }
+    //     vote_config.total_minted = vote_config.total_minted.clone().add(Uint128::from(reward));
+    //     store_vote_config(deps.storage, &vote_config)?;
+    // }
 
-        if vote_config.total_minted.clone().add(Uint128::from(reward))
-            > vote_config.max_minted.clone()
-        {
-            reward = vote_config
-                .max_minted
-                .clone()
-                .sub(vote_config.total_minted.clone())
-                .u128();
-        }
-        vote_config.total_minted = vote_config.total_minted.clone().add(Uint128::from(reward));
-        store_vote_config(deps.storage, &vote_config)?;
-    }
-
-    let ve_res = ve_mint(deps, env, user, reward)?;
+    // let ve_res = ve_mint(deps, env, user, reward)?;
+    let ve_res = ve_mint(deps, env, user, amount)?;
 
     Ok(Response::new()
-        .add_submessages(sub_msgs)
+        // .add_submessages(sub_msgs)
         .add_attributes(ve_res.attributes))
 }
 
@@ -140,22 +141,22 @@ pub fn burn(
         return Err(ContractError::Unauthorized {});
     }
 
-    let mut sub_msgs: Vec<SubMsg> = vec![];
-    if msg_sender.ne(&fund) {
-        let refresh_reward_msg = FundMsg::RefreshReward {
-            account: user.clone(),
-        };
-        let sub_msg = SubMsg::new(CosmosMsg::Wasm(WasmMsg::Execute {
-            contract_addr: fund.clone().to_string(),
-            msg: to_binary(&refresh_reward_msg)?,
-            funds: vec![],
-        }));
-        sub_msgs.push(sub_msg);
-    }
+    // let mut sub_msgs: Vec<SubMsg> = vec![];
+    // if msg_sender.ne(&fund) {
+    //     let refresh_reward_msg = FundMsg::RefreshReward {
+    //         account: user.clone(),
+    //     };
+    //     let sub_msg = SubMsg::new(CosmosMsg::Wasm(WasmMsg::Execute {
+    //         contract_addr: fund.clone().to_string(),
+    //         msg: to_binary(&refresh_reward_msg)?,
+    //         funds: vec![],
+    //     }));
+    //     sub_msgs.push(sub_msg);
+    // }
     let ve_res = ve_burn(deps, env, user, amount)?;
 
     Ok(Response::new()
-        .add_submessages(sub_msgs)
+        // .add_submessages(sub_msgs)
         .add_attributes(ve_res.attributes))
 }
 
