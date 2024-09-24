@@ -11,10 +11,8 @@ use crate::querier::{
 use crate::state::{store_staking_config, store_staking_state, StakingConfig, StakingState, read_staking_state};
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
-use cosmwasm_std::{
-    to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult, Uint128, Uint256,
-};
-use cw2::set_contract_version;
+use cosmwasm_std::{to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult, Uint128, Uint256, StdError};
+use cw2::{get_contract_version, query_contract_info, set_contract_version};
 
 // version info for migration info
 const CONTRACT_NAME: &str = "kryptonite.finance:cw20-ve-seilor-staking";
@@ -108,10 +106,24 @@ pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
 #[cfg_attr(not(feature = "library"), entry_point)]
 pub fn migrate(deps: DepsMut, _env: Env, _msg: MigrateMsg) -> StdResult<Response> {
     // Cannot upgrade sei-seilor /sei-stsei to staking pool
+
+
+    let contract_version = get_contract_version(deps.storage)?.version;
+    let old_version = "1.0.0".to_string();
+    let next_version = "1.0.1".to_string();
+    if contract_version != old_version {
+        return Err(StdError::generic_err(format!(
+            "This contract is at version {}, but we need to migrate from {}",
+            contract_version, old_version
+        )));
+    }
     let mut staking_state = read_staking_state(deps.storage)?;
     staking_state.updated_at = Uint128::zero();
     staking_state.finish_at = Uint128::zero();
     staking_state.reward_rate = Uint256::zero();
     staking_state.reward_per_token_stored = Uint128::zero();
+    set_contract_version(deps.storage, CONTRACT_NAME, next_version)?;
+
+    store_staking_state(deps.storage, &staking_state)?;
     Ok(Response::default())
 }
