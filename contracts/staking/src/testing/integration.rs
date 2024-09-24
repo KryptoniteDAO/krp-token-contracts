@@ -1,3 +1,4 @@
+use std::ops::{Div, Mul};
 use crate::constract::{execute, instantiate, query};
 use crate::msg::Cw20HookMsg::Stake;
 use crate::msg::ExecuteMsg::NotifyRewardAmount;
@@ -241,15 +242,17 @@ fn test_integration() {
     set_fund_ve_token_miners(&creator, &mut app, &fund, staking_reward.clone(), true);
 
     // send reward
-    let reward_amount = Uint128::from(1000000u128);
+    let reward_amount = Uint128::from(10u128).pow(6).mul(Uint128::from(1000u128));
     let kusd_reward_addr = Addr::unchecked(REWARD_CONTROLLER_ADDR.clone().to_string());
     notify_reward_amount(&kusd_reward_addr, &mut app, &staking_reward, &reward_amount);
+
+
 
     // query token staking token balance
     let balance = cw20_balance(&mut app, &staking_token, &tom_address);
     assert_eq!(balance.balance, Uint128::zero());
 
-    let stake_amount = Uint128::from(1000000u128);
+    let stake_amount = Uint128::from(10u128).pow(18).mul(Uint128::from(1000000u128));
 
     stake(
         &tom_address,
@@ -259,29 +262,32 @@ fn test_integration() {
         &stake_amount,
     );
 
+
     // send staking token to tom
+    let send_amount = Uint128::from(10u128).pow(12).mul(Uint128::from(10000u128));
     cw20_transfer(
         &mut app,
         &staking_token,
         &creator,
         &tom_address,
-        Uint128::from(1000000u128),
+        send_amount.clone(),
     );
     // query token staking token balance
     let balance = cw20_balance(&mut app, &staking_token, &tom_address);
-    assert_eq!(balance.balance, Uint128::from(1000000u128));
+    assert_eq!(balance.balance, send_amount.clone());
+
     // stake method
     stake(
         &tom_address,
         &mut app,
         &staking_token,
         &staking_reward,
-        &stake_amount,
+        &send_amount.clone(),
     );
 
     // user balance of
     let user_balance_of = balance_of(&mut app, &staking_reward, &tom_address);
-    assert_eq!(user_balance_of, Uint128::from(1000000u128));
+    assert_eq!(user_balance_of, send_amount.clone());
 
     // query token staking token balance
     let balance = cw20_balance(&mut app, &staking_token, &tom_address);
@@ -289,7 +295,7 @@ fn test_integration() {
 
     // check staking reward contract balance
     let balance = cw20_balance(&mut app, &staking_token, &staking_reward);
-    assert_eq!(balance.balance, Uint128::from(1000000u128));
+    assert_eq!(balance.balance, send_amount.clone());
 
     // query reward per token
     let reward_per_token = reward_per_token(&mut app, &staking_reward);
@@ -345,12 +351,13 @@ fn test_integration() {
     assert_eq!(balance.balance, query_earned_1);
 
     // withdraw stake
-    let withdraw_amount = Uint128::from(500000u128);
+    let half_amount = send_amount.div(Uint128::from(2u128));
+    let withdraw_amount = half_amount.clone();
     withdraw(&tom_address, &mut app, &staking_reward, &withdraw_amount);
 
     // user balance of
     let user_balance_of = balance_of(&mut app, &staking_reward, &tom_address);
-    assert_eq!(user_balance_of, Uint128::from(500000u128));
+    assert_eq!(user_balance_of, half_amount.clone());
 
     // update block time
     app.update_block(|block| {

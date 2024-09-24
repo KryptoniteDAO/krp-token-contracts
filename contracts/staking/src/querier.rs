@@ -1,4 +1,5 @@
-use crate::helper::{BASE_RATE_14, BASE_RATE_6};
+use std::ops::{Div, Mul};
+use crate::helper::{BASE_RATE_26, BASE_RATE_8};
 use crate::msg::{
     BalanceOfResponse, EarnedResponse, GetBoostResponse, GetUserRewardPerTokenPaidResponse,
     GetUserUpdatedAtResponse, LastTimeRewardApplicableResponse, RewardPerTokenResponse,
@@ -42,12 +43,18 @@ pub fn reward_per_token(deps: Deps, env: Env) -> StdResult<RewardPerTokenRespons
     let updated_at = staking_state.updated_at;
     let reward_per_token_stored = staking_state.reward_per_token_stored;
 
-    let rewards_256 = reward_rate.multiply_ratio(
-        Uint256::from(last_time_reward_applicable - updated_at),
-        Uint256::from(BASE_RATE_6),
-    );
-    let rewards_128 = Uint128::from_str(&rewards_256.to_string())?;
-    let reward_per_token = reward_per_token_stored + rewards_128 / staking_state.total_supply;
+    // let rewards_256 = reward_rate.multiply_ratio(
+    //     Uint256::from(last_time_reward_applicable - updated_at),
+    //     Uint256::from(BASE_RATE_6),
+    // );
+    let diffTime = last_time_reward_applicable - updated_at;
+    let rewards_256 = reward_rate.mul(Uint256::from(diffTime));
+    let add_reward_per_token_256 = rewards_256.div(Uint256::from(staking_state.total_supply));
+
+    let add_reward_per_token = Uint128::from_str(&add_reward_per_token_256.to_string())?;
+    let reward_per_token = reward_per_token_stored + add_reward_per_token;
+    // println!("rewards_256: {} ,reward_rate:{} ,diffTime:{},reward_per_token_stored:{},total_supply:{},reward_per_token:{}",
+    //          rewards_256, reward_rate, diffTime, reward_per_token_stored, staking_state.total_supply, reward_per_token);
     Ok(RewardPerTokenResponse { reward_per_token })
 }
 
@@ -71,7 +78,7 @@ pub fn get_boost(deps: Deps, account: Addr) -> StdResult<GetBoostResponse> {
         }))?;
 
     let user_boost = get_user_boost_res.user_boost;
-    let boost = Uint128::new(100u128) * Uint128::new(BASE_RATE_6) + user_boost;
+    let boost = Uint128::new(BASE_RATE_8) + user_boost;
     Ok(GetBoostResponse { boost })
 }
 
@@ -83,9 +90,14 @@ pub fn earned(deps: Deps, env: Env, account: Addr) -> StdResult<EarnedResponse> 
     let user_reward_per_token_paid = read_user_reward_per_token_paid(deps.storage, account.clone());
 
     let boost = get_boost(deps, account.clone())?.boost;
-    let earned = ((balance_of * boost * (reward_per_token - user_reward_per_token_paid))
-        / Uint128::new(BASE_RATE_14))
-        + rewards;
+    let newEarned = Uint256::from(balance_of)
+        .mul(Uint256::from(boost))
+        .mul(Uint256::from(reward_per_token - user_reward_per_token_paid))
+        .div(Uint256::from(BASE_RATE_26));
+    // let earned = ((balance_of * boost * (reward_per_token - user_reward_per_token_paid))
+    //     / Uint128::new(BASE_RATE_26))
+    //     + rewards;
+    let earned = Uint128::from_str(&newEarned.to_string())? + rewards;
     Ok(EarnedResponse { earned })
 }
 

@@ -1,5 +1,5 @@
 use crate::error::ContractError;
-use crate::helper::BASE_RATE_12;
+use crate::helper::{BASE_RATE_18};
 use crate::msg::{Cw20HookMsg, UpdateStakingConfigStruct};
 use crate::querier::{earned, is_empty_address, last_time_reward_applicable, reward_per_token};
 use crate::state::{
@@ -329,17 +329,17 @@ pub fn notify_reward_amount(
         if current_time >= staking_state.finish_at {
             // staking_state.reward_rate = amount / staking_state.duration;
             staking_state.reward_rate = Uint256::from(amount).multiply_ratio(
-                Uint256::from(BASE_RATE_12),
+                Uint256::from(BASE_RATE_18),
                 Uint256::from(staking_state.duration),
             );
         } else {
             // let remaining_rewards = (staking_state.finish_at - current_time) * staking_state.reward_rate;
             let remaining_rewards = Uint256::from(staking_state.finish_at - current_time)
-                .multiply_ratio(staking_state.reward_rate, Uint256::from(BASE_RATE_12));
+                .multiply_ratio(staking_state.reward_rate, Uint256::from(BASE_RATE_18));
             // staking_state.reward_rate = (amount + remaining_rewards) / staking_state.duration;
             staking_state.reward_rate = (Uint256::from(amount).add(remaining_rewards))
                 .multiply_ratio(
-                    Uint256::from(BASE_RATE_12),
+                    Uint256::from(BASE_RATE_18),
                     Uint256::from(staking_state.duration),
                 );
         }

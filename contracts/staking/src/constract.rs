@@ -8,7 +8,7 @@ use crate::querier::{
     balance_of, earned, get_boost, get_user_reward_per_token_paid, get_user_updated_at,
     last_time_reward_applicable, query_staking_config, query_staking_state, reward_per_token,
 };
-use crate::state::{store_staking_config, store_staking_state, StakingConfig, StakingState};
+use crate::state::{store_staking_config, store_staking_state, StakingConfig, StakingState, read_staking_state};
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
 use cosmwasm_std::{
@@ -106,6 +106,12 @@ pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
-pub fn migrate(_deps: DepsMut, _env: Env, _msg: MigrateMsg) -> StdResult<Response> {
+pub fn migrate(deps: DepsMut, _env: Env, _msg: MigrateMsg) -> StdResult<Response> {
+    // Cannot upgrade sei-seilor /sei-stsei to staking pool
+    let mut staking_state = read_staking_state(deps.storage)?;
+    staking_state.updated_at = Uint128::zero();
+    staking_state.finish_at = Uint128::zero();
+    staking_state.reward_rate = Uint256::zero();
+    staking_state.reward_per_token_stored = Uint128::zero();
     Ok(Response::default())
 }
